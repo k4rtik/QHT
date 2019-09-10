@@ -53,6 +53,8 @@
 \usepackage{subcaption} %% For complex figures with subfigures/subcaptions
                         %% http://ctan.org/pkg/subcaption
 
+%% Added by kartik
+\usepackage[braket]{qcircuit}
 
 \begin{document}
 
@@ -129,9 +131,10 @@
 %% Note: \begin{abstract}...\end{abstract} environment must come
 %% before \maketitle command
 \begin{abstract}
-Text of abstract \ldots.
-
 (4 sentences)
+
+\textit{Text of abstract \ldots.}
+
 \end{abstract}
 
 
@@ -165,29 +168,42 @@ Text of abstract \ldots.
 
 
 \section{Introduction}
-
-Text of paper \ldots
+(1 page)
 
 \textit{- Describe the problem}
 
 \textit{- State your contributions}
 
-(1 page)
+
+It is difficult to reason about the correctness of quantum programs; both while running them and while writing them. Sound static type systems help prevent a huge class of bugs from occurring, but since the realm of quantum programming is still new, there is not a lot of consensus on what kind of types make the most sense and whether they help programmers reason about the semantic properties associated with the quantum algorithms that they are implementing.
+
+Previous work such as Proto-Quipper\cite{2015arXiv151002198R} and QWire\cite{rand18,paykin18} utilize a linear type system and dependent types to enforce a small subset of semantic properties in the quantum setting such as the no-cloning theorem and whether a unitary operator is of the right dimension. These advances in quantum type systems although helpful, still fall short in encoding and enforcing even more useful properties that one would like to be able to express for the purpose of verification. Inspired by the use of Hoare triples in the verification of imperative programs and building on the idea of Hoare Types in classical programming languages, we propose Quantum Hoare Types aimed at enabling both sound static type checking and formal verification of quantum programs.
 
 \subsection{Contributions}
-In this section we present the main contributions of the paper
+(bulleted list of contributions)
 
-\textit{bulleted list of contributions}
+\textit{In this section we present the main contributions of the paper\ldots}
 
 \section{Problem}
+(1 page)
 
 \textit{Use an example to introduce the problem}
 
-(1 page)
+\subsection{Motivating Example}
 
-\section{Idea}
+\begin{figure}
+	\centerline{
+		\Qcircuit @C=1em @R=.7em {
+		\lstick{\ket{q_0}} & \gate{H} & \ctrl{1} & \qw \\
+		\lstick{\ket{q_1}} & \qw         & \targ    & \qw
+	}}
+	\caption{Bell Pair Creation}
+	\label{fig:bellpair}
+\end{figure}
 
-The main idea of this paper is \ldots
+In Figure \ref{fig:bellpair}, we see a standard Bell Pair generation circuit.
+
+Assume the input is \ket{00}. A Hadamard gate is applied to qubit $q_0$ and then a CNOT gate is applied to its outcome as the control and the qubit $q_1$ as the target.
 
 (2 pages)
 
