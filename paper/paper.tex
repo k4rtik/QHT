@@ -172,6 +172,30 @@ Text of abstract \ldots.
 
 Text of paper \ldots
 
+From Xavier Leroy's OPLSS Slides:
+
+
+Arithmetic expressions:
+
+\[a ::= n \mid x \mid a1 + a2 \mid a1 - a2 \mid a1 \times a2\]
+
+Boolean expressions:
+
+\begin{align*}
+	b ::=&\ \textsf{true} \mid \textsf{false} \mid a1 = a2 \mid a1 \le a2\\
+	\mid&\ \textsf{not}\ b \mid b1\ \textsf{and}\ b2
+\end{align*}
+
+Commands (statements):
+
+\begin{align*}
+	c ::=&\ \textsf{SKIP} 														&\textsf{(do\ nothing)}\\
+	\mid&\ x ::= a 															&\textsf{(assignment)}\\
+	\mid&\ 1; ; c2 															&\textsf{(sequence)}\\
+	\mid&\ \textsf{IFB}\ b\ \textsf{THEN}\ c1\ \textsf{ELSE}\ c2\ \textsf{FI} 	&\textsf{(conditional)}\\
+	\mid&\ \textsf{WHILE}\ b\ \textsf{DO}\ c\ \textsf{END} 					&\textsf{(loop)}
+\end{align*}
+
 \cite{DBLP:conf/oopsla/HuangM18}
 
 \cite{Huang:2019:SAV:3307650.3322213}
