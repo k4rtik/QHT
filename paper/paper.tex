@@ -205,10 +205,75 @@ In Figure \ref{fig:bellpair}, we see a standard Bell Pair generation circuit.
 
 Assume the input is \ket{00}. A Hadamard gate is applied to qubit $q_0$ and then a CNOT gate is applied to its outcome as the control and the qubit $q_1$ as the target.
 
+The result will be a 2-qubit entangled state aka the first Bell state that will, on measurement, collapse into either \ket{00} or \ket{11} with equal probability.
+
+
+\subsection{Desired Properties}
+For our example, we would like to guarantee correctness of properties such as the following:
+\begin{itemize}
+	\item Before application of H gate, the qubit $q_0$ should have a deterministic integer value (on measurement)
+	\item After application of H, $q_0$ should be in 50-50 probabilistic distribution of being in the two computational states
+	\item After application of CNOT, the two qubits should be in a maximally entangled state
+	\item Given a certain input to the whole circuit, we should get the corresponding Bell state
+\end{itemize}
+
+\section{Idea}
 (2 pages)
+
+\textit{The main idea of this paper is \ldots}
+
+Recent work at Princeton as part of EPiQC\cite{DBLP:conf/oopsla/HuangM18,Huang:2019:SAV:3307650.3322213} has identified several classes of bugs in quantum programs and proposed approaches to tackle them. They proposed assertion checking using preconditions and post-conditions as one of the most effective techniques for most such classes of bugs.
+
+As programming languages researchers, we think it will be more useful to encode such assertions into a static type system for both formal verification and aiding the programmers in writing correct programs from the start.
 
 \section{Details}
 (5 pages)
+
+\subsection{Notation and Background}
+\begin{itemize}
+	\item \textbf{Dependent Types}
+	\[ \mathrm{inner\_product}: \Pi m: \mathrm{nat}.\mathrm{vector}(m) \times \mathrm{vector}(m) \rightarrow \mathrm{nat} \]
+
+	\item \textbf{Hoare Triples} from \textbf{Floyd-Hoare Logic}
+	\[ \{P\}\ C\ \{Q\} \]
+	$P$ and $Q$ are pre and postcondition respectively on the program state, while $C$ is the command. For example:
+	\[ \{\mathrm{True}\}\ x := 3\ \{x=3\} \]
+	\item \textbf{Hoare Types} from \textbf{Hoare Type Theory} (\textbf{HTT}) that combine the strengths of dependent types and Hoare logic.
+	\[ \{P\}\ \mathrm{res}:A\ \{Q\}\]
+	for a stateful computation executed in a heap that satisfies precondition $P$ and returns a value of type $A$ in a heap that satisfies postcondition $Q$. For example:
+	\[ \mathrm{alloc} : \forall \alpha . \Pi x : \alpha. \{\mathrm{emp}\}\ y : \mathrm{nat}\ \{ y \mapsto_{\alpha} x\}\]
+\end{itemize}
+
+\subsection{Quantum Hoare Types}
+Quantum Hoare typing for the Hadamard and the CNOT operations will look something like:
+
+\abovedisplayskip=0pt
+\belowdisplayskip=12pt
+
+\[ \mathbf{H}(q_0) : \{ \mathrm{q\_state}(q_0) \in \{\ket{0}, \ket{1} \}\}\ r : \mathrm{unit}\ \{ \mathrm{q\_state}(q_0) \in \{\ket{+}, \ket{-}\} \} \]
+
+\[ \mathbf{CNOT}(q_0, q_1) : \{ \mathrm{q\_state}(q_0) \in \{ \ket{+}, \ket{-} \} \wedge \mathrm{q\_state}(q_0) \in \{\ket{0}, \ket{1} \}\ r : \mathrm{unit}\ \{ \mathrm{entangled}(q_0, q_1) \}\]
+
+Using sequential composition, type of the complete program will be:
+
+\[ \mathbf{BellPair}(q_0, q_1) : \{ \mathrm{q\_state}(q_i) \in \{\ket{0}, \ket{1} \}\}\ r : \mathrm{unit}\ \{ \mathrm{entangled}(q_0, q_1) \} \]
+
+where the predicates need to be encoded in terms of suitable dependent types. This is ongoing work.
+
+\subsubsection{Challenges}
+\begin{itemize}
+	\item The type system for Hoare Type Theory is fairly complex. We are mechanizing the type system to handle design changes easily.
+	\item We need to be able to reason about both decomposable quantum state and entangled state. This aspect may require incorporating ideas from Separation Logic.
+\end{itemize}
+
+\subsubsection{Benefits}
+\begin{itemize}
+	\item Potential to be a unified system for programming, specification and reasoning about quantum programs similar to HTT.
+	\item Allows composition of verification in the same style as Hoare logic.
+\end{itemize}
+
+
+\hrulefill
 
 From Xavier Leroy's OPLSS Slides:
 
