@@ -55,6 +55,7 @@
 
 %% Added by kartik
 \usepackage[braket]{qcircuit}
+\usepackage{mathpartir}
 
 \begin{document}
 
@@ -195,7 +196,7 @@ Previous work such as Proto-Quipper\cite{2015arXiv151002198R} and QWire\cite{ran
 	\centerline{
 		\Qcircuit @C=1em @R=.7em {
 		\lstick{\ket{q_0}} & \gate{H} & \ctrl{1} & \qw \\
-		\lstick{\ket{q_1}} & \qw         & \targ    & \qw
+		\lstick{\ket{q_1}} & \qw      & \targ    & \qw
 	}}
 	\caption{Bell Pair Creation}
 	\label{fig:bellpair}
@@ -222,7 +223,7 @@ For our example, we would like to guarantee correctness of properties such as th
 
 \textit{The main idea of this paper is \ldots}
 
-Recent work at Princeton as part of EPiQC\cite{DBLP:conf/oopsla/HuangM18,Huang:2019:SAV:3307650.3322213} has identified several classes of bugs in quantum programs and proposed approaches to tackle them. They proposed assertion checking using preconditions and post-conditions as one of the most effective techniques for most such classes of bugs.
+Recent work at Princeton as part of EPiQC\footnote{EPiQC: Enabling Practical-Scale Quantum Computation:  \url{https://epiqc.cs.uchicago.edu}}\cite{DBLP:conf/oopsla/HuangM18,Huang:2019:SAV:3307650.3322213} has identified several classes of bugs in quantum programs and proposed approaches to tackle them. They proposed assertion checking using preconditions and post-conditions as one of the most effective techniques for most such classes of bugs.
 
 As programming languages researchers, we think it will be more useful to encode such assertions into a static type system for both formal verification and aiding the programmers in writing correct programs from the start.
 
@@ -247,12 +248,15 @@ As programming languages researchers, we think it will be more useful to encode 
 \subsection{Quantum Hoare Types}
 Quantum Hoare typing for the Hadamard and the CNOT operations will look something like:
 
-\abovedisplayskip=0pt
-\belowdisplayskip=12pt
+\begin{mathpar}
+	\mathbf{H}(q_0) : \{ \mathrm{q\_state}(q_0) \in \{\ket{0}, \ket{1} \}\}\ r : \mathrm{unit}\ \{ \mathrm{q\_state}(q_0) \in \{\ket{+}, \ket{-}\} \}
 
-\[ \mathbf{H}(q_0) : \{ \mathrm{q\_state}(q_0) \in \{\ket{0}, \ket{1} \}\}\ r : \mathrm{unit}\ \{ \mathrm{q\_state}(q_0) \in \{\ket{+}, \ket{-}\} \} \]
+	\\
 
-\[ \mathbf{CNOT}(q_0, q_1) : \{ \mathrm{q\_state}(q_0) \in \{ \ket{+}, \ket{-} \} \wedge \mathrm{q\_state}(q_0) \in \{\ket{0}, \ket{1} \}\ r : \mathrm{unit}\ \{ \mathrm{entangled}(q_0, q_1) \}\]
+	\mathbf{CNOT}(q_0, q_1) : \{ \mathrm{q\_state}(q_0) \in \{ \ket{+}, \ket{-} \} \wedge \mathrm{q\_state}(q_0) \in \{\ket{0}, \ket{1} \}\ r : \mathrm{unit}\ \{ \mathrm{entangled}(q_0, q_1) \}
+\end{mathpar}
+
+
 
 Using sequential composition, type of the complete program will be:
 
