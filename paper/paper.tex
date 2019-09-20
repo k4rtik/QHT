@@ -232,6 +232,31 @@ As programming languages researchers, we think it will be more useful to encode 
 
 \subsection{Syntax}
 
+$\alpha$ represents type of a non-specific quantum state vector.
+
+\begin{tabular}{lrcl}
+\textit{Types} & $A, B, C$ & ::= & $ \alpha \mid \mathrm{bool} \mid \mathrm{nat} \mid 1 \mid \Pi x{:}A.B \mid \Psi. X. \{P\} x{:}A \{Q\} \mid \forall \alpha.A$ \\
+\textit{Monotypes} & $\tau, \sigma$ & ::= & $ \alpha \mid \mathrm{bool} \mid \mathrm{nat} \mid 1 \mid \Pi x{:}\tau.\sigma \mid \Psi. X. \{P\} x{:}\tau \{Q\}$ \\
+\textit{Assertions} & $P, Q, R$ & ::= & \begin{minipage}[t]{0.6\columnwidth}%
+	$ \mathrm{id}_A(M,N) \mid \top \mid \bot \mid P \wedge Q \mid P \vee Q \mid P \supset Q \mid \neg P \mid \\
+	  \forall x{:}A.P \mid \forall \alpha.P \mid \forall h{:}\mathrm{heap}.P $
+\end{minipage}\\
+\textit{(Quantum) Heaps} & $H, G$ & ::= & $ h \mid \mathrm{empty} \mid \mathrm{upd}_{\tau}(H, M, N) $\\
+\textit{Elim terms} & $K, L$ & ::= & $ x \mid K\ M \mid K\ \tau \mid M : A $\\
+\textit{Intro terms} & $M, N, O$ & ::= & \begin{minipage}[t]{0.6\columnwidth}%
+	$ K \mid () \mid \lambda x.\ M \mid \mathrm{do}\ E \mid \mathrm{true} \mid \mathrm{false} \mid \mathrm{z} \mid \mathrm{succ}\ M \mid \\
+	  M + N \mid M \times N \mid M==N $
+\end{minipage}\\
+\textit{Commands} & $c$ & ::= & \begin{minipage}[t]{0.6\columnwidth}%
+	$ \mathrm{alloc}_\tau\ M \mid \mathrm{dealloc}\ M \mid \mathrm{if}_A\ M\ \mathrm{then}\ E_1\ \mathrm{else}\ E_2 \mid \\
+	 \mathrm{fix}\ f(y{:}A){:}B = \mathrm{do}\ E\ \mathrm{in\ eval}\ f M $
+\end{minipage}\\
+\textit{Computations} & $E, F$ & ::= & $ \mathrm{return}\ M \mid x \gets K; E \mid x \Leftarrow c; E \mid x =_A M; E $\\
+\textit{Variable context} & $\Delta, \Psi$ & ::= & $ \cdot \mid \Delta, x{:}A \mid \Delta, \alpha $\\
+\textit{Heap context} & $X$ & ::= & $ \cdot \mid X, h $\\
+\textit{Assertion context} & $\Gamma$& ::= & $\cdot \mid \Gamma, P $
+\end{tabular}
+
 \subsubsection{Assertions}
 
 \subsubsection{Example}
@@ -239,6 +264,8 @@ As programming languages researchers, we think it will be more useful to encode 
 \subsection{Typing Rules}
 
 \subsection{Annotated Example}
+
+\subsection{Evaluation Rules}
 
 \subsection{Notation and Background}
 \begin{itemize}
