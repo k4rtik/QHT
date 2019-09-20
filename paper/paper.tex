@@ -232,29 +232,50 @@ As programming languages researchers, we think it will be more useful to encode 
 
 \subsection{Syntax}
 
-$\alpha$ represents type of a non-specific quantum state vector.
+See Fig. \ref{fig:syntax}. Let's assume $\alpha$ represents type of a non-specific quantum state vector (that includes entangled qubits).
 
+\begin{figure}
 \begin{tabular}{lrcl}
-\textit{Types} & $A, B, C$ & ::= & $ \alpha \mid \mathrm{bool} \mid \mathrm{nat} \mid 1 \mid \Pi x{:}A.B \mid \Psi. X. \{P\} x{:}A \{Q\} \mid \forall \alpha.A$ \\
-\textit{Monotypes} & $\tau, \sigma$ & ::= & $ \alpha \mid \mathrm{bool} \mid \mathrm{nat} \mid 1 \mid \Pi x{:}\tau.\sigma \mid \Psi. X. \{P\} x{:}\tau \{Q\}$ \\
-\textit{Assertions} & $P, Q, R$ & ::= & \begin{minipage}[t]{0.6\columnwidth}%
-	$ \mathrm{id}_A(M,N) \mid \top \mid \bot \mid P \wedge Q \mid P \vee Q \mid P \supset Q \mid \neg P \mid \\
-	  \forall x{:}A.P \mid \forall \alpha.P \mid \forall h{:}\mathrm{heap}.P $
-\end{minipage}\\
-\textit{(Quantum) Heaps} & $H, G$ & ::= & $ h \mid \mathrm{empty} \mid \mathrm{upd}_{\tau}(H, M, N) $\\
-\textit{Elim terms} & $K, L$ & ::= & $ x \mid K\ M \mid K\ \tau \mid M : A $\\
-\textit{Intro terms} & $M, N, O$ & ::= & \begin{minipage}[t]{0.6\columnwidth}%
-	$ K \mid () \mid \lambda x.\ M \mid \mathrm{do}\ E \mid \mathrm{true} \mid \mathrm{false} \mid \mathrm{z} \mid \mathrm{succ}\ M \mid \\
-	  M + N \mid M \times N \mid M==N $
-\end{minipage}\\
-\textit{Commands} & $c$ & ::= & \begin{minipage}[t]{0.6\columnwidth}%
-	$ \mathrm{alloc}_\tau\ M \mid \mathrm{dealloc}\ M \mid \mathrm{if}_A\ M\ \mathrm{then}\ E_1\ \mathrm{else}\ E_2 \mid \\
-	 \mathrm{fix}\ f(y{:}A){:}B = \mathrm{do}\ E\ \mathrm{in\ eval}\ f M $
-\end{minipage}\\
-\textit{Computations} & $E, F$ & ::= & $ \mathrm{return}\ M \mid x \gets K; E \mid x \Leftarrow c; E \mid x =_A M; E $\\
-\textit{Variable context} & $\Delta, \Psi$ & ::= & $ \cdot \mid \Delta, x{:}A \mid \Delta, \alpha $\\
-\textit{Heap context} & $X$ & ::= & $ \cdot \mid X, h $\\
-\textit{Assertion context} & $\Gamma$& ::= & $\cdot \mid \Gamma, P $
+	\textit{Types} & $A, B, C$ & ::= & $ \alpha \mid \mathrm{qbit} \mid A \otimes B \mid 1 \mid \Pi x{:}A.B \mid \Psi. X. \{P\} x{:}A \{Q\} \mid \forall \alpha.A$ \\
+	\textit{Monotypes} & $\tau, \sigma$ & ::= & $ \alpha \mid \mathrm{qbit} \mid \tau \otimes \sigma \mid 1 \mid \Pi x{:}\tau.\sigma \mid \Psi. X. \{P\} x{:}\tau \{Q\}$ \\
+	\textit{Assertions} & $P, Q, R$ & ::= & \begin{minipage}[t]{0.6\columnwidth}%
+		$ \mathrm{id}_A(M,N) \mid \top \mid \bot \mid P \wedge Q \mid P \vee Q \mid P \supset Q \mid \neg P \mid \\
+		\forall x{:}A.P \mid \forall \alpha.P \mid \forall h{:}\mathrm{heap}.P \mid \mathrm{is\_entangled}\ M $
+	\end{minipage}\\
+	\textit{(Quantum) Heaps} & $H, G$ & ::= & $ h \mid \mathrm{empty} \mid \mathrm{upd}_{\tau}(H, M, N) $\\
+	\textit{Elim terms} & $K, L$ & ::= & $ x \mid K\ M \mid K\ \tau \mid M : A $\\
+	\textit{Intro terms} & $M, N, O$ & ::= & \begin{minipage}[t]{0.6\columnwidth}%
+		$ K \mid (\,) \mid \lambda x.\ M \mid \Lambda \alpha.\ M \mid \mathrm{do}\ E \mid \ket{0} \mid \ket{1} \mid (M, N) \mid M==N $
+	\end{minipage}\\
+	\textit{Commands} & $c$ & ::= & \begin{minipage}[t]{0.6\columnwidth}%
+		$ \mathrm{alloc}_\tau\ M \mid \mathrm{dealloc}\ M \mid \mathrm{if}_A\ M\ \mathrm{then}\ E_1\ \mathrm{else}\ E_2 \mid \\
+		\mathrm{fix}\ f(y{:}A){:}B = \mathrm{do}\ E\ \mathrm{in\ eval}\ f M \mid \mathrm{apply}(M, N) \mid \mathrm{capply}(M, N, O) $
+	\end{minipage}\\
+	\textit{Computations} & $E, F$ & ::= & $ \mathrm{return}\ M \mid x \gets K; E \mid x \Leftarrow c; E \mid x =_A M; E $\\
+	\textit{Variable context} & $\Delta, \Psi$ & ::= & $ \cdot \mid \Delta, x{:}A \mid \Delta, \alpha $\\
+	\textit{Heap context} & $X$ & ::= & $ \cdot \mid X, h $\\
+	\textit{Assertion context} & $\Gamma$& ::= & $\cdot \mid \Gamma, P $
+\end{tabular}
+	\caption{Syntax}
+\label{fig:syntax}
+\end{figure}
+
+
+\textit{Terms.} Split into introduction and elimination terms. Intro term for Hoare type is do $E$ that represents effectful computation and will suspend the evaluation; corresponding elimination form (which is a computation) is $x \gets K; E$.
+
+\textit{Computations.}  All effectful stuff happens here. Separated by semicolon. Should terminate with a return value. return $M$ and $x \gets K; E$ correspond to monadic \textit{unit} and \textit{bind}.
+
+Simple example to create a Bell Pair using QHTT commands:
+
+\begin{tabular}{ll}
+	$\mathrm{plus\_minus} =_{\mathrm{qbit} \to \mathrm{qbit}} \lambda q.\ \mathrm{do}\ ($&$a \Leftarrow \mathrm{apply}(\mathrm{Hadamard}, q);$\\
+																																	&$\mathrm{return}\ a);$\\
+	$\mathrm{share} =_{\mathrm{qbit} \to \mathrm{qbit} \otimes \mathrm{qbit}} \lambda a.\ \mathrm{do}\ ($&$q \Leftarrow \mathrm{alloc_{qbit}}\ \ket{0};$\\
+																																							   &$b \Leftarrow \mathrm{capply}(\mathrm{a, QNot}, q);$\\
+																																							   &$\mathrm{return}\ (a, b));$\\
+	$a \gets \mathrm{plus\_minus} \ket{0};$ & \\
+	$\mathrm{bell_{00}} \gets \mathrm{share}\ a;$ & \\
+	$\mathrm{return}\ \mathrm{bell_{00}}; $&
 \end{tabular}
 
 \subsubsection{Assertions}
