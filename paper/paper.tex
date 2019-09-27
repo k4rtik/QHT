@@ -263,7 +263,7 @@ See Fig. \ref{fig:syntax}. Let's assume $\alpha$ represents type of a non-specif
 
 \textit{Terms.} Split into introduction and elimination terms. Intro term for Hoare type is do $E$ that represents effectful computation and will suspend the evaluation; corresponding elimination form (which is a computation) is $x \gets K; E$.
 
-\textit{Computations.}  All effectful stuff happens here. Separated by semicolon. Should terminate with a return value. return $M$ and $x \gets K; E$ correspond to monadic \textit{unit} and \textit{bind}.
+\textit{Computations.} All effectful stuff happens here. Separated by semicolon. Should terminate with a return value. return $M$ and $x \gets K; E$ correspond to monadic \textit{unit} and \textit{bind}.
 
 Simple example to create a Bell Pair using QHTT commands:\\
 
@@ -282,10 +282,14 @@ Simple example to create a Bell Pair using QHTT commands:\\
 																																							   &$\mathrm{return}\ (a, b));$\\
 	$a \gets \mathrm{plus\_minus} \ket{0};$ & \\
 	$\mathrm{bell_{00}} \gets \mathrm{share}\ a;$ & \\
-	$\mathrm{return}\ \mathrm{bell_{00}}; $&
+	$\mathrm{return}\ \mathrm{bell_{00}}$&
 \end{tabular}
 \endgroup
 \end{center}
+
+In above, we can abbreviate the last two lines to: eval(share $a$).
+
+\textit{Types.}
 
 \subsubsection{Assertions}
 
