@@ -265,11 +265,17 @@ See Fig. \ref{fig:syntax}. Let's assume $\alpha$ represents type of a non-specif
 
 \textit{Computations.}  All effectful stuff happens here. Separated by semicolon. Should terminate with a return value. return $M$ and $x \gets K; E$ correspond to monadic \textit{unit} and \textit{bind}.
 
-Simple example to create a Bell Pair using QHTT commands:
+Simple example to create a Bell Pair using QHTT commands:\\
 
+\begingroup
+\setlength{\tabcolsep}{0pt}
 \begin{tabular}{ll}
+
 	$\mathrm{plus\_minus} =_{\mathrm{qbit} \to \mathrm{qbit}} \lambda q.\ \mathrm{do}\ ($&$a \Leftarrow \mathrm{apply}(\mathrm{Hadamard}, q);$\\
 																																	&$\mathrm{return}\ a);$\\
+\end{tabular}
+
+\begin{tabular}{ll}
 	$\mathrm{share} =_{\mathrm{qbit} \to \mathrm{qbit} \otimes \mathrm{qbit}} \lambda a.\ \mathrm{do}\ ($&$q \Leftarrow \mathrm{alloc_{qbit}}\ \ket{0};$\\
 																																							   &$b \Leftarrow \mathrm{capply}(\mathrm{a, QNot}, q);$\\
 																																							   &$\mathrm{return}\ (a, b));$\\
@@ -277,6 +283,7 @@ Simple example to create a Bell Pair using QHTT commands:
 	$\mathrm{bell_{00}} \gets \mathrm{share}\ a;$ & \\
 	$\mathrm{return}\ \mathrm{bell_{00}}; $&
 \end{tabular}
+\endgroup
 
 \subsubsection{Assertions}
 
