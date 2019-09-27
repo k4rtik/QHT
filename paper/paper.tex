@@ -178,7 +178,7 @@
 
 It is difficult to reason about the correctness of quantum programs; both while running them and while writing them. Sound static type systems help prevent a huge class of bugs from occurring, but since the realm of quantum programming is still new, there is not a lot of consensus on what kind of types make the most sense and whether they help programmers reason about the semantic properties associated with the quantum algorithms that they are implementing.
 
-Previous work such as Proto-Quipper\cite{2015arXiv151002198R} and QWire\cite{rand18,paykin18} utilize a linear type system and dependent types to enforce a small subset of semantic properties in the quantum setting such as the no-cloning theorem and whether a unitary operator is of the right dimension. These advances in quantum type systems although helpful, still fall short in encoding and enforcing even more useful properties that one would like to be able to express for the purpose of verification. Inspired by the use of Hoare triples in the verification of imperative programs and building on the idea of Hoare Types in classical programming languages, we propose Quantum Hoare Types aimed at enabling both sound static type checking and formal verification of quantum programs.
+Previous work such as Proto-Quipper\cite{ross2015algebraic} and QWire\cite{paykin2018,rand2018a} utilize a linear type system and dependent types to enforce a small subset of semantic properties in the quantum setting such as the no-cloning theorem and whether a unitary operator is of the right dimension. These advances in quantum type systems although helpful, still fall short in encoding and enforcing even more useful properties that one would like to be able to express for the purpose of verification. Inspired by the use of Hoare triples in the verification of imperative programs and building on the idea of Hoare Types in classical programming languages, we propose Quantum Hoare Types aimed at enabling both sound static type checking and formal verification of quantum programs.
 
 \subsection{Contributions}
 (bulleted list of contributions)
@@ -223,7 +223,7 @@ For our example, we would like to guarantee correctness of properties such as th
 
 \textit{The main idea of this paper is \ldots}
 
-Recent work at Princeton as part of EPiQC\footnote{EPiQC: Enabling Practical-Scale Quantum Computation:  \url{https://epiqc.cs.uchicago.edu}}\cite{DBLP:conf/oopsla/HuangM18,Huang:2019:SAV:3307650.3322213} has identified several classes of bugs in quantum programs and proposed approaches to tackle them. They proposed assertion checking using preconditions and post-conditions as one of the most effective techniques for most such classes of bugs.
+Recent work at Princeton as part of EPiQC\footnote{EPiQC: Enabling Practical-Scale Quantum Computation:  \url{https://epiqc.cs.uchicago.edu}}\cite{huang2018,huang2019} has identified several classes of bugs in quantum programs and proposed approaches to tackle them. They proposed assertion checking using preconditions and post-conditions as one of the most effective techniques for most such classes of bugs.
 
 As programming languages researchers, we think it will be more useful to encode such assertions into a static type system for both formal verification and aiding the programmers in writing correct programs from the start.
 
@@ -364,19 +364,19 @@ Commands (statements):
 \section{Related Work}
 (1-2 pages)
 
-\cite{DBLP:conf/oopsla/HuangM18}
+\cite{huang2018}
 
-\cite{Huang:2019:SAV:3307650.3322213}
+\cite{huang2019}
 
-\cite{nanevski_morrisett_birkedal_2008}
+\cite{nanevski2008}
 
-\cite{paykin18}
+\cite{paykin2018}
 
-\cite{rand18}
+\cite{rand2018a}
 
-\cite{2015arXiv151002198R}
+\cite{ross2015algebraic}
 
-\cite{PGL-045}
+\cite{ringer2019}
 
 \cite{silq}
 
