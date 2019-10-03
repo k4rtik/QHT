@@ -230,7 +230,7 @@ As programming languages researchers, we think it will be more useful to encode 
 \section{Details}
 (5 pages)
 
-\subsection{Syntax}
+\subsection{Abstract Syntax}
 
 See Fig. \ref{fig:syntax}. Let's assume $\alpha$ represents type of a non-specific quantum state vector (that includes entangled qubits).
 
@@ -263,7 +263,7 @@ See Fig. \ref{fig:syntax}. Let's assume $\alpha$ represents type of a non-specif
 
 \textit{Terms.} Split into introduction and elimination terms. Intro term for Hoare type is do $E$ that represents effectful computation and will suspend the evaluation; corresponding elimination form (which is a computation) is $x \gets K; E$.
 
-\textit{Computations.} All effectful stuff happens here. Separated by semicolon. Should terminate with a return value. return $M$ and $x \gets K; E$ correspond to monadic \textit{unit} and \textit{bind}.
+\textit{Computations.} All effectful stuff happens here. Separated by semicolon. Should terminate with a return value. return $M$ and $x \gets K; E$ correspond to monadic \textit{unit} and \textit{bind}. $x =_A M$ is syntactic sugar for the let-binding of $M:A$ to $x$.
 
 Simple example to create a Bell Pair using QHTT commands:\\
 
