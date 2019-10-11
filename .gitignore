@@ -273,5 +273,5 @@ TSWLatexianTemp*
 *.lpz
 
 
-paper.pdf
+*.pdf
 *.txss
