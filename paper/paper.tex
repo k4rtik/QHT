@@ -1,9 +1,9 @@
 %% For double-blind review submission, w/o CCS and ACM Reference (max submission space)
-\documentclass[acmsmall,review]{acmart}\settopmatter{printfolios=true,printccs=false,printacmref=false}
+%\documentclass[acmsmall,review,anonymous]{acmart}\settopmatter{printfolios=true,printccs=false,printacmref=false}
 %% For double-blind review submission, w/ CCS and ACM Reference
 %\documentclass[acmsmall,review,anonymous]{acmart}\settopmatter{printfolios=true}
 %% For single-blind review submission, w/o CCS and ACM Reference (max submission space)
-%\documentclass[acmsmall,review]{acmart}\settopmatter{printfolios=true,printccs=false,printacmref=false}
+\documentclass[acmsmall,nonacm]{acmart}\settopmatter{printfolios=true,printccs=false,printacmref=false}
 %% For single-blind review submission, w/ CCS and ACM Reference
 %\documentclass[acmsmall,review]{acmart}\settopmatter{printfolios=true}
 %% For final camera-ready submission, w/ required CCS and ACM Reference
@@ -16,7 +16,7 @@
 \acmJournal{PACMPL}
 \acmVolume{1}
 \acmNumber{CONF} % CONF = POPL or ICFP or OOPSLA
-\acmArticle{1}
+\acmArticle{}
 \acmYear{2018}
 \acmMonth{1}
 \acmDOI{} % \acmDOI{10.1145/nnnnnnn.nnnnnnn}
@@ -56,11 +56,16 @@
 %% Added by kartik
 \usepackage[braket]{qcircuit}
 \usepackage{mathpartir}
+\usepackage{xspace}
+
+\newcommand{\sqir}{\ensuremath{s\textsc{qir}}\xspace}
+\newcommand{\qwire}{\ensuremath{\mathcal{Q}\textsc{wire}}\xspace}
+\newcommand{\denote}[1]{\llbracket #1 \rrbracket\xspace}
 
 \begin{document}
 
 %% Title information
-\title[]{Quantum Hoare Types}         %% [Short Title] is optional;
+\title[Quantum Hoare Types]{Quantum Hoare Types}         %% [Short Title] is optional;
                                         %% when present, will be used in
                                         %% header instead of Full Title.
 %\titlenote{with title note}             %% \titlenote is optional;
@@ -95,7 +100,7 @@
 %  \city{City1}
 %  \state{State1}
 %  \postcode{Post-Code1}
-  \country{United States}                    %% \country is recommended
+  \country{USA}                    %% \country is recommended
 }
 \email{ks@cs.uchicago.edu}          %% \email is recommended
 
@@ -152,7 +157,6 @@
 \end{CCSXML}
 
 \ccsdesc[500]{Software and its engineering~General programming languages}
-\ccsdesc[300]{Social and professional topics~History of programming languages}
 %% End of generated code
 
 
@@ -178,7 +182,7 @@
 
 It is difficult to reason about the correctness of quantum programs; both while running them and while writing them. Sound static type systems help prevent a huge class of bugs from occurring, but since the realm of quantum programming is still new, there is not a lot of consensus on what kind of types make the most sense and whether they help programmers reason about the semantic properties associated with the quantum algorithms that they are implementing.
 
-Previous work such as Proto-Quipper\cite{ross2015algebraic} and QWire\cite{paykin2018,rand2018a} utilize a linear type system and dependent types to enforce a small subset of semantic properties in the quantum setting such as the no-cloning theorem and whether a unitary operator is of the right dimension. These advances in quantum type systems although helpful, still fall short in encoding and enforcing even more useful properties that one would like to be able to express for the purpose of verification. Inspired by the use of Hoare triples in the verification of imperative programs and building on the idea of Hoare Types in classical programming languages, we propose Quantum Hoare Types aimed at enabling both sound static type checking and formal verification of quantum programs.
+Previous work such as Proto-Quipper\cite{ross2015algebraic} and \qwire\cite{paykin2018,rand2018a} utilize a linear type system and dependent types to enforce a small subset of semantic properties in the quantum setting such as the no-cloning theorem and whether a unitary operator is of the right dimension. These advances in quantum type systems although helpful, still fall short in encoding and enforcing even more useful properties that one would like to be able to express for the purpose of verification. Inspired by the use of Hoare triples in the verification of imperative programs and building on the idea of Hoare Types in classical programming languages, we propose Quantum Hoare Types aimed at enabling both sound static type checking and formal verification of quantum programs.
 
 \subsection{Contributions}
 (bulleted list of contributions)
@@ -192,7 +196,7 @@ Previous work such as Proto-Quipper\cite{ross2015algebraic} and QWire\cite{payki
 
 \subsection{Motivating Example}
 
-\begin{figure}
+\begin{figure}[hb]
 	\centerline{
 		\Qcircuit @C=1em @R=.7em {
 		\lstick{\ket{q_0}} & \gate{H} & \ctrl{1} & \qw \\
@@ -234,7 +238,7 @@ As programming languages researchers, we think it will be more useful to encode 
 
 See Fig. \ref{fig:syntax}.
 
-\begin{figure}
+\begin{figure}[hb]
 \begin{tabular}{lrcl}
 	\textit{Types} & $\tau, \sigma$ & ::= & $ \mathrm{qbit} \mid \tau \otimes \sigma \mid 1 \mid \Pi x{:}\tau.\sigma \mid \Psi. X. \{P\} x{:}\tau \{Q\}$ \\
 	\textit{Assertions} & $P, Q, R$ & ::= & \begin{minipage}[t]{0.6\columnwidth}%
@@ -266,7 +270,7 @@ See Fig. \ref{fig:syntax}.
 
 \textit{Computations.} All effectful stuff happens here. Separated by semicolon. Should terminate with a return value. return $M$ and $x \gets K; E$ correspond to monadic \textit{unit} and \textit{bind}. $x =_\tau M$ is syntactic sugar for the let-binding of $M:\tau$ to $x$.
 
-Simple example to create a Bell Pair using QHTT commands:\\
+Simple example to create a Bell Pair using QHTT commands:
 
 \begin{center}
 \begingroup
@@ -347,33 +351,6 @@ where the predicates need to be encoded in terms of suitable dependent types. Th
 	\item Potential to be a unified system for programming, specification and reasoning about quantum programs similar to HTT.
 	\item Allows composition of verification in the same style as Hoare logic.
 \end{itemize}
-
-
-\hrulefill
-
-From Xavier Leroy's OPLSS Slides:
-
-
-Arithmetic expressions:
-
-\[a ::= n \mid x \mid a1 + a2 \mid a1 - a2 \mid a1 \times a2\]
-
-Boolean expressions:
-
-\begin{align*}
-	b ::=&\ \mathrm{true} \mid \mathrm{false} \mid a1 = a2 \mid a1 \le a2\\
-	\mid&\ \mathrm{not}\ b \mid b1\ \mathrm{and}\ b2
-\end{align*}
-
-Commands (statements):
-
-\begin{align*}
-	c ::=&\ \mathrm{SKIP}	&\mathrm{(do\ nothing)}\\
-	\mid&\ x ::= a	&\mathrm{(assignment)}\\
-	\mid&\ 1; ; c2	&\mathrm{(sequence)}\\
-	\mid&\ \mathrm{IFB}\ b\ \mathrm{THEN}\ c1\ \mathrm{ELSE}\ c2\ \mathrm{FI}	&\mathrm{(conditional)}\\
-	\mid&\ \mathrm{WHILE}\ b\ \mathrm{DO}\ c\ \mathrm{END}	&\mathrm{(loop)}
-\end{align*}
 
 \section{Related Work}
 (1-2 pages)
