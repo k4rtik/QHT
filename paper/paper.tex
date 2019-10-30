@@ -1,16 +1,8 @@
-\documentclass[acmsmall,nonacm]{acmart}\settopmatter{printfolios=true,printccs=false,printacmref=false}
-
+\documentclass[acmsmall,nonacm,review,timestamp]{acmart}
 
 \acmJournal{PACMPL}
-\acmVolume{}
-\acmNumber{} %
-\acmArticle{}
-\acmYear{}
-\acmMonth{}
-\acmDOI{} %
-\startPage{1}
 
-\setcopyright{none}
+\authorsaddresses{}
 
 \bibliographystyle{ACM-Reference-Format}
 \citestyle{acmauthoryear}   %
@@ -28,9 +20,7 @@
 
 \begin{document}
 
-\title[Quantum Hoare Types]{Quantum Hoare Types}         %
-
-
+\title{Quantum Hoare Types}         %
 
 \author{Kartik Singhal}
 \orcid{0000-0003-1132-269X}             %
@@ -42,25 +32,10 @@
 \email{ks@cs.uchicago.edu}          %
 
 
-
 \begin{abstract}
 	Quantum Computing is a new and upcoming way to utilize Quantum Mechanics to do computation. It is easy to introduce bugs while programming quantum computers similar to classical computing. Strong static type systems have prevented a lot of bugs from being introduced in the classical paradigm. There is a similar need for well-designed types in the domain of quantum computing. We introduce Quantum Hoare Types that let programmers reason statically about certain semantic properties of their quantum programs and further allow limited form of formal verification.
 
 \end{abstract}
-
-
-\begin{CCSXML}
-<ccs2012>
-<concept>
-<concept_id>10011007.10011006.10011008</concept_id>
-<concept_desc>Software and its engineering~General programming languages</concept_desc>
-<concept_significance>500</concept_significance>
-</concept>
-</ccs2012>
-\end{CCSXML}
-
-\ccsdesc[500]{Software and its engineering~General programming languages}
-
 
 \keywords{Quantum Computing, Programming Languages, Type Systems, Dependent Types}  %
 
@@ -78,7 +53,7 @@
 
 It is difficult to reason about the correctness of quantum programs; both while running them and while writing them. Sound static type systems help prevent a huge class of bugs from occurring, but since the realm of quantum programming is still new, there is not a lot of consensus on what kind of types make the most sense and whether they help programmers reason about the semantic properties associated with the quantum algorithms that they are implementing.
 
-Previous work such as Proto-Quipper\cite{ross2015algebraic} and \qwire\cite{paykin2018,rand2018a} utilize a linear type system and dependent types to enforce a small subset of semantic properties in the quantum setting such as the no-cloning theorem and whether a unitary operator is of the right dimension. These advances in quantum type systems although helpful, still fall short in encoding and enforcing even more useful properties that one would like to be able to express for the purpose of verification. Inspired by the use of Hoare triples in the verification of imperative programs and building on the idea of Hoare Types in classical programming languages, we propose Quantum Hoare Types aimed at enabling both sound static type checking and formal verification of quantum programs.
+Previous work such as Proto-Quipper\cite{ross2015algebraic} and \qwire\cite{paykin2018,rand2018a} utilize a linear type system and dependent types to enforce a small subset of semantic properties in the quantum setting such as the no-cloning theorem and whether a unitary operator is of the right dimension. These advances in quantum type systems although helpful, still fall short in encoding and enforcing even more useful properties that one would like to be able to express for the purpose of verification. Inspired by the use of Hoare triples in the verification of imperative programs and building on the idea of Hoare Types in classical programming languages\cite{nanevski2008}, we propose Quantum Hoare Types aimed at enabling both sound static type checking and formal verification of quantum programs.
 
 %\subsection{Contributions}
 %(bulleted list of contributions)
