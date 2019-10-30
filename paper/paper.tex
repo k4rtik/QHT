@@ -13,10 +13,16 @@
 \usepackage[braket]{qcircuit}
 \usepackage{mathpartir}
 \usepackage{xspace}
+\usepackage[nowatermark]{fixmetodonotes}
 
 \newcommand{\sqir}{\ensuremath{s\textsc{qir}}\xspace}
 \newcommand{\qwire}{\ensuremath{\mathcal{Q}\textsc{wire}}\xspace}
 \newcommand{\denote}[1]{\llbracket #1 \rrbracket\xspace}
+
+\newcommand{\Z}{\ensuremath{\mathbf{Z}}\xspace}
+\newcommand{\X}{\ensuremath{\mathbf{X}}\xspace}
+\newcommand{\E}{\ensuremath{\mathbf{E}}\xspace}
+\renewcommand{\G}{\ensuremath{\mathbf{G}}\xspace}
 
 \begin{document}
 
@@ -107,6 +113,8 @@ As programming languages researchers, we think it will be more useful to encode 
 
 \subsection{Abstract Syntax}
 
+\TODO{Figure out if stabilizer types fit well as assertions}
+
 See Fig. \ref{fig:syntax}.
 
 \begin{figure}[hb]
@@ -114,7 +122,7 @@ See Fig. \ref{fig:syntax}.
 	\textit{Types} & $\tau, \sigma$ & ::= & $ \mathrm{qbit} \mid \tau \otimes \sigma \mid 1 \mid \Pi x{:}\tau.\sigma \mid \Psi. X. \{P\} x{:}\tau \{Q\}$ \\
 	\textit{Assertions} & $P, Q, R$ & ::= & \begin{minipage}[t]{0.6\columnwidth}%
 		$ \mathrm{id}_\tau(M,N) \mid \mathrm{seleq}_\tau(H,M,N) \mid \top \mid \bot \mid P \wedge Q \mid P \vee Q \mid \\
-		P \supset Q \mid \neg P \mid \forall h{:}\mathrm{heap}.P $
+		P \supset Q \mid \neg P \mid \forall h{:}\mathrm{heap}.P \mid \Z \mid \X \mid \E \mid \G $
 	\end{minipage}\\
 	\textit{(Quantum) Heaps} & $H, G$ & ::= & $ h \mid \mathrm{empty} \mid \mathrm{upd}_{\tau}(H, M, N) $\\
 	\textit{Elim terms} & $K, L$ & ::= & $ x \mid K\ M \mid M : \tau $\\
