@@ -24,6 +24,8 @@
 \newcommand{\E}{\ensuremath{\mathbf{E}}\xspace}
 \renewcommand{\G}{\ensuremath{\mathbf{G}}\xspace}
 
+\newcommand\hoare[3]{\{\,#1\,\}&#2&\{\,#3\,\}}
+
 \begin{document}
 
 \title{Quantum Hoare Types}         %
@@ -113,7 +115,7 @@ As programming languages researchers, we think it will be more useful to encode 
 
 \subsection{Abstract Syntax}
 
-\TODO{Figure out if stabilizer types fit well as assertions}
+\TODO{Figure out if stabilizer types fit well as assertions (need to frame them as containment relation, at the least)}
 
 See Fig. \ref{fig:syntax}.
 
@@ -173,11 +175,44 @@ Simple example to create a Bell Pair using QHTT commands:
 
 In above, we can abbreviate the last two lines to: eval(share $a$).
 
-\textit{Types.}
+\textit{Types.} Primitive types such as qbit, pair, unit, dependent functions, and the Hoare type.
 
-\subsubsection{Assertions}
+\textit{Assertions.} We introduce the notion of stabilizer types \Z, \X, \E, \G as type assertions. \TODO{shouldn't these be really treated as type refinements?}
 
 \subsubsection{Example}
+\begin{enumerate}
+	\item Bell Pair:
+\[ \begin{array}{rcl}
+\hoare{a, b : \Z}{H(a);}{a : \X; b: \Z} \\
+\hoare{a : \X; b: \Z}{CX(a, b);}{(a, b): \E} \\
+\end{array} \]
+
+	\item Superdense coding:
+\[ \begin{array}{rcl}
+\hoare{x, y : \Z; (a, b): \E}{CZ(x,a); \; CX(y, a); \; transmit(A, B);}{x, y : \Z; (a, b): \E} \\
+\hoare{x, y : \Z; (a, b): \E}{CX(a, b);}{x, y : \Z; (a, b): \X \ast \Z} \\
+\hoare{x, y, b : \Z; a: \X}{H(a);}{x, y, a, b : \Z} \\
+\end{array} \]
+
+or for the complete program:
+
+\[ \begin{array}{rcl}
+\hoare{x, y : \Z; (a, b): \E}{ superdense(x, y, a, b);}{x, y, a, b : \Z} \\
+\end{array} \]
+
+\TODO{figure out ownership types and pure vs mixed state types}
+
+	\item Entanglement Swapping (variant of teleportation):\\
+	Initially Alice ($a_1$) and Carol ($c$) share an EPR pair and so do Alice ($a_2$) and Bob ($b$)
+\[ \begin{array}{rcl}
+\hoare{(c, a_1), (a_2, b): \E}{CX(a_1, a_2);}{??} \\
+\hoare{??}{H(a_1)}{??}\\
+\hoare{??}{meas(a_1); \; meas(a_2);}{(c,b): \E; a_1, a_2 : qbit}\\
+\end{array} \]
+
+\item BB84 Protocol for key distribution:
+\end{enumerate}
+
 
 \subsection{Typing Rules}
 
