@@ -202,17 +202,29 @@ or for the complete program:
 
 \TODO{figure out ownership types and pure vs mixed state types}
 
+	\item Quantum Teleportation\\
+\[ \begin{array}{rcl}
+\hoare{a: qbit; b, c : \Z}{H(b)}{a: qbit; c : \Z; b : \X} \\
+\hoare{a: qbit; c : \Z; b : \X}{CX(b, c)}{a: qbit; (b,c) : \E} \\
+\hoare{a: qbit; (b,c) : \E}{CX(a, b)}{??} \\
+\hoare{??}{H(a)}{??} \\
+\hoare{??}{meas(a); \; meas(b);}{a, b : bit, c: qbit}\\
+\end{array} \]
+
+\TODO{Need a way to assert that $a$ and $c$ have the same quantum state at the end of the program}
+
 	\item Entanglement Swapping (variant of teleportation):\\
 	Initially Alice ($a_1$) and Carol ($c$) share an EPR pair and so do Alice ($a_2$) and Bob ($b$)
 \[ \begin{array}{rcl}
 \hoare{(c, a_1), (a_2, b): \E}{CX(a_1, a_2);}{??} \\
 \hoare{??}{H(a_1)}{??}\\
-\hoare{??}{meas(a_1); \; meas(a_2);}{(c,b): \E; a_1, a_2 : qbit}\\
+\hoare{??}{meas(a_1); \; meas(a_2);}{(c,b): \E; a_1, a_2 : bit}\\
 \end{array} \]
 
 \item BB84 Protocol for key distribution:
 \end{enumerate}
 
+\TODO{Can we assign such type refinements to all/most quantum state patterns that have recognizable structure for human programmers?}
 
 \subsection{Typing Rules}
 
@@ -269,8 +281,9 @@ where the predicates need to be encoded in terms of suitable dependent types. Th
 \section{Related Work}
 %(1-2 pages)
 
-
 \section{Conclusions and Further Work}
+
+\listofnotes
 
 %(0.5 page)
 
