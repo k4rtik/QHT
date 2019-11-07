@@ -237,7 +237,7 @@ and after Hadamard application to qubit 0, it becomes:
 
 This can be simplified to:
 
-\[ \frac{1}{2}\big[\alpha\ket{00\;0} + \beta\ket{00\;1} + \alpha\ket{01\;1} + \beta\ket{01\;0} + \alpha\ket{10\;0} - \beta\ket{10\;1} + \alpha\ket{11\;1} - \beta\ket{11\;0}\big] \]
+\[ \frac{1}{2}\big[\ket{00}(\alpha\ket{0} + \beta\ket{1}) + \ket{01}(\alpha\ket{1} + \beta\ket{0}) + \ket{10}(\alpha\ket{0} - \beta\ket{1}) + \ket{11}(\alpha\ket{1} - \beta\ket{0})\big] \]
 
 The next step is the measurement of the first two qubits:
 
@@ -252,7 +252,7 @@ This leads to 4 possibilities of getting $(0, 0), (0, 1), (1, 0, (1, 1)$. Depend
 \end{array} \]
 
 \TODO{Need a way to assert that $q_2$ has the same quantum state at the end of the program as $q_0$ did at the beginning}
-
+\newpage
 	\item Entanglement Swapping (variant of teleportation):\\
 	Initially Alice ($a_1$) and Carol ($c$) share an EPR pair and so do Alice ($a_2$) and Bob ($b$)
 \[ \begin{array}{rcl}
