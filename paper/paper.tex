@@ -202,16 +202,56 @@ or for the complete program:
 
 \TODO{figure out ownership types and pure vs mixed state types}
 
-	\item Quantum Teleportation\\
+\newpage
+
+	\item Quantum Teleportation
+
+	We have three qubits. Qubit 0 represents the message in state $\ket{\psi} = \alpha \ket{0} + \beta \ket{1}$. Qubit 1 corresponds to Alice and qubit 2 corresponds to Bob and they both start in the state $\ket{0}$. To send the message, first step in this protocol is for qubits 1 and 2 to be entangled.
 \[ \begin{array}{rcl}
-\hoare{a: qbit; b, c : \Z}{H(b)}{a: qbit; c : \Z; b : \X} \\
-\hoare{a: qbit; c : \Z; b : \X}{CX(b, c)}{a: qbit; (b,c) : \E} \\
-\hoare{a: qbit; (b,c) : \E}{CX(a, b)}{??} \\
-\hoare{??}{H(a)}{??} \\
-\hoare{??}{meas(a); \; meas(b);}{a, b : bit, c: qbit}\\
+\hoare{q_0: qbit = \ket{\psi}; q_1, q_2 : \Z}{H(q_1)}{q_0: qbit; q_2 : \Z; q_1 : \X} \\
+\hoare{q_0: qbit = \ket{\psi}; q_2 : \Z; q_1 : \X}{CX(q_1, q_2)}{q_0: qbit; (q_1,q_2) : \E} \\
 \end{array} \]
 
-\TODO{Need a way to assert that $a$ and $c$ have the same quantum state at the end of the program}
+Once entangled they are in the state $\ket{\phi^+} = \frac{\ket{0} + \ket{1}}{2}$. The complete quantum state looks like:
+
+\[  \ket{\psi}\ket{\phi^+} = (\alpha\ket{0} + \beta\ket{1})(\frac{1}{\sqrt{2}}(\ket{00} + \ket{11})) \]
+
+or, normalized:
+
+\[  \ket{\psi}\ket{\phi^+} = \frac{\alpha}{\sqrt{2}}\ket{000} + \frac{\alpha}{\sqrt{2}}\ket{011} + \frac{\beta}{\sqrt{2}}\ket{100} + \frac{\beta}{\sqrt{2}}\ket{111} \]
+
+In the second step we apply CNOT to qubits 0 and 1 and then a Hadamard to qubit 0.
+
+\[ \begin{array}{rcl}
+\hoare{q_0: qbit = \ket{\psi}; (q_1,q_2) : \E}{CX(q_0, q_1)}{??} \\
+\hoare{??}{H(q_0)}{??} \\
+\end{array} \]
+
+After the CNOT application, the resulting state is:
+
+\[ \frac{\alpha}{\sqrt{2}}\ket{000} + \frac{\alpha}{\sqrt{2}}\ket{011} + \frac{\beta}{\sqrt{2}}\ket{110} + \frac{\beta}{\sqrt{2}}\ket{101} \]
+
+and after Hadamard application to qubit 0, it becomes:
+
+\[ \frac{\alpha}{\sqrt{2}}(\frac{1}{\sqrt{2}}(\ket{0} + \ket{1}))\ket{00} + \frac{\alpha}{\sqrt{2}}(\frac{1}{\sqrt{2}}(\ket{0} + \ket{1}))\ket{11} + \frac{\beta}{\sqrt{2}}(\frac{1}{\sqrt{2}}(\ket{0} - \ket{1}))\ket{10} + \frac{\beta}{\sqrt{2}}(\frac{1}{\sqrt{2}}(\ket{0} - \ket{1}))\ket{01} \]
+
+This can be simplified to:
+
+\[ \frac{1}{2}\big[\alpha\ket{00\;0} + \beta\ket{00\;1} + \alpha\ket{01\;1} + \beta\ket{01\;0} + \alpha\ket{10\;0} - \beta\ket{10\;1} + \alpha\ket{11\;1} - \beta\ket{11\;0}\big] \]
+
+The next step is the measurement of the first two qubits:
+
+\[ \begin{array}{rcl}
+\hoare{??}{meas(q_0); \; meas(q_1);}{q_0, q_1 : bit, q_2: qbit}\\
+\end{array} \]
+
+This leads to 4 possibilities of getting $(0, 0), (0, 1), (1, 0, (1, 1)$. Depending on what we got, we need to make a correction on the resulting state of qubit 2, so we get the original message $\ket{\psi}$. This is done by applying X and Z gates conditioned on the two measured bits.
+
+\[ \begin{array}{rcl}
+\hoare{q_0, q_1 : bit, q_2: qbit}{CX(q_1, q_2); \; CZ(q_0, q_2);}{q_0, q_1 : bit, q_2: qbit = \ket{\psi}}\\
+\end{array} \]
+
+\TODO{Need a way to assert that $q_2$ has the same quantum state at the end of the program as $q_0$ did at the beginning}
 
 	\item Entanglement Swapping (variant of teleportation):\\
 	Initially Alice ($a_1$) and Carol ($c$) share an EPR pair and so do Alice ($a_2$) and Bob ($b$)
