@@ -7,3 +7,5 @@ htt/stsep.v
 htt/stlog.v
 htt/stlogR.v
 htt/array.v
+htt/llistR.v
+htt/llist_map_demo.v
