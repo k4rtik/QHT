@@ -1,4 +1,5 @@
 -Q htt HTT
+-Q vqc VQC
 
 htt/domain.v
 htt/heaptac.v
@@ -9,3 +10,10 @@ htt/stlogR.v
 htt/array.v
 htt/llistR.v
 htt/llist_map_demo.v
+
+vqc/Complex.v
+vqc/Matrix.v
+vqc/Multiqubit.v
+vqc/Qubit.v
+vqc/Real.v
+vqc/SQIMP.v
