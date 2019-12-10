@@ -1,0 +1,245 @@
+\documentclass[acmsmall,nonacm,timestamp,review]{acmart}
+
+\acmJournal{PACMPL}
+
+\bibliographystyle{ACM-Reference-Format}
+\citestyle{acmauthoryear}
+
+\usepackage{booktabs}
+\usepackage{subcaption}
+
+\usepackage[braket]{qcircuit}
+\usepackage{mathpartir}
+\usepackage{mathtools}
+\usepackage{xspace}
+
+\usepackage{listings}
+\usepackage{lstcoq}
+
+\definecolor{ltblue}{rgb}{0,0.4,0.4}
+\definecolor{dkblue}{rgb}{0,0.1,0.6}
+\definecolor{dkgreen}{rgb}{0,0.35,0}
+\definecolor{dkviolet}{rgb}{0.3,0,0.5}
+\definecolor{dkred}{rgb}{0.5,0,0}
+
+\lstset{language=coq, basicstyle=\ttfamily\scriptsize, columns=flexible,
+	keepspaces=true}
+
+
+\newcommand{\sqir}{\ensuremath{s\textsc{qir}}\xspace}
+\newcommand{\qwire}{\ensuremath{\mathcal{Q}\textsc{wire}}\xspace}
+\newcommand{\denote}[1]{\llbracket #1 \rrbracket\xspace}
+\newcommand{\qdenote}[1]{(\!| #1 |\!)\xspace}
+
+\title{Quantum Hoare Types}
+\subtitle{A Master's Thesis}
+
+\author{Kartik Singhal}
+\orcid{0000-0003-1132-269X}
+\affiliation{
+	\position{PhD Student}
+	\department{Department of Computer Science}
+	\institution{University of Chicago}
+	\state{IL}
+%	\postcode{60637}
+	\country{USA}}
+\email{ks@cs.uchicago.edu}
+
+\authornote{Homepage: \url{http://ks.cs.uchicago.edu}}
+
+%\authorsaddresses{}
+
+\begin{document}
+
+\begin{abstract}
+Quantum Computing is a new and upcoming way to utilize quantum mechanics for computation. It is easy to introduce bugs while programming quantum computers similar to classical computing. Strong static type systems have prevented a lot of bugs from being introduced in the classical paradigm. There is a similar need for well-designed types in the domain of quantum computing. We propose Quantum Hoare Types that let programmers reason statically about certain semantic properties of their quantum programs and further allow a limited form of formal verification.
+\end{abstract}
+
+\maketitle
+
+\renewcommand*\contentsname{Table of Contents}
+\tableofcontents
+
+\listoffigures
+
+\newpage
+
+\section{Introduction / Background}
+It is difficult to reason about the correctness of quantum programs. Sound static type systems help prevent a huge class of bugs from occurring but since the realm of quantum programming is still new there is not a lot of consensus on what kind of types make the most sense. Further, it is unclear how much they help programmers reason about the semantic properties associated with the quantum algorithms that they are implementing.
+
+Recent work~\cite{huang_qdb:_2018,huang_statistical_2019} as part of EPiQC\footnote{EPiQC: Enabling Practical-Scale Quantum Computation:  \url{https://epiqc.cs.uchicago.edu}} has identified several classes of bugs in quantum programs and proposed approaches to tackle them. The technique that holds the most promise is assertion checking using preconditions and postconditions. But assertions are usually checked dynamically during runtime, which can be wasteful of precious quantum computing or simulation resources.
+
+As programming languages researchers, we think it will be more useful to encode such assertions into a static type system both for formal verification and to aid the programmers in writing correct programs from the start. Inspired by the use of Hoare triples in the verification of imperative programs and building on the idea of Hoare Types in classical programming languages~\cite{nanevski_hoare_2008}, we propose Quantum Hoare Types aimed at enabling both sound static type checking and formal verification of quantum programs.
+
+\subsection{Quantum Computing}
+The basic unit of information in quantum computing is a qubit, that can be represented using a unit vector in a 2-dimensional complex vector space. Using Dirac's bra-ket notation, we can write an arbitrary qubit, $\ket{\psi}$, as a linear combination of the computational basis vectors: $\ket{\psi} = \alpha\ket{0} + \beta\ket{1}$, where $\ket{0}=\begin{bsmallmatrix}
+1 \\
+0
+\end{bsmallmatrix}$ and $\ket{1}=\begin{bsmallmatrix}
+0 \\
+1
+\end{bsmallmatrix}$, and the two constants are complex amplitudes that are normalized using the constraint $|\alpha|^2 +|\beta|^2 = 1$. This means that when measured the probability of the qubit being in the state 0 is $|\alpha|^2$ and that for the state 1 is $|\beta|^2$. To work with multiple qubits, we need to take their tensor product, denoted by $\otimes$. Computation is performed by the application of unitary quantum gates, such as Hadamard (H) or controlled NOT (CX), that can be represented as square matrices. Mathematically, a gate application is equivalent to multiplying the matrix representing the gate with the state vector of the qubit(s).
+
+This basic unit of information is not the only reason why quantum computing is fundamentally different from classical computing---certain quantum mechanical phenomenon are highly counterintuitive! One such phenomenon is \textit{quantum entanglement} which, at its most basic level, involves a correlation between two qubits such that when one is measured the outcome obtained necessarily influences the measurement outcome of the other qubit (even if the two qubits are far apart). We will see how this can be utilized for computation in the quantum teleportation algorithm that we describe and program in \S\ref{telep}. We refer the reader to the standard textbook~\cite{nielsen_quantum_2010} or Nielsen's excellent series of essays~\cite{matuschak2019} for more background.
+
+\subsection{Type Theory}
+\textit{Basics of type theory for non-specialists\ldots}
+
+\subsection{Program Proof}
+\textit{Basics of program proof and techniques for non-specialists\ldots}
+
+
+\section{Hoare Types for Quantum Programming Languages}
+In this section we describe Quantum Hoare Types using an example of programming quantum teleportation protocol. We start with the background necessary to understand teleportation and then present how Quantum Hoare Types help us write and verify the  correctness of the protocol.
+
+\subsection{Example: Quantum Teleportation}\label{telep}
+Teleportation is a simple quantum algorithm that is used to communicate a quantum state using two classical bits and a shared entangled pair of qubits. Alice is trying to send a message encoded in the qubit to Bob. There are three broad steps in the protocol: 1) preparation, ie, entanglement creation between two qubits to be shared between Alice and Bob in advance; 2) sending the message by Alice; and, 3) reconstruction of the message by Bob. Program and circuit follow:
+\begin{figure}[h]
+	\begin{subfigure}{3in}
+		% 	a       ← init0 ();
+		%     b       ← init0 ();
+		\begin{lstlisting}
+		teleport : Π\kp:qbit.{q↦qbit\kp /\ a↦qbit|0⟩ /\ b↦qbit|0⟩} c:Circuit(qbit⊗qbit⊗qbit, qbit) {b↦qbit\kp} =
+		box (q, a, b) ⇒
+		(* 1. Bell state preparation for Alice and Bob *)
+		a       ← H a;
+		(a, b)  ← CX (a, b);
+		(* 2. Bell measurement by Alice *)
+		(q, a)  ← CX (q, a);
+		q       ← H q;
+		x       ← meas q;
+		y       ← meas a;
+		(* 3. Correction by Bob *)
+		(y, b)  ← CX (y, b);
+		(x, b)  ← CZ (x, b);
+		output b
+		\end{lstlisting}
+		% ()      ← discard y;
+		%     ()      ← discard x;
+	\end{subfigure}
+	\begin{subfigure}{1in}
+		% 	\centerline{
+		\Qcircuit @C=.4em @R=.4em @! {
+			\lstick{q=\ket{\psi}} & \qw & \qw & \ctrl{1} & \gate{H} & \meter & \cw & \control \cw\\
+			\lstick{a=\ket{0}} & \gate{H} & \ctrl{1} & \gate{X} & \qw & \meter & \control \cw & \\
+			\lstick{b=\ket{0}} & \qw & \gate{X} & \qw & \qw & \qw & \gate{X} \cwx & \gate{Z} \cwx[-2] & \rstick{\ket{\psi}} \qw
+			\gategroup{2}{2}{3}{3}{.7em}{.}
+			\gategroup{1}{4}{2}{6}{.7em}{.}
+		}
+		% }
+	\end{subfigure}
+	\Description{On the left, \qwire code to implement Quantum Teleportation algorithm annotated by its Hoare Type that provides specification for the algorithm. On the right, the corresponding quantum circuit.}
+	\caption{Quantum Teleportation (Code and Circuit)}
+	\label{fig:teleport}
+\end{figure}
+
+In Fig. \ref{fig:teleport} we show a function \lstinline{teleport} that implements the quantum teleportation circuit. It returns one qubit and takes three qubits as arguments: one qubit \lstinline{q} that could be in any unknown state $\ket{\psi}$ which Alice is trying to send to Bob; and two qubits, \lstinline{a} and \lstinline{b}, initially in the state $\ket{0}$. The function first entangles the latter two qubits into a Bell state. Then, Alice performs a Bell measurement of her two qubits \lstinline{q} and \lstinline{a} and sends the resulting classical bits (\lstinline{x} and \lstinline{y}) to Bob. Finally, Bob applies corrective measurement using the quantum gates X and Z controlled by the classical bits that he received from Alice. The result is that Bob's qubit is now in the same state as the initial state of the message qubit \lstinline{q}. The specification that the function must meet is written using a Hoare type, which we describe next.
+
+\subsection{Hoare Types}
+A Hoare type encodes preconditions and postconditions in the same spirit as Hoare triples. The type shown on the left below can be read as `for a stateful computation executed in a heap that satisfies precondition $P$, return a value of type $A$ in a heap that satisfies postcondition $Q$.' We show an example, the \lstinline{alloc} primitive from HTT~\cite{nanevski_hoare_2008}, to demonstrate the expressiveness of a Hoare type:
+\begin{mathpar}
+
+	\{P\}\; \texttt{x}:A\; \{Q\}
+
+	\and
+
+	\texttt{alloc} : \forall \alpha. \Pi x:\alpha. \{\texttt{emp}\}\; y:\texttt{nat}\; \{y \mapsto_{\alpha} x\}
+
+\end{mathpar}
+
+\begin{figure}[h]
+	\begin{tabular}{lrcl}
+		\textit{Types} & $\tau, \sigma$ & ::= & $ \mathrm{qbit} \mid \tau \otimes \sigma \mid 1 \mid \Pi x{:}\tau.\sigma \mid \Psi. X. \{P\} x{:}\tau \{Q\}$ \\
+		\textit{Assertions} & $P, Q, R$ & ::= & \begin{minipage}[t]{0.6\columnwidth}%
+			$ \mathrm{id}_\tau(M,N) \mid \mathrm{seleq}_\tau(H,M,N) \mid \top \mid \bot \mid P \wedge Q \mid P \vee Q \mid \\
+			P \supset Q \mid \neg P \mid \forall h{:}\mathrm{heap}.P$
+		\end{minipage}\\
+		\textit{(Quantum) Heaps} & $H, G$ & ::= & $ h \mid \mathrm{empty} \mid \mathrm{upd}_{\tau}(H, M, N) $\\
+		\textit{Elim terms} & $K, L$ & ::= & $ x \mid K\ M \mid M : \tau $\\
+		\textit{Intro terms} & $M, N, O$ & ::= & \begin{minipage}[t]{0.6\columnwidth}%
+			$ K \mid (\,) \mid \lambda x.\ M \mid \mathrm{do}\ E \mid \ket{0} \mid \ket{1} \mid (M, N) \mid M==N $
+		\end{minipage}\\
+		\textit{Commands} & $c$ & ::= & \begin{minipage}[t]{0.6\columnwidth}%
+			$ \mathrm{alloc}_\tau\ M \mid \mathrm{dealloc}\ M \mid \mathrm{if}_\tau\ M\ \mathrm{then}\ E_1\ \mathrm{else}\ E_2 \mid
+			\mathrm{fix}\ f(y{:}\tau){:}\sigma = \mathrm{do}\ E\ \mathrm{in\ eval}\ f M \mid \mathrm{apply}(M, N) \mid \mathrm{capply}(M, N, O) $
+		\end{minipage}\\
+		\textit{Computations} & $E, F$ & ::= & $ \mathrm{return}\ M \mid x \gets K; E \mid x \Leftarrow c; E \mid x =_\tau M; E $\\
+		\textit{Variable context} & $\Delta, \Psi$ & ::= & $ \cdot \mid \Delta, x{:}\tau $\\
+		\textit{Heap context} & $X$ & ::= & $ \cdot \mid X, h $\\
+		\textit{Assertion context} & $\Gamma$& ::= & $\cdot \mid \Gamma, P $
+	\end{tabular}
+	\Description{Syntax of Hoare Type Theory from \cite{nanevski_hoare_2008}}
+	\caption{Syntax of Hoare Type Theory}
+	\label{fig:syntax}
+\end{figure}
+
+In order to extend HTT to support quantum circuits, we augment its syntax with that of \qwire\cite{paykin_qwire:_2017,rand_formally_2018}. \qwire is a core quantum circuit language that can cooperate with an arbitrary classical host language. This requires minimal support from the host language to interface with the circuit language. In our case, HTT acts as the classical host language for \qwire.
+
+\qwire's circuit language has a wire type W that can be a unit, a bit, a qubit or a tuple of wires. The host language (HTT) is augmented with additional types to support interaction between the two languages and to treat circuits as data:
+\begin{mathpar}
+
+	W ::= 1 \mid \texttt{bit} \mid \texttt{qbit} \mid W1 \otimes W2
+
+	\and
+
+	A ::= \ldots \mid \texttt{Unit} \mid \texttt{Bool} \mid A \times A \mid \texttt{Circuit}(W1, W2)
+
+\end{mathpar}
+
+\subsection{Verification}
+Here we describe how HTT lets us verify the correctness of teleportation based on the specification provided as the type of the function. Type checking in HTT involves generation of strongest postconditions at each step of the program with the initial precondition as input. Verification is a two-step process: the first phase does basic type checking and verification condition generation which is decidable, the second phase needs to show the validity of the generated verification conditions, which is undecidable. This second phase can be deferred to an automated theorem prover. For illustration, we show the assertions as we step through step 1 of teleportation. The final state here is that qubits \lstinline{a} and \lstinline{b} are entangled into the first Bell state, $\ket{\phi^+} = \frac{1}{\sqrt{2}}(\ket{00} + \ket{11})$.
+
+% \lstset{aboveskip=1pt,belowskip=1pt}
+\begin{lstlisting}
+(* P0 (given): {q↦qbit\kp /\ a↦qbit|0⟩ /\ b↦qbit|0⟩} *)
+a      ← H a;
+(* P1: {q↦qbit\kp /\ a↦qbit1/sqrt2(|0⟩+|1⟩) /\ b↦qbit|0⟩} *)
+(a, b) ← CX (a, b);
+(* P2: {q↦qbit\kp /\ (a,b)↦qbit|φ+⟩ *)
+\end{lstlisting}
+
+\subsection{Soundness / Type Checking Algorithm}
+
+\section{Related Work}
+\textit{Objective of this section\ldots}
+
+\subsection{Programming Languages for Quantum Computing}
+\textit{A chronology of langugage developments\ldots}
+
+\subsection{Verification of Quantum Programs}
+Previous work such as Proto-Quipper~\cite{ross_algebraic_2015,mahmoud_formalization_2019,rios_categorical_2017} and \qwire~\cite{paykin_qwire:_2017,rand_qwire_2017,rand_formally_2018} utilize a linear type system and dependent types to enforce a small subset of semantic properties, such as the no-cloning theorem and whether a unitary gate is of the right dimension. These advances in quantum type systems, although helpful, still fall short in encoding and enforcing even more useful properties that one would like to be able to express for the purpose of verification.
+
+Our approach builds upon previous work in reasoning about quantum programs such as Quantum Weakest Preconditions~\cite{dhondt_quantum_2006} and Quantum Hoare Logic~\cite{ying_floydhoare_2012} in the spirit of Hoare~\cite{hoare_axiomatic_1969} and Dijkstra~\cite{dijkstra_discipline_1976} but attempts to bring those reasoning techniques into the type system. The hope is that programmers will be able to encode some of the semantic properties that they expect of their programs as specifications in their code and type checking will ensure correctness of some of those properties. In the classical setting, Hoare Type Theory (HTT)~\cite{nanevski_hoare_2008} accomplishes exactly this goal. Here, we attempt to merge these ideas for the quantum realm.
+
+\section{Conclusion and Perspectives}
+This approach has the potential to be a unified system for programming, specification and reasoning about quantum programs. We need to overcome challenges such as compactly specifying properties of quantum state when dealing with more than a few qubits. We also need to maintain the syntax directed nature of HTT's bidirectional typechecking while incorporating quantum wire types.
+
+We are working on programming other interesting quantum algorithms that can serve as a litmus test for this technique, specifically, a cryptographic protocol called Quantum Key Distribution and the well-known Grover's search algorithm. These examples involve some form of classical control or iteration that makes them non-trivial for our technique.
+
+We also look to explore how our types will evolve when we start incorporating higher-order constructs in our quantum language such as those demonstrated in languages like Quantum $\lambda$-calculus~\cite{selinger_lambda_2006} and Quipper~\cite{green_quipper:_2013}.
+
+Another venue for exploration is to incorporate more precise types that can distinguish between qubits in pure classical state vs. those in superposition vs. those in entanglement inspired by the various quantum resource theories (see \cite{rand_type_2019} and references therein).
+
+\begin{acks}
+	I would like to thank my advisor John Reppy for suggesting me to look at Hoare Type Theory that led to this master's thesis and for his constant support and encouragement to see it through. I also thank my committee members Fred Chong and Ravi Chugh for reading drafts of this document and providing useful feedback.
+
+	This material is based upon work supported by
+	EPiQC, an \grantsponsor{GS100000001}{NSF}{http://dx.doi.org/10.13039/100000001}
+	Expedition in Computing, under Grant
+	No.~\grantnum{GS100000001}{1730449}.  Any opinions, findings, and
+	conclusions or recommendations expressed in this material are those
+	of the authors and do not necessarily reflect the views of the
+	National Science Foundation.
+\end{acks}
+
+\newpage
+
+\bibliography{references}
+
+\newpage
+
+\appendix
+\section{Sample Proof}
+\textit{Coq code / Annotated proof objects from implementation\ldots}
+
+\end{document}
