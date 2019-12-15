@@ -84,12 +84,14 @@ The basic unit of information in quantum computing is a qubit, that can be repre
 
 This basic unit of information is not the only reason why quantum computing is fundamentally different from classical computing---certain quantum mechanical phenomenon are highly counterintuitive! One such phenomenon is \textit{quantum entanglement} which, at its most basic level, involves a correlation between two qubits such that when one is measured, the outcome obtained necessarily influences the measurement outcome of the other qubit (even if the two qubits are far apart). We will see how this can be utilized for computation in the quantum teleportation algorithm that we describe and program in \S\ref{telep}. We refer the reader to the standard textbook~\cite{nielsen_quantum_2010} or Nielsen's excellent series of essays~\cite{matuschak2019} for more background.
 
-\subsection{Type Theory}
-\textit{Basics of type theory for non-specialists\ldots}
+\subsection{Hoare Style Reasoning}
+\textit{Basics of Hoare-triples for non-specialists\ldots}
 
-\subsection{Program Proof}
+\subsection{Program Proof and HTT}
 \textit{Basics of program proof and techniques for non-specialists\ldots}
 
+\section{Running Example}
+\textit{Move teleportation example here}
 
 \section{Hoare Types for Quantum Programming Languages}
 In this section we describe Quantum Hoare Types using an example of programming quantum teleportation protocol. We start with the background necessary to understand teleportation and then present how Quantum Hoare Types help us write and verify the  correctness of the protocol.
@@ -202,16 +204,25 @@ a      ← H a;
 
 \subsection{Soundness / Type Checking Algorithm}
 
+\section{Evaluation}
+
+\subsection{More Examples}
+\textit{add at least one example with scaling knob}
+
+\subsection{Circuit-complexity Considerations}
+
 \section{Related Work}
 \textit{Objective of this section\ldots}
 
-\subsection{Programming Languages for Quantum Computing}
-\textit{A chronology of language developments\ldots}
+\subsection{Quantum Languages and Types}
+\textit{A chronology of language developments wrt to usefulness of types\ldots}
 
 \subsection{Verification of Quantum Programs}
 Previous work such as Proto-Quipper~\cite{ross_algebraic_2015,mahmoud_formalization_2019,rios_categorical_2017} and \qwire~\cite{paykin_qwire:_2017,rand_qwire_2017,rand_formally_2018} utilize a linear type system and dependent types to enforce a small subset of semantic properties, such as the no-cloning theorem and whether a unitary gate is of the right dimension. These advances in quantum type systems, although helpful, still fall short in encoding and enforcing even more useful properties that one would like to be able to express for the purpose of verification.
 
 Our approach builds upon previous work in reasoning about quantum programs such as Quantum Weakest Preconditions~\cite{dhondt_quantum_2006} and Quantum Hoare Logic~\cite{ying_floydhoare_2012} in the spirit of \citet{hoare_axiomatic_1969} and \citet{dijkstra_discipline_1976} but attempts to bring those reasoning techniques into the type system. The hope is that programmers will be able to encode some of the semantic properties that they expect of their programs as specifications in their code and type checking will ensure correctness of some of those properties. In the classical setting, Hoare Type Theory (HTT)~\cite{nanevski_hoare_2008} accomplishes exactly this goal. Here, we attempt to merge these ideas for the quantum realm.
+
+\textit{Add from Mingsheng Ying's book, papers, etc.}
 
 \section{Conclusion and Perspectives}
 This approach has the potential to be a unified system for programming, specification and reasoning about quantum programs. We need to overcome challenges such as compactly specifying properties of quantum state when dealing with more than a few qubits. We also need to maintain the syntax directed nature of HTT's bidirectional typechecking while incorporating quantum wire types.
@@ -222,8 +233,10 @@ We also look to explore how our types will evolve when we start incorporating hi
 
 Another venue for exploration is to incorporate more precise types that can distinguish between qubits in pure classical state vs. those in superposition vs. those in entanglement inspired by the various quantum resource theories (see \cite{rand_type_2019} and references therein).
 
+\textit{Future work about using Proto-Quipper/\qwire as languages, then extraction into QASM and checking generated verification conditions.}
+
 \begin{acks}
-	I would like to thank my advisor John Reppy for suggesting me to look at Hoare Type Theory that led to this master's thesis and for his constant support and encouragement to see it through. I also thank my committee members Fred Chong and Ravi Chugh for reading drafts of this document and providing useful feedback.
+%	I would like to thank my advisor John Reppy for suggesting me to look at Hoare Type Theory that led to this master's thesis and for his constant support and encouragement to see it through. I also thank my committee members Fred Chong and Ravi Chugh for reading drafts of this document and providing useful feedback.
 
 	This material is based upon work supported by
 	EPiQC, an \grantsponsor{GS100000001}{NSF}{http://dx.doi.org/10.13039/100000001}
