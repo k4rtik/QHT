@@ -1,14 +1,17 @@
 (** * Real: Coq's Axiomatic Real Numbers *)
 
+(* HIDEFROMHTML *)
 Require Reals.
 Require Psatz.
 Require Ring.
 Require Field.
 
-(* ################################################################# *)
+(* /HIDEFROMHTML *)
+
+(* ###################################################################### *)
 (** * Axiomatizing the set R *)
 
-(** Traditionally, real numbers are represented by Cauchy Sequences or
+(** FULL: Traditionally, real numbers are represented by Cauchy Sequences or
     Dedekind Cuts. These representations are mathematically rigorous
     and expressible in Coq, and implemented in libraries like the Coq
     Repository at Nijmegen (CoRN). However, these representations are
@@ -16,6 +19,8 @@ Require Field.
 
     Coq's standard library takes a very different approach to the real
     numbers: An _axiomatic_ approach. *)
+
+(** TERSE: An _axiomatic_ approach to real numbers. *)
 
 Module OurR.
 
@@ -33,11 +38,13 @@ Parameter Rplus : R -> R -> R.
 Parameter Rmult : R -> R -> R.
 Parameter Ropp : R -> R.
 Parameter Rinv : R -> R.
+(* HIDE: Parameter up : R -> Z. *)
 
 Infix "+" := Rplus : R_scope.
 Infix "*" := Rmult : R_scope.
 Notation "- x" := (Ropp x) : R_scope.
 Notation "/ x" := (Rinv x) : R_scope.
+
 
 (** Other basic operations are given in terms of our declared ones *)
 
@@ -60,6 +67,31 @@ Fixpoint INR (n : nat) : R :=
 (** The standard library defines a coercion from Z to R which is
     slightly more useful but also more difficult to parse. *)
 
+(* HIDE:
+Require Export ZArith_base.
+
+Fixpoint IPR_2 (p:positive) : R :=
+  match p with
+  | xH => R1 + R1
+  | xO p => (R1 + R1) * IPR_2 p
+  | xI p => (R1 + R1) * (R1 + IPR_2 p)
+  end.
+
+Definition IPR (p:positive) : R :=
+  match p with
+  | xH => R1
+  | xO p => IPR_2 p
+  | xI p => R1 + IPR_2 p
+  end.
+
+Definition IZR (z:Z) : R :=
+  match z with
+  | Z0 => R0
+  | Zpos n => IPR n
+  | Zneg n => - IPR n
+  end.
+*)
+
 (** A _coercion_ tells Coq to try applying a given function whenever
    types mismatch. For instance, [Rplus 4 5] will currently give a
    type error. *)
@@ -71,8 +103,9 @@ Coercion INR : nat >-> R.
 Check 4 + 5.
 Compute (4 + 5).
 
-(* ################################################################# *)
+(* ###################################################################### *)
 (** * The Field Equations *)
+(* ###################################################################### *)
 
 (** We can now proceed to the core of the real number library : The axioms *)
 
@@ -92,19 +125,21 @@ Axiom Rplus_0_l : forall r : R, 0 + r = r.
 
 Lemma Rplus_0_r : forall r : R, r + 0 = r.
 Proof.
-  (* WORKED IN CLASS *)
+  (* WORKINCLASS *)
   intros r.
   rewrite Rplus_comm.
   apply Rplus_0_l.
 Qed.
+  (* /WORKINCLASS *)
 
 Lemma Rplus_opp_l : forall r, -r + r = 0.
 Proof.
-  (* WORKED IN CLASS *)
+  (* WORKINCLASS *)
   intros r.
   rewrite Rplus_comm.
   apply Rplus_opp_r.
 Qed.
+(* /WORKINCLASS *)
 
 Lemma Ropp_0 : -0 = 0.
 Proof.
@@ -148,33 +183,35 @@ Axiom Rmult_plus_distr_l : forall r1 r2 r3:R, r1 * (r2 + r3) = r1 * r2 + r1 * r3
 
 Lemma Rmult_0_r : forall r, r * 0 = 0.
 Proof.
-  (* WORKED IN CLASS *)
+  (* WORKINCLASS *)
   intros r.
   apply (R0_unique (r * 0)).
   rewrite <- Rmult_plus_distr_l.
   rewrite Rplus_0_l.
   reflexivity.
 Qed.
+(* /WORKINCLASS *)
 
 Lemma Rmult_plus_distr_r : forall r1 r2 r3:R, (r1 + r2) * r3 = r1 * r3 + r2 * r3.
 Proof.
-  (* WORKED IN CLASS *)
+  (* WORKINCLASS *)
   intros r1 r2 r3.
   rewrite Rmult_comm.
   rewrite Rmult_plus_distr_l.
   rewrite 2 (Rmult_comm r3).
   reflexivity.
 Qed.
+(* /WORKINCLASS *)
 
 Lemma Rinv_r : forall r:R, r <> 0 -> r * / r = 1.
 Proof.
-  (* WORKED IN CLASS *)
+  (* WORKINCLASS *)
   intros. rewrite Rmult_comm.
   apply Rinv_l.
   assumption.
 Qed.
+  (* /WORKINCLASS *)
 
-(* ================================================================= *)
 (** ** The Ring and Field tactics *)
 
 (** Once we have some set of basic lemmas, we can tell Coq that R forms an
@@ -220,8 +257,11 @@ Example ring_test2 : forall (x y z: R), x * y + z  = z + y * x. Proof. intros. r
 Example field_test1 : forall (x y : R), x <> 0 -> x * y / x = y.
 Proof. intros. Fail ring. field. assumption. Qed.
 
-(* ################################################################# *)
+(* HIDE: TODO: Introduce ring_simplify, field_simplify. *)
+
+(* ###################################################################### *)
 (** * Ordering *)
+(* ###################################################################### *)
 
 (** We also impose the standard ordering on real numbers, again by
     means of axioms *)
@@ -248,10 +288,12 @@ Axiom Rplus_lt_compat_l : forall r r1 r2 : R, r1 < r2 -> r + r1 < r + r2.
 
 Axiom Rmult_lt_compat_l : forall r r1 r2 : R, 0 < r -> r1 < r2 -> r * r1 < r * r2.
 
-(* ################################################################# *)
-(** * Completeness *)
 
-(** Of course, not every field corresponds to the real numbers:
+(* ###################################################################### *)
+(** * Completeness *)
+(* ###################################################################### *)
+
+(** FULL: Of course, not every field corresponds to the real numbers:
     Even the rational numbers (a strict subset of the reals) form a
     field. The last thing we need to "complete" the real numbers is
     the _completeness_ axiom. This states that every bounded set of
@@ -261,6 +303,8 @@ Axiom Rmult_lt_compat_l : forall r r1 r2 : R, 0 < r -> r1 < r2 -> r * r1 < r * r
     As usual, we will express sets as functions of type [R -> Prop],
     indicating whether the given real number is a member of the
     set. *)
+
+(** TERSE: The last core axiom of the reals: *)
 
 Definition is_upper_bound (E:R -> Prop) (m:R) := forall x:R, E x -> x <= m.
 
@@ -274,7 +318,6 @@ Axiom
     forall E:R -> Prop,
       bound E -> (exists x : R, E x) -> { m:R | is_lub E m }.
 
-(* ================================================================= *)
 (** ** Defining irrational numbers *)
 
 (** Let's see an example of the completeness axiom in practice.  We'll
@@ -402,5 +445,3 @@ Lemma sqrt2_inv : √ (/ 2) = (/ √ 2)%R.
 Proof.
   apply sqrt_inv; lra.
 Qed.
-
-(* Wed Dec 4 22:25:43 EST 2019 *)

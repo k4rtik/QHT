@@ -16,4 +16,4 @@ vqc/Matrix.v
 vqc/Multiqubit.v
 vqc/Qubit.v
 vqc/Real.v
-vqc/SQIMP.v
+vqc/SQIR.v

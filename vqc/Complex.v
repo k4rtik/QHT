@@ -2,22 +2,25 @@
 
 From VQC Require Export Real.
 
-(* ################################################################# *)
 (** * Basic Definitions *)
 
 (** A complex number is simply a pair of reals *)
 
+Declare Scope C_scope.
+Delimit Scope C_scope with C.
+Bind Scope C_scope with C.
+Open Scope C_scope.
+
 Definition C : Type := R * R.
+
+Definition RtoC (r : R) : C := (r,0).
+Coercion RtoC : R >-> C.
 
 (** We give names to three generally useful constants *)
 
-Definition C0 : C := (0,0).
-Definition C1 : C := (1,0).
-Definition Ci : C := (0,1).
-
-Definition RtoC (r : R) : C := (r,0).
-
-Coercion RtoC : R >-> C.
+Notation i := (0,1).
+Notation "0" := (RtoC 0) : C_scope.
+Notation "1" := (RtoC 1) : C_scope.
 
 (** We can define plus component-wise *)
 
@@ -49,15 +52,15 @@ Definition Cnorm (c : C) : R := √ (Cnorm2 c).
 Arguments Cnorm2 c /.
 Arguments Cnorm c /.
 
-Declare Scope C_scope.
 Infix "+" := Cplus : C_scope.
 Notation "- x" := (Copp x) : C_scope.
 Infix "-" := Cminus : C_scope.
 Infix "*" := Cmult : C_scope.
 Notation "/ x" := (Cinv x) : C_scope.
 Infix "/" := Cdiv : C_scope.
+Notation "⎸ x ⎸²" := (Cnorm2 x) : C_scope.
 
-(* ################################################################# *)
+
 (** * Interlude: Psatz *)
 
 (** We would like to prove that all of the field equations from the
@@ -72,7 +75,7 @@ Proof. intros. destruct c1, c2. simpl in *. subst. reflexivity. Qed.
 
 Ltac lca := eapply c_proj_eq; simpl; lra.
 
-(** [lra] (for Linear Real Arithmetic) is a member of the Psatz
+(** FULL: [lra] (for Linear Real Arithmetic) is a member of the Psatz
     family of tactics, which include [nra] (for Nonlinear Real
     Arithmetic), [lia] (for Linear Integer Arithmetic) and
     [nia]. These tactics are generally very powerful but not
@@ -82,12 +85,12 @@ Ltac lca := eapply c_proj_eq; simpl; lra.
     The same holds of [lca] and subsequent tactics that we will build
     on top of [lra]. *)
 
-(* ################################################################# *)
+
 (** * C is a field *)
 
 Open Scope C_scope.
 
-Lemma C1_neq_C0 : C1 <> C0. Proof. intros F. inversion F. lra. Qed.
+Lemma C1_neq_C0 : 1 <> 0. Proof. intros F. inversion F. lra. Qed.
 
 Lemma Cplus_comm : forall c1 c2 : C, c1 + c2 = c2 + c1. Proof. intros. lca. Qed.
 Lemma Cplus_assoc : forall c1 c2 c3 : C, c1 + c2 + c3 = c1 + (c2 + c3).
@@ -165,10 +168,11 @@ Lemma Copp_mult_distr_l : forall c1 c2 : C, - (c1 * c2) = - c1 * c2.
 Proof. intros; lca. Qed.
 Lemma Copp_involutive: forall c : C, - - c = c. Proof. intros; lca. Qed.
 
+(* HIDE: Move?  *)
 Lemma RtoC_neq : forall (r1 r2 : R), r1 <> r2 -> RtoC r1 <> RtoC r2.
 Proof. intros r1 r2 H F. inversion F. easy. Qed.
 
-(* ################################################################# *)
+
 (** * The complex conjugate *)
 
 (** One unique operation on complex numbers is the complex conjugate.
@@ -188,17 +192,36 @@ Lemma Cconj_involutive : forall c, (c^*)^* = c. Proof. intros; lca. Qed.
 Lemma Cconj_plus_distr : forall (x y : C), (x + y)^* = x^* + y^*. Proof. intros; lca. Qed.
 Lemma Cconj_mult_distr : forall (x y : C), (x * y)^* = x^* * y^*. Proof. intros; lca. Qed.
 
-(** **** Exercise: 1 star, standard, recommended (Conj_mult_norm2)
-
-    Show that when you multiply a complex number by its conjugate,
+(* EX1! (Conj_mult_norm2) *)
+(** Show that when you multiply a complex number by its conjugate,
     you obtain the norm-squared. *)
 
-Lemma Conj_mult_norm2 : forall c, c * c^* = Cnorm2 c.
+Lemma Conj_mult_norm2 : forall c, c^* * c = ⎸c⎸².
 Proof.
-  (* FILL IN HERE *) Admitted.
+  (* ADMITTED *)
+  intros c.
+  unfold Cconj, Cmult, Cnorm2. simpl.
+  repeat rewrite Rmult_1_r.
+  lca.
+Qed.
+  (* /ADMITTED *)
 (** [] *)
 
-(* ################################################################# *)
+(* HIDE:
+Lemma Cmult_conj_real : forall (c : C), snd (c * c^* ) = 0.
+Proof.
+  intros c.
+  unfold Cconj.
+  unfold Cmult.
+  simpl.
+  rewrite <- Ropp_mult_distr_r.
+  rewrite Rmult_comm.
+  rewrite Rplus_opp_l.
+  reflexivity.
+Qed.
+*)
+
+
 (** * Sums over Complex Numbers *)
 
 (** One important function we will care about when reasoning about
@@ -215,7 +238,7 @@ Lemma Csum_0 : forall (f : nat -> C) (n : nat),
     (forall x, (x < n)%nat -> f x = 0) ->
     Csum f n = 0.
 Proof.
-  (* WORKED IN CLASS *)
+  (* WORKINCLASS *)
   intros.
   induction n.
   - reflexivity.
@@ -224,12 +247,13 @@ Proof.
     rewrite IHn. lca.
     intros. apply H; lia.
 Qed.
+  (* /WORKINCLASS *)
 
 Lemma Csum_eq : forall (f g : nat -> C) (n : nat),
   (forall x, (x < n)%nat -> f x = g x) ->
   Csum f n = Csum g n.
 Proof.
-  (* WORKED IN CLASS *)
+  (* WORKINCLASS *)
   intros f g n H.
   induction n.
   + simpl. reflexivity.
@@ -238,6 +262,7 @@ Proof.
     rewrite IHn by (intros; apply H; lia).
     reflexivity.
 Qed.
+  (* /WORKINCLASS *)
 
 
 Lemma Csum_plus : forall (f g : nat -> C) (n : nat),
@@ -273,24 +298,48 @@ Proof.
     reflexivity.
 Qed.
 
-(** **** Exercise: 2 stars, standard, recommended (Csum_conj_distr)  *)
+(* EX2! (Csum_conj_distr) *)
 Lemma Csum_conj_distr : forall (f : nat -> C) (n : nat),
     (Csum f n) ^* = Csum (fun x => (f x)^*) n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  (* ADMITTED *)
+  intros f n.
+  induction n.
+  + simpl; lca.
+  + simpl.
+    rewrite Cconj_plus_distr.
+    rewrite IHn.
+    reflexivity.
+Qed.
+  (* /ADMITTED *)
 (** [] *)
 
-(** **** Exercise: 3 stars, standard, recommended (Csum_unique)  *)
+(* EX3! (Csum_unique) *)
 Lemma Csum_unique : forall (f : nat -> C) (k : C) (n x : nat),
   (x < n)%nat ->
   f x = k ->
   (forall x', x <> x' -> f x' = 0) ->
   Csum f n = k.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  (* ADMITTED *)
+  intros f k.
+  induction n.
+  - intros x H; lia.
+  - intros x H H0 H1.
+    simpl.
+    destruct (x =? n)%nat eqn:E.
+    + apply Nat.eqb_eq in E. subst.
+      rewrite (Csum_0 f n). lca.
+      intros x L. apply H1. lia.
+    + apply Nat.eqb_neq in E.
+      rewrite H1 by lia.
+      rewrite (IHn x); trivial.
+      lca.
+      lia.
+Qed.
+  (* /ADMITTED *)
 (** [] *)
 
-(* ================================================================= *)
 (** ** Solving equations with square roots *)
 
 (* Dealing with square roots is important for quantum computing,
@@ -319,27 +368,116 @@ Proof.
 Qed.
 
 Ltac nonzero :=
-  repeat split;
+  repeat match goal with
+  | |- _ /\ _ => split
+  end;
   try match goal with
-  | |- ?x <> RtoC 0  => apply RtoC_neq
+  | |- (?x <> 0)%C  => apply RtoC_neq
   end;
   repeat match goal with
-  | |- √?x <> 0      => apply sqrt_neq_0_compat
-  | |- (/?x)%R <> 0  => apply Rinv_neq_0_compat
+  | |- (√?x <> 0)%R  => apply sqrt_neq_0_compat
+  | |- (/?x <> 0)%R  => apply Rinv_neq_0_compat
   end;
   match goal with
-  | |- _ <> _        => lra
-  | |- _ < _        => lra
+  | |- (_ <> _)%R        => lra
+  | |- (_ < _)%R        => lra
   end.
 
 Ltac R_field_simplify := repeat field_simplify_eq [pow2_sqrt2 sqrt2_inv];
                          try nonzero.
-Ltac R_field := R_field_simplify; nonzero; trivial.
+Ltac R_field := R_field_simplify; reflexivity.
 Ltac C_field_simplify := repeat field_simplify_eq [Csqrt2_square Csqrt2_inv];
                          try nonzero.
-Ltac C_field := C_field_simplify; nonzero; trivial.
+Ltac C_field := C_field_simplify; reflexivity.
+
+
+(** Library *)
+
+Lemma Csum_extend_r : forall n f, Csum f n + f n = Csum f (S n).
+Proof. reflexivity. Qed.
+
+Lemma Csum_extend_l : forall n f, f O + Csum (fun x => f (S x)) n = Csum f (S n).
+Proof.
+  intros n f.
+  induction n.
+  + simpl; lca.
+  + simpl.
+    rewrite <- Cplus_assoc.
+    rewrite IHn.
+    simpl.
+    reflexivity.
+Qed.
+
+Lemma Cmult_plus_dist_l (x y z : C) : x * (y + z) = x * y + x * z.
+Proof.
+  apply injective_projections ; simpl ; ring.
+Qed.
+
+Lemma Cmult_plus_dist_r (x y z : C) : (x + y) * z = x * z + y * z.
+Proof.
+  apply injective_projections ; simpl ; ring.
+Qed.
+
+Lemma Csum_sum : forall m n f, Csum f (m + n) =
+                          Csum f m + Csum (fun x => f (m + x)%nat) n.
+Proof.
+  intros m n f.
+  induction m.
+  + simpl. rewrite Cplus_0_l. reflexivity.
+  + simpl.
+    rewrite IHm.
+    remember (fun y => f (m + y)%nat) as g.
+    replace (f m) with (g O) by (subst; rewrite plus_0_r; reflexivity).
+    replace (f (m + n)%nat) with (g n) by (subst; reflexivity).
+    replace (Csum (fun x : nat => f (S (m + x))) n) with
+            (Csum (fun x : nat => g (S x)) n).
+    2:{ apply Csum_eq. subst. intros. intros; rewrite <- plus_n_Sm. reflexivity. }
+    repeat rewrite Cplus_assoc.
+    rewrite Csum_extend_l.
+    rewrite Csum_extend_r.
+    reflexivity.
+Qed.
+
+Lemma Csum_eq_bounded : forall f g n, (forall x, (x < n)%nat -> f x = g x) -> Csum f n = Csum g n.
+Proof.
+  intros f g n H.
+  induction n.
+  + simpl. reflexivity.
+  + simpl.
+    rewrite H by lia.
+    rewrite IHn by (intros; apply H; lia).
+    reflexivity.
+Qed.
+
+Lemma Csum_product : forall m n f g, n <> O ->
+                              Csum f m * Csum g n =
+                              Csum (fun x => f (x / n)%nat * g (x mod n)%nat) (m * n).
+Proof.
+  intros.
+  induction m.
+  + simpl; lca.
+  + simpl.
+    rewrite Cmult_plus_dist_r.
+    rewrite IHm. clear IHm.
+    rewrite Csum_mult_l.
+    remember ((fun x : nat => f (x / n)%nat * g (x mod n)%nat)) as h.
+    replace (Csum (fun x : nat => f m * g x) n) with
+            (Csum (fun x : nat => h ((m * n) + x)%nat) n).
+    2:{
+      subst.
+      apply Csum_eq_bounded.
+      intros x Hx.
+      rewrite Nat.div_add_l by assumption.
+      rewrite Nat.div_small; trivial.
+      rewrite plus_0_r.
+      rewrite Nat.add_mod by assumption.
+      rewrite Nat.mod_mul by assumption.
+      rewrite plus_0_l.
+      repeat rewrite Nat.mod_small; trivial. }
+    rewrite <- Csum_sum.
+    rewrite plus_comm.
+    reflexivity.
+Qed.
 
 (** We'll make C opaque so Coq doesn't treat it as a pair. *)
 Opaque C.
-
-(* Wed Dec 4 22:25:44 EST 2019 *)
