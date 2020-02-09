@@ -31,6 +31,8 @@
 \newcommand{\denote}[1]{\llbracket #1 \rrbracket\xspace}
 \newcommand{\qdenote}[1]{(\!| #1 |\!)\xspace}
 
+\newcommand{\type}[1]{\textrm{\textbf{#1}}}
+
 \title{Quantum Hoare Types}
 \subtitle{A Master's Thesis}
 
@@ -153,24 +155,32 @@ A Hoare type encodes preconditions and postconditions in the same spirit as Hoar
 
 \begin{figure}[h]
 	\begin{tabular}{lrcl}
-		\textit{Types} & $\tau, \sigma$ & ::= & $ \mathrm{qbit} \mid \tau \otimes \sigma \mid 1 \mid \Pi x{:}\tau.\sigma \mid \Psi. X. \{P\} x{:}\tau \{Q\}$ \\
-		\textit{Assertions} & $P, Q, R$ & ::= & \begin{minipage}[t]{0.6\columnwidth}%
-			$ \mathrm{id}_\tau(M,N) \mid \mathrm{seleq}_\tau(H,M,N) \mid \top \mid \bot \mid P \wedge Q \mid P \vee Q \mid \\
-			P \supset Q \mid \neg P \mid \forall h{:}\mathrm{heap}.P$
+		\textit{Types} & $A, B, C$ & ::= & \begin{minipage}[t]{0.5\columnwidth}%
+			$ \type{Unit} \mid \type{Bit} \mid \type{Qubit} \mid A \otimes B \mid \type{Nat} \mid \Pi x{ : }A.B \mid ~!A  \mid \type{Circ}(S, U) \mid \{P\} x{ : }A \{Q\}$
+					\end{minipage}\\
+		\textit{Simple Types} & $S, U$ & ::= & $ \type{Unit} \mid \type{Bit} \mid \type{Qubit} \mid S \otimes U$ \\
+		\textit{Propositions} & $P, Q, R$ & ::= & \begin{minipage}[t]{0.5\columnwidth}%
+			$ \top \mid \bot \mid P \wedge Q \mid P \vee Q \mid P \supset Q \mid \neg P \mid \exists x{:}A.P \mid \forall x.P$
 		\end{minipage}\\
-		\textit{(Quantum) Heaps} & $H, G$ & ::= & $ h \mid \mathrm{empty} \mid \mathrm{upd}_{\tau}(H, M, N) $\\
-		\textit{Elim terms} & $K, L$ & ::= & $ x \mid K\ M \mid M : \tau $\\
-		\textit{Intro terms} & $M, N, O$ & ::= & \begin{minipage}[t]{0.6\columnwidth}%
-			$ K \mid (\,) \mid \lambda x.\ M \mid \mathrm{do}\ E \mid \ket{0} \mid \ket{1} \mid (M, N) \mid M==N $
+%		\textit{(Quantum) Heaps} & $H, G$ & ::= & $ h \mid \mathrm{empty} \mid \mathrm{upd}_{\tau}(H, M, N) $\\
+%		\textit{Elim terms} & $K, L$ & ::= & $ x \mid K\ M \mid M : \tau $\\
+		\textit{Terms} & $M, N$ & ::= & \begin{minipage}[t]{0.5\columnwidth}%
+			$ c \mid l \mid x \mid \lambda x.M \mid MN \mid \mathrm{unit} \mid (a, \mathcal{C}, b) \mid \mathrm{unbox}~M \mid \mathrm{force}~M \mid \mathrm{lift}~M \mid \mathrm{box_U}~M \mid (M, N) \mid \mathrm{let}~ (x, y) = N ~\mathrm{in}~ M $
 		\end{minipage}\\
-		\textit{Commands} & $c$ & ::= & \begin{minipage}[t]{0.6\columnwidth}%
-			$ \mathrm{alloc}_\tau\ M \mid \mathrm{dealloc}\ M \mid \mathrm{if}_\tau\ M\ \mathrm{then}\ E_1\ \mathrm{else}\ E_2 \mid
-			\mathrm{fix}\ f(y{:}\tau){:}\sigma = \mathrm{do}\ E\ \mathrm{in\ eval}\ f M \mid \mathrm{apply}(M, N) \mid \mathrm{capply}(M, N, O) $
-		\end{minipage}\\
-		\textit{Computations} & $E, F$ & ::= & $ \mathrm{return}\ M \mid x \gets K; E \mid x \Leftarrow c; E \mid x =_\tau M; E $\\
-		\textit{Variable context} & $\Delta, \Psi$ & ::= & $ \cdot \mid \Delta, x{:}\tau $\\
-		\textit{Heap context} & $X$ & ::= & $ \cdot \mid X, h $\\
-		\textit{Assertion context} & $\Gamma$& ::= & $\cdot \mid \Gamma, P $
+		\textit{Simple Terms} & $a, b, c$ & ::= & $ l \mid \mathrm{unit} \mid (a, b)$ \\
+		\textit{Circuits} & $\mathcal{C}, \mathcal{D}$ & : & $ \Sigma \to \Sigma' $ \\
+		\textit{Label Contexts} & $\Sigma$ & ::= & $ \cdot \mid l : \type{Qubit}, \Sigma$ \\
+%		\textit{Commands} & $c$ & ::= & \begin{minipage}[t]{0.5\columnwidth}%
+%			$ \mathrm{alloc}_\tau\ M \mid \mathrm{dealloc}\ M \mid \mathrm{if}_\tau\ M\ \mathrm{then}\ E_1\ \mathrm{else}\ E_2 \mid
+%			\mathrm{fix}\ f(y{:}\tau){:}\sigma = \mathrm{do}\ E\ \mathrm{in\ eval}\ f M \mid \mathrm{apply}(M, N) \mid \mathrm{capply}(M, N, O) $
+%		\end{minipage}\\
+%		\textit{Computations} & $E, F$ & ::= & $ \mathrm{return}\ M \mid x \gets K; E \mid x \Leftarrow c; E \mid x =_\tau M; E $\\
+%		\textit{Variable context} & $\Delta, \Psi$ & ::= & $ \cdot \mid \Delta, x{:}\tau $\\
+%		\textit{Heap context} & $X$ & ::= & $ \cdot \mid X, h $\\
+		\textit{Contexts} & $\Gamma$ & ::= & $ \cdot \mid x : A, \Gamma \mid l : \type{Qubit}, \Sigma$ \\
+		\textit{Values} & $V$ & ::= & \begin{minipage}[t]{0.5\columnwidth}%
+	$ x \mid l \mid \lambda x.M \mid \mathrm{lift}~M \mid (a, \mathcal{C}, b) \mid \mathrm{unbox}~V \mid \mathrm{force}(\mathrm{unbox}~V) \mid $
+\end{minipage}\\
 	\end{tabular}
 	\Description{Syntax of Hoare Type Theory from \cite{nanevski_hoare_2008}}
 	\caption{Syntax of Hoare Type Theory}
