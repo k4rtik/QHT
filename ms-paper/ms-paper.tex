@@ -183,9 +183,11 @@ A Hoare type encodes preconditions and postconditions in the same spirit as Hoar
 \end{minipage}\\
 	\end{tabular}
 	\Description{Syntax of Hoare Type Theory from \cite{nanevski_hoare_2008}}
-	\caption{Syntax of Hoare Type Theory}
+	\caption{Syntax of Quantum Hoare Type Theory}
 	\label{fig:syntax}
 \end{figure}
+
+Figure \ref{fig:syntax} shows syntax of Quantum HTT. Symbol $c$ ranges over constants of the language such as constructors for Nat (Zero and Succ).
 
 In order to extend HTT to support quantum circuits, we augment its syntax with that of \qwire\cite{paykin_qwire:_2017,rand_formally_2018}. \qwire is a core quantum circuit language that can cooperate with an arbitrary classical host language. This requires minimal support from the host language to interface with the circuit language. In our case, HTT acts as the classical host language for \qwire.
 
@@ -199,6 +201,11 @@ In order to extend HTT to support quantum circuits, we augment its syntax with t
 	A ::= \ldots \mid \texttt{Unit} \mid \texttt{Bool} \mid A \times A \mid \texttt{Circuit}(W1, W2)
 
 \end{mathpar}
+
+
+Here we show some simple examples of annotating Hoare Types for quantum gates:
+
+
 
 \subsection{Verification}
 Here we describe how HTT lets us verify the correctness of teleportation based on the specification provided as the type of the function. Type checking in HTT involves generation of strongest postconditions at each step of the program with the initial precondition as input. Verification is a two-step process: the first phase does basic type checking and verification condition generation which is decidable, the second phase needs to show the validity of the generated verification conditions, which is undecidable. This second phase can be deferred to an automated theorem prover. For illustration, we show the assertions as we step through the first step of teleportation. The final state here is that qubits \lstinline{a} and \lstinline{b} are entangled into the first Bell state, $\ket{\phi^+} = \frac{1}{\sqrt{2}}(\ket{00} + \ket{11})$.
