@@ -153,22 +153,23 @@ A Hoare type encodes preconditions and postconditions in the same spirit as Hoar
 
 \end{mathpar}
 
-\begin{figure}[h]
+\begin{figure}[t]
 	\begin{tabular}{lrcl}
 		\textit{Types} & $A, B, C$ & ::= & \begin{minipage}[t]{0.5\columnwidth}%
-			$ \type{Unit} \mid \type{Bit} \mid \type{Qubit} \mid A \otimes B \mid \type{Nat} \mid \Pi x{ : }A.B \mid ~!A  \mid \type{Circ}(S, U) \mid \{P\} x{ : }A \{Q\}$
+			$ \type{Unit} \mid \type{Bit} \mid \type{Qubit} \mid A \otimes B \mid \Pi x{ : }A.B \mid ~!A  \mid \type{Circ}(S, U) \mid \{P\} x{ : }A \{Q\}$
 					\end{minipage}\\
-		\textit{Simple Types} & $S, U$ & ::= & $ \type{Unit} \mid \type{Bit} \mid \type{Qubit} \mid S \otimes U$ \\
+		\textit{Wire Types} & $S, U$ & ::= & $ \type{Unit} \mid \type{Bit} \mid \type{Qubit} \mid S \otimes U$ \\
 		\textit{Propositions} & $P, Q, R$ & ::= & \begin{minipage}[t]{0.5\columnwidth}%
-			$ \top \mid \bot \mid P \wedge Q \mid P \vee Q \mid P \supset Q \mid \neg P \mid \exists x{:}A.P \mid \forall x.P$
+			$ \top \mid \bot \mid P \wedge Q \mid P \vee Q \mid P \supset Q \mid \neg P \mid \exists x{:}A.P \mid \forall x{:}A.P \mid \mathrm{Id_A}(M, N)$
 		\end{minipage}\\
 %		\textit{(Quantum) Heaps} & $H, G$ & ::= & $ h \mid \mathrm{empty} \mid \mathrm{upd}_{\tau}(H, M, N) $\\
 %		\textit{Elim terms} & $K, L$ & ::= & $ x \mid K\ M \mid M : \tau $\\
 		\textit{Terms} & $M, N$ & ::= & \begin{minipage}[t]{0.5\columnwidth}%
-			$ c \mid l \mid x \mid \lambda x.M \mid MN \mid \mathrm{unit} \mid (a, \mathcal{C}, b) \mid \mathrm{unbox}~M \mid \mathrm{force}~M \mid \mathrm{lift}~M \mid \mathrm{box_U}~M \mid (M, N) \mid \mathrm{let}~ (x, y) = N ~\mathrm{in}~ M $
+			$ c \mid l \mid x \mid \lambda x.M \mid MN \mid \mathrm{unit} \mid (a, \mathcal{C}, b) \mid \mathrm{box_S}~M \mid \mathrm{unbox}~M \mid \mathrm{force}~M \mid \mathrm{lift}~M \mid (M, N) \mid \mathrm{let}~ (x, y) = N ~\mathrm{in}~ M $
 		\end{minipage}\\
-		\textit{Simple Terms} & $a, b, c$ & ::= & $ l \mid \mathrm{unit} \mid (a, b)$ \\
+		\textit{Simple Terms} & $a, b$ & ::= & $ l \mid \mathrm{unit} \mid (a, b)$ \\
 		\textit{Circuits} & $\mathcal{C}, \mathcal{D}$ & : & $ \Sigma \to \Sigma' $ \\
+		\textit{Proposition Contexts} & $\Delta$ & ::= & $ \cdot \mid P, \Delta$ \\
 		\textit{Label Contexts} & $\Sigma$ & ::= & $ \cdot \mid l : \type{Qubit}, \Sigma$ \\
 %		\textit{Commands} & $c$ & ::= & \begin{minipage}[t]{0.5\columnwidth}%
 %			$ \mathrm{alloc}_\tau\ M \mid \mathrm{dealloc}\ M \mid \mathrm{if}_\tau\ M\ \mathrm{then}\ E_1\ \mathrm{else}\ E_2 \mid
@@ -177,33 +178,39 @@ A Hoare type encodes preconditions and postconditions in the same spirit as Hoar
 %		\textit{Computations} & $E, F$ & ::= & $ \mathrm{return}\ M \mid x \gets K; E \mid x \Leftarrow c; E \mid x =_\tau M; E $\\
 %		\textit{Variable context} & $\Delta, \Psi$ & ::= & $ \cdot \mid \Delta, x{:}\tau $\\
 %		\textit{Heap context} & $X$ & ::= & $ \cdot \mid X, h $\\
-		\textit{Contexts} & $\Gamma$ & ::= & $ \cdot \mid x : A, \Gamma \mid l : \type{Qubit}, \Sigma$ \\
+		\textit{Contexts} & $\Gamma$ & ::= & $ \cdot \mid x : A, \Gamma \mid l : \type{Qubit}, \Gamma$ \\
 		\textit{Values} & $V$ & ::= & \begin{minipage}[t]{0.5\columnwidth}%
 	$ x \mid l \mid \lambda x.M \mid \mathrm{lift}~M \mid (a, \mathcal{C}, b) \mid \mathrm{unbox}~V \mid \mathrm{force}(\mathrm{unbox}~V) \mid $
 \end{minipage}\\
 	\end{tabular}
 	\Description{Syntax of Hoare Type Theory from \cite{nanevski_hoare_2008}}
-	\caption{Syntax of Quantum Hoare Type Theory}
+	\caption{Syntax of Quantum (Linear) Hoare Type Theory}
 	\label{fig:syntax}
 \end{figure}
 
-Figure \ref{fig:syntax} shows syntax of Quantum HTT. Symbol $c$ ranges over constants of the language such as constructors for Nat (Zero and Succ).
+Figure \ref{fig:syntax} shows syntax of Quantum HTT, inspired by the syntax of Proto-Quipper for the quantum parts. Symbol $c$ ranges over constants of the language such as primitive quantum gates (Hadamard, X, Y, Z, CNOT, etc), while $l$ identifies wires (bits or qubits). $!A$ represents duplicable/reusable data. The Pi type can be simplified to $A \multimap B$ if $B$ does not depend on $x$. $\mathrm{Id_A}(M, N)$ is propositional equality. $\mathrm{box_S}$ converts a circuit-producing function of type $S \multimap U$ into a circuit treated as data of type $\type{Circ}(S, U)$; $\mathrm{unbox}$ does the reverse.
 
-In order to extend HTT to support quantum circuits, we augment its syntax with that of \qwire\cite{paykin_qwire:_2017,rand_formally_2018}. \qwire is a core quantum circuit language that can cooperate with an arbitrary classical host language. This requires minimal support from the host language to interface with the circuit language. In our case, HTT acts as the classical host language for \qwire.
 
-\qwire's circuit language has a wire type W that can be a unit, a bit, a qubit or a tuple of wires. The host language (HTT) is augmented with additional types to support interaction between the two languages and to treat circuits as data:
+
+%In order to extend HTT to support quantum circuits, we augment its syntax with that of \qwire\cite{paykin_qwire:_2017,rand_formally_2018}. \qwire is a core quantum circuit language that can cooperate with an arbitrary classical host language. This requires minimal support from the host language to interface with the circuit language. In our case, HTT acts as the classical host language for \qwire.
+%
+%\qwire's circuit language has a wire type W that can be a unit, a bit, a qubit or a tuple of wires. The host language (HTT) is augmented with additional types to support interaction between the two languages and to treat circuits as data:
+%\begin{mathpar}
+%
+%	W ::= 1 \mid \texttt{bit} \mid \texttt{qbit} \mid W1 \otimes W2
+%
+%	\and
+%
+%	A ::= \ldots \mid \texttt{Unit} \mid \texttt{Bool} \mid A \times A \mid \texttt{Circuit}(W1, W2)
+%
+%\end{mathpar}
+
+The primitive quantum gates that are treated as constants in the language have types such as follows:
 \begin{mathpar}
-
-	W ::= 1 \mid \texttt{bit} \mid \texttt{qbit} \mid W1 \otimes W2
-
+	H : \type{Qubit} \multimap \type{Qubit}
 	\and
-
-	A ::= \ldots \mid \texttt{Unit} \mid \texttt{Bool} \mid A \times A \mid \texttt{Circuit}(W1, W2)
-
+	CNOT : \type{Qubit} \otimes \type{Qubit} \multimap \type{Qubit}  \otimes \type{Qubit}
 \end{mathpar}
-
-
-Here we show some simple examples of annotating Hoare Types for quantum gates:
 
 
 
