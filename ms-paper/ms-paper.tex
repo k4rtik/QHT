@@ -165,7 +165,7 @@ A Hoare type encodes preconditions and postconditions in the same spirit as Hoar
 %		\textit{(Quantum) Heaps} & $H, G$ & ::= & $ h \mid \mathrm{empty} \mid \mathrm{upd}_{\tau}(H, M, N) $\\
 %		\textit{Elim terms} & $K, L$ & ::= & $ x \mid K\ M \mid M : \tau $\\
 		\textit{Terms} & $M, N$ & ::= & \begin{minipage}[t]{0.5\columnwidth}%
-			$ c \mid l \mid x \mid \lambda x.M \mid MN \mid \mathrm{unit} \mid (a, \mathcal{C}, b) \mid \mathrm{box_S}~M \mid \mathrm{unbox}~M \mid \mathrm{force}~M \mid \mathrm{lift}~M \mid (M, N) \mid \mathrm{let}~ (x, y) = N ~\mathrm{in}~ M $
+			$ c \mid l \mid x \mid \lambda x.M \mid MN \mid \mathrm{unit} \mid (a, \mathcal{C}, b) \mid \mathrm{box_S}~M \mid \mathrm{unbox}~M \mid \mathrm{force}~M \mid \mathrm{lift}~M \mid (M, N) \mid \mathrm{let}~ x = N ~\mathrm{in}~ M $
 		\end{minipage}\\
 		\textit{Simple Terms} & $a, b$ & ::= & $ l \mid \mathrm{unit} \mid (a, b)$ \\
 		\textit{Circuits} & $\mathcal{C}, \mathcal{D}$ & : & $ \Sigma \to \Sigma' $ \\
@@ -207,12 +207,34 @@ Figure \ref{fig:syntax} shows syntax of Quantum HTT, inspired by the syntax of P
 
 The primitive quantum gates that are treated as constants in the language have types such as follows:
 \begin{mathpar}
-	H : \type{Qubit} \multimap \type{Qubit}
+	\mathrm{H} : \type{Qubit} \multimap \type{Qubit}
 	\and
-	CNOT : \type{Qubit} \otimes \type{Qubit} \multimap \type{Qubit}  \otimes \type{Qubit}
+	\mathrm{CNOT} : \type{Qubit} \otimes \type{Qubit} \multimap \type{Qubit}  \otimes \type{Qubit}
+	\and
+	\mathrm{Init0} : \type{Unit} \multimap \type{Qubit}
+	\and
+	\mathrm{meas} : \type{Qubit} \multimap \type{Bit}
 \end{mathpar}
 
+Simple quantum programs can be written using the above syntax, for example, cointoss:
 
+\begin{lstlisting}
+cointoss : Unit ⊸ Bit
+cointoss = let
+					q = Init0 unit
+					q = H q
+					b = meas q
+				in b
+\end{lstlisting}
+
+To write a Hoare type, we need to box the circuit as follows:
+
+\begin{lstlisting}
+boxed_cointoss : {⊤} c : Circ(Unit, Bit) {⊤}
+boxed_cointoss = box_unit cointoss
+\end{lstlisting}
+
+The propositions shown above are trivial. More interesting examples will follow.
 
 \subsection{Verification}
 Here we describe how HTT lets us verify the correctness of teleportation based on the specification provided as the type of the function. Type checking in HTT involves generation of strongest postconditions at each step of the program with the initial precondition as input. Verification is a two-step process: the first phase does basic type checking and verification condition generation which is decidable, the second phase needs to show the validity of the generated verification conditions, which is undecidable. This second phase can be deferred to an automated theorem prover. For illustration, we show the assertions as we step through the first step of teleportation. The final state here is that qubits \lstinline{a} and \lstinline{b} are entangled into the first Bell state, $\ket{\phi^+} = \frac{1}{\sqrt{2}}(\ket{00} + \ket{11})$.
