@@ -188,7 +188,7 @@ A Hoare type encodes preconditions and postconditions in the same spirit as Hoar
 	\label{fig:syntax}
 \end{figure}
 
-Figure \ref{fig:syntax} shows syntax of Quantum HTT, inspired by the syntax of Proto-Quipper for the quantum parts. Symbol $c$ ranges over constants of the language such as primitive quantum gates (Hadamard, X, Y, Z, CNOT, etc), while $l$ identifies wires (bits or qubits). $!A$ represents duplicable/reusable data. The Pi type can be simplified to $A \multimap B$ if $B$ does not depend on $x$. $\mathrm{Id_A}(M, N)$ is propositional equality. $\mathrm{box_S}$ converts a circuit-producing function of type $S \multimap U$ into a circuit treated as data of type $\type{Circ}(S, U)$; $\mathrm{unbox}$ does the reverse.
+Figure \ref{fig:syntax} shows syntax of Quantum HTT, inspired by the syntax of Proto-Quipper for the quantum parts. Symbol $c$ ranges over constants of the language such as primitive quantum gates (Hadamard, X, Y, Z, CNOT, etc), while $l$ identifies wires (bits or qubits). $!A$ represents duplicable/reusable data. The Pi type can be simplified to $A \multimap B$ if $B$ does not depend on $x$. $\mathrm{Id_A}(M, N)$ is propositional equality. $\mathrm{box_S}$ converts a circuit-producing function of type $S \multimap U$ into a circuit treated as data of type $\type{Circ}(S, U)$; $\mathrm{unbox}$ does the reverse. lift and force convert between linear and reusable types.
 
 
 
@@ -210,7 +210,7 @@ The primitive quantum gates that are treated as constants in the language have t
 	\mathrm{H} : \type{Qubit} \multimap \type{Qubit}
 	\and
 	\mathrm{CNOT} : \type{Qubit} \otimes \type{Qubit} \multimap \type{Qubit}  \otimes \type{Qubit}
-	\and
+	\\
 	\mathrm{Init0} : \type{Unit} \multimap \type{Qubit}
 	\and
 	\mathrm{meas} : \type{Qubit} \multimap \type{Bit}
