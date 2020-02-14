@@ -71,7 +71,7 @@ It is difficult to reason about the correctness of quantum programs. Sound stati
 
 Recent work~\cite{huang_qdb:_2018,huang_statistical_2019} as part of EPiQC\footnote{EPiQC: Enabling Practical-Scale Quantum Computation:  \url{https://epiqc.cs.uchicago.edu}} has identified several classes of bugs in quantum programs and proposed approaches to tackle them. The technique that holds the most promise is assertion checking using preconditions and postconditions. But assertions are usually checked dynamically during runtime, which can be wasteful of precious quantum computing or simulation resources.
 
-As programming languages researchers, we think it will be more useful to encode such assertions into a static type system both for formal verification and to aid the programmers in writing correct programs from the start. Inspired by the use of Hoare triples in the verification of imperative programs and building on the idea of Hoare Types in classical programming languages~\cite{nanevski_hoare_2008}, we propose Quantum Hoare Types aimed at enabling both sound static type checking and formal verification of quantum programs.
+As programming language researchers, we think it will be more useful to encode such assertions into a static type system both for formal verification and to aid the programmers in writing correct programs from the start. Inspired by the use of Hoare triples in the verification of imperative programs and building on the idea of Hoare Types in classical programming languages~\cite{nanevski_hoare_2008}, we propose Quantum Hoare Types aimed at enabling both sound static type checking and formal verification of quantum programs.
 
 \section{Background}
 
@@ -84,7 +84,7 @@ The basic unit of information in quantum computing is a qubit, that can be repre
 1
 \end{bsmallmatrix}$, and the two constants are complex amplitudes that are normalized using the constraint $|\alpha|^2 +|\beta|^2 = 1$. This means that when measured, the probability of the qubit being in the state 0 is $|\alpha|^2$ and that for the state 1 is $|\beta|^2$. To work with multiple qubits, we need to take their tensor product, denoted by $\otimes$. Computation is performed by the application of unitary quantum gates, such as the Hadamard (H) gate or the controlled NOT (CX) gate, that can be represented as square matrices. Mathematically, a gate application is equivalent to multiplying the matrix representing the gate with the state vector of the qubit(s).
 
-This basic unit of information is not the only reason why quantum computing is fundamentally different from classical computing---certain quantum mechanical phenomenon are highly counterintuitive! One such phenomenon is \textit{quantum entanglement} which, at its most basic level, involves a correlation between two qubits such that when one is measured, the outcome obtained necessarily influences the measurement outcome of the other qubit (even if the two qubits are far apart). We will see how this can be utilized for computation in the quantum teleportation algorithm that we describe and program in \S\ref{telep}. We refer the reader to the standard textbook~\cite{nielsen_quantum_2010} or Nielsen's excellent series of essays~\cite{matuschak2019} for more background.
+This basic unit of information is not the only reason why quantum computing is fundamentally different from classical computing---certain quantum mechanical phenomenon are highly counterintuitive! One such phenomenon is \textit{quantum entanglement} which, at its most basic level, involves a correlation between two qubits such that when one is measured, the outcome obtained necessarily influences the measurement outcome of the other qubit (even if the two qubits are far apart). We will see how this property can be utilized for computation in the quantum teleportation algorithm that we describe and program in \S\ref{telep}. We refer the reader to the standard textbook~\cite{nielsen_quantum_2010} or Nielsen's excellent series of essays~\cite{matuschak2019} for more background.
 
 \subsection{Hoare Style Reasoning}
 \textit{Basics of Hoare-triples for non-specialists\ldots}
@@ -93,10 +93,6 @@ This basic unit of information is not the only reason why quantum computing is f
 \textit{Basics of program proof and techniques for non-specialists\ldots}
 
 \section{Running Example}
-\textit{Move teleportation example here}
-
-\section{Hoare Types for Quantum Programming Languages}
-In this section we describe Quantum Hoare Types using an example of programming quantum teleportation protocol. We start with the background necessary to understand teleportation and then present how Quantum Hoare Types help us write and verify the  correctness of the protocol.
 
 \subsection{Example: Quantum Teleportation}\label{telep}
 Teleportation is a simple quantum algorithm that is used to communicate a quantum state using two classical bits and a shared entangled pair of qubits. Alice is trying to send a message encoded in the qubit to Bob. There are three broad steps in the protocol: 1) preparation, ie, entanglement creation between two qubits to be shared between Alice and Bob in advance; 2) sending the message by Alice; and, 3) reconstruction of the message by Bob.
@@ -140,6 +136,10 @@ Teleportation is a simple quantum algorithm that is used to communicate a quantu
 \end{figure}
 
 In Fig. \ref{fig:teleport}, on the left, we show a function \lstinline{teleport} written in \qwire-like syntax (TODO: add ref) that implements the quantum teleportation circuit shown on the right. It returns one qubit and takes three qubits as arguments: one qubit \lstinline{q} that could be in any unknown state $\ket{\psi}$ which Alice is trying to send to Bob; and two qubits, \lstinline{a} and \lstinline{b}, initially in the state $\ket{0}$. The function first entangles the latter two qubits into a Bell state. Then, Alice performs a Bell measurement of her two qubits \lstinline{q} and \lstinline{a} and sends the resulting classical bits (\lstinline{x} and \lstinline{y}) to Bob. Finally, Bob applies corrective measurement using the quantum gates X and Z controlled by the classical bits that he received from Alice. The result is that Bob's qubit is now in the same state as the initial state of the message qubit \lstinline{q}. The specification that the function must meet is written using a Hoare type, which we describe next.
+\section{Hoare Types for Quantum Programming Languages}
+In this section we describe Quantum Hoare Types using an example of programming quantum teleportation protocol. We start with the background necessary to understand teleportation and then present how Quantum Hoare Types help us write and verify the  correctness of the protocol.
+
+
 
 \subsection{Hoare Types}
 A Hoare type encodes preconditions and postconditions in the same spirit as Hoare triples. The type shown on the left below can be read as `for a stateful computation executed in a heap that satisfies precondition $P$, return a value of type $A$ in a heap that satisfies postcondition $Q$.' We show an example, the \lstinline{alloc} primitive from HTT~\cite{nanevski_hoare_2008}, to demonstrate the expressiveness of a Hoare type:
