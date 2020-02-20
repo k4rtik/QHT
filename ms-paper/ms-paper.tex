@@ -92,54 +92,8 @@ This basic unit of information is not the only reason why quantum computing is f
 \subsection{Program Proof and HTT}
 \textit{Basics of program proof and techniques for non-specialists\ldots}
 
-\section{Running Example}
-
-\subsection{Example: Quantum Teleportation}\label{telep}
-Teleportation is a simple quantum algorithm that is used to communicate a quantum state using two classical bits and a shared entangled pair of qubits. Alice is trying to send a message encoded in the qubit to Bob. There are three broad steps in the protocol: 1) preparation, ie, entanglement creation between two qubits to be shared between Alice and Bob in advance; 2) sending the message by Alice; and, 3) reconstruction of the message by Bob.
-\begin{figure}[h]
-	\begin{subfigure}{3in}
-		% 	a       ← init0 ();
-		%     b       ← init0 ();
-		\begin{lstlisting}
-		teleport : Π\kp:qbit.{q↦qbit\kp /\ a↦qbit|0⟩ /\ b↦qbit|0⟩} c:Circuit(qbit⊗qbit⊗qbit, qbit) {b↦qbit\kp} =
-		box (q, a, b) ⇒
-		(* 1. Bell state preparation for Alice and Bob *)
-		a       ← H a;
-		(a, b)  ← CX (a, b);
-		(* 2. Bell measurement by Alice *)
-		(q, a)  ← CX (q, a);
-		q       ← H q;
-		x       ← meas q;
-		y       ← meas a;
-		(* 3. Correction by Bob *)
-		(y, b)  ← CX (y, b);
-		(x, b)  ← CZ (x, b);
-		output b
-		\end{lstlisting}
-		% ()      ← discard y;
-		%     ()      ← discard x;
-	\end{subfigure}
-	\begin{subfigure}{1in}
-		% 	\centerline{
-		\Qcircuit @C=.4em @R=.4em @! {
-			\lstick{q=\ket{\psi}} & \qw & \qw & \ctrl{1} & \gate{H} & \meter & \cw & \control \cw\\
-			\lstick{a=\ket{0}} & \gate{H} & \ctrl{1} & \gate{X} & \qw & \meter & \control \cw & \\
-			\lstick{b=\ket{0}} & \qw & \gate{X} & \qw & \qw & \qw & \gate{X} \cwx & \gate{Z} \cwx[-2] & \rstick{\ket{\psi}} \qw
-			\gategroup{2}{2}{3}{3}{.7em}{.}
-			\gategroup{1}{4}{2}{6}{.7em}{.}
-		}
-		% }
-	\end{subfigure}
-	\Description{On the left, \qwire code to implement Quantum Teleportation algorithm annotated by its Hoare Type that provides specification for the algorithm. On the right, the corresponding quantum circuit.}
-	\caption{Quantum Teleportation (Code and Circuit)}
-	\label{fig:teleport}
-\end{figure}
-
-In Fig. \ref{fig:teleport}, on the left, we show a function \lstinline{teleport} written in \qwire-like syntax (TODO: add ref) that implements the quantum teleportation circuit shown on the right. It returns one qubit and takes three qubits as arguments: one qubit \lstinline{q} that could be in any unknown state $\ket{\psi}$ which Alice is trying to send to Bob; and two qubits, \lstinline{a} and \lstinline{b}, initially in the state $\ket{0}$. The function first entangles the latter two qubits into a Bell state. Then, Alice performs a Bell measurement of her two qubits \lstinline{q} and \lstinline{a} and sends the resulting classical bits (\lstinline{x} and \lstinline{y}) to Bob. Finally, Bob applies corrective measurement using the quantum gates X and Z controlled by the classical bits that he received from Alice. The result is that Bob's qubit is now in the same state as the initial state of the message qubit \lstinline{q}. The specification that the function must meet is written using a Hoare type, which we describe next.
 \section{Hoare Types for Quantum Programming Languages}
-In this section we describe Quantum Hoare Types using an example of programming quantum teleportation protocol. We start with the background necessary to understand teleportation and then present how Quantum Hoare Types help us write and verify the  correctness of the protocol.
-
-
+% In this section we describe Quantum Hoare Types using an example of programming quantum teleportation protocol. We start with the background necessary to understand teleportation and then present how Quantum Hoare Types help us write and verify the  correctness of the protocol.
 
 \subsection{Hoare Types}
 A Hoare type encodes preconditions and postconditions in the same spirit as Hoare triples. The type shown on the left below can be read as `for a stateful computation executed in a heap that satisfies precondition $P$, return a value of type $A$ in a heap that satisfies postcondition $Q$.' We show an example, the \lstinline{alloc} primitive from HTT~\cite{nanevski_hoare_2008}, to demonstrate the expressiveness of a Hoare type:
@@ -153,7 +107,9 @@ A Hoare type encodes preconditions and postconditions in the same spirit as Hoar
 
 \end{mathpar}
 
-\begin{figure}[t]
+Figure \ref{fig:syntax} shows syntax of Quantum HTT, inspired by the syntax of Proto-Quipper for the quantum parts. Symbol $c$ ranges over constants of the language such as primitive quantum gates (Hadamard, X, Y, Z, CNOT, etc), while $l$ identifies wires (bits or qubits). $!A$ represents duplicable/reusable data. The Pi type can be simplified to $A \multimap B$ if $B$ does not depend on $x$. $\mathrm{Id_A}(M, N)$ is propositional equality. $\mathrm{box_S}$ converts a circuit-producing function of type $S \multimap U$ into a circuit treated as data of type $\type{Circ}(S, U)$; $\mathrm{unbox}$ does the reverse. lift and force convert between linear and reusable types.
+
+\begin{figure}[h]
 	\begin{tabular}{lrcl}
 		\textit{Types} & $A, B, C$ & ::= & \begin{minipage}[t]{0.5\columnwidth}%
 			$ \type{Unit} \mid \type{Bit} \mid \type{Qubit} \mid A \otimes B \mid \Pi x{ : }A.B \mid ~!A  \mid \type{Circ}(S, U) \mid \{P\} x{ : }A \{Q\}$
@@ -164,7 +120,7 @@ A Hoare type encodes preconditions and postconditions in the same spirit as Hoar
 		\end{minipage}\\
 %		\textit{(Quantum) Heaps} & $H, G$ & ::= & $ h \mid \mathrm{empty} \mid \mathrm{upd}_{\tau}(H, M, N) $\\
 %		\textit{Elim terms} & $K, L$ & ::= & $ x \mid K\ M \mid M : \tau $\\
-		\textit{Terms} & $M, N$ & ::= & \begin{minipage}[t]{0.5\columnwidth}%
+		\textit{Terms} & $M, N$ & ::= & \begin{minipage}[t]{0.55\columnwidth}%
 			$ c \mid l \mid x \mid \lambda x.M \mid MN \mid \mathrm{unit} \mid (a, \mathcal{C}, b) \mid \mathrm{box_S}~M \mid \mathrm{unbox}~M \mid \mathrm{force}~M \mid \mathrm{lift}~M \mid (M, N) \mid \mathrm{let}~ x = N ~\mathrm{in}~ M $
 		\end{minipage}\\
 		\textit{Simple Terms} & $a, b$ & ::= & $ l \mid \mathrm{unit} \mid (a, b)$ \\
@@ -187,10 +143,6 @@ A Hoare type encodes preconditions and postconditions in the same spirit as Hoar
 	\caption{Syntax of Quantum (Linear) Hoare Type Theory}
 	\label{fig:syntax}
 \end{figure}
-
-Figure \ref{fig:syntax} shows syntax of Quantum HTT, inspired by the syntax of Proto-Quipper for the quantum parts. Symbol $c$ ranges over constants of the language such as primitive quantum gates (Hadamard, X, Y, Z, CNOT, etc), while $l$ identifies wires (bits or qubits). $!A$ represents duplicable/reusable data. The Pi type can be simplified to $A \multimap B$ if $B$ does not depend on $x$. $\mathrm{Id_A}(M, N)$ is propositional equality. $\mathrm{box_S}$ converts a circuit-producing function of type $S \multimap U$ into a circuit treated as data of type $\type{Circ}(S, U)$; $\mathrm{unbox}$ does the reverse. lift and force convert between linear and reusable types.
-
-
 
 %In order to extend HTT to support quantum circuits, we augment its syntax with that of \qwire\cite{paykin_qwire:_2017,rand_formally_2018}. \qwire is a core quantum circuit language that can cooperate with an arbitrary classical host language. This requires minimal support from the host language to interface with the circuit language. In our case, HTT acts as the classical host language for \qwire.
 %
@@ -235,6 +187,49 @@ boxed_cointoss = box_unit cointoss
 \end{lstlisting}
 
 The propositions shown above are trivial. More interesting examples will follow.
+
+\subsection{Example: Quantum Teleportation}\label{telep}
+Teleportation is a simple quantum algorithm that is used to communicate a quantum state using two classical bits and a shared entangled pair of qubits. Alice is trying to send a message encoded in the qubit to Bob. There are three broad steps in the protocol: 1) preparation, ie, entanglement creation between two qubits to be shared between Alice and Bob in advance; 2) sending the message by Alice; and, 3) reconstruction of the message by Bob.
+\begin{figure}[h]
+	\begin{subfigure}{3in}
+		% 	a       ← init0 ();
+		%     b       ← init0 ();
+		\begin{lstlisting}
+		teleport : Π\kp:qbit.{q↦qbit\kp /\ a↦qbit|0⟩ /\ b↦qbit|0⟩} c:Circuit(qbit⊗qbit⊗qbit, qbit) {b↦qbit\kp} =
+		box (q, a, b) ⇒
+		(* 1. Bell state preparation for Alice and Bob *)
+		a       ← H a;
+		(a, b)  ← CX (a, b);
+		(* 2. Bell measurement by Alice *)
+		(q, a)  ← CX (q, a);
+		q       ← H q;
+		x       ← meas q;
+		y       ← meas a;
+		(* 3. Correction by Bob *)
+		(y, b)  ← CX (y, b);
+		(x, b)  ← CZ (x, b);
+		output b
+		\end{lstlisting}
+		% ()      ← discard y;
+		%     ()      ← discard x;
+	\end{subfigure}
+	\begin{subfigure}{1in}
+		% 	\centerline{
+		\Qcircuit @C=.4em @R=.4em @! {
+			\lstick{q=\ket{\psi}} & \qw & \qw & \ctrl{1} & \gate{H} & \meter & \cw & \control \cw\\
+			\lstick{a=\ket{0}} & \gate{H} & \ctrl{1} & \gate{X} & \qw & \meter & \control \cw & \\
+			\lstick{b=\ket{0}} & \qw & \gate{X} & \qw & \qw & \qw & \gate{X} \cwx & \gate{Z} \cwx[-2] & \rstick{\ket{\psi}} \qw
+			\gategroup{2}{2}{3}{3}{.7em}{.}
+			\gategroup{1}{4}{2}{6}{.7em}{.}
+		}
+		% }
+	\end{subfigure}
+	\Description{On the left, \qwire code to implement Quantum Teleportation algorithm annotated by its Hoare Type that provides specification for the algorithm. On the right, the corresponding quantum circuit.}
+	\caption{Quantum Teleportation (Code and Circuit)}
+	\label{fig:teleport}
+\end{figure}
+
+In Fig. \ref{fig:teleport}, on the left, we show a function \lstinline{teleport} written in \qwire-like syntax (TODO: add ref) that implements the quantum teleportation circuit shown on the right. It returns one qubit and takes three qubits as arguments: one qubit \lstinline{q} that could be in any unknown state $\ket{\psi}$ which Alice is trying to send to Bob; and two qubits, \lstinline{a} and \lstinline{b}, initially in the state $\ket{0}$. The function first entangles the latter two qubits into a Bell state. Then, Alice performs a Bell measurement of her two qubits \lstinline{q} and \lstinline{a} and sends the resulting classical bits (\lstinline{x} and \lstinline{y}) to Bob. Finally, Bob applies corrective measurement using the quantum gates X and Z controlled by the classical bits that he received from Alice. The result is that Bob's qubit is now in the same state as the initial state of the message qubit \lstinline{q}. The specification that the function must meet is written using a Hoare type, which we described in the previous section.
 
 \subsection{Verification}
 Here we describe how HTT lets us verify the correctness of teleportation based on the specification provided as the type of the function. Type checking in HTT involves generation of strongest postconditions at each step of the program with the initial precondition as input. Verification is a two-step process: the first phase does basic type checking and verification condition generation which is decidable, the second phase needs to show the validity of the generated verification conditions, which is undecidable. This second phase can be deferred to an automated theorem prover. For illustration, we show the assertions as we step through the first step of teleportation. The final state here is that qubits \lstinline{a} and \lstinline{b} are entangled into the first Bell state, $\ket{\phi^+} = \frac{1}{\sqrt{2}}(\ket{00} + \ket{11})$.
