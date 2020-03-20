@@ -316,7 +316,7 @@ Makefile.coq
 Makefile.coq.conf
 
 ## LaTeX Makefile related
-*.*.make
+*.*.make*
 *.d
 ott/qhtt.tex
 paper/lstqht.tex
