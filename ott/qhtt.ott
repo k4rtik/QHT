@@ -1,0 +1,91 @@
+metavar termvar, x ::=
+  {{ tex \mathit{[[termvar]]} }} {{ com term variable }}
+
+grammar
+  M, N :: 'M_' ::=                                         {{ com term }}
+    | x                   ::   :: Var                     {{ com variable }}         
+    | \ x . M             ::   :: Lam  (+ bind x in M +)  {{ com abstraction }}      
+    | M N                 ::   :: App                     {{ com application }}      
+    | ( M )               :: S :: paren
+    | { M / x } M'        :: M :: tsub
+
+  v :: 'v_' ::=                                         {{ com  value }}
+    | \ x . M             ::   :: Lam                     {{ com abstraction }}
+
+  A, B :: Ty ::=                                           {{ com type }}
+    | Unit                ::   :: Unit                    {{ com unit }}
+    | Bool                ::   :: Bool                    {{ com booleans }}
+    | Qbit                ::   :: Qubit                   {{ com qubits }}
+    | U                   ::   :: Unitary                 {{ com unitary }}
+    | Pi x : A . B        ::   :: Pi  (+ bind x in B +)   {{ com dependent function }}
+    | A -> B              :: S :: arrow                   {{ com function }}
+    | A otimes B          ::   :: pair                    {{ com product }}
+    | { P } x : A { Q }   ::   :: Hoare                   {{ com hoare type }}
+    | ( A )               :: S :: paren
+
+  D {{ tex \Delta }} :: D_ ::= {{ com type environment }}
+    | empty               ::   :: em         {{ tex \cdot }} {{ com empty }}
+    | D , x : A           ::   :: vn 
+
+  terminals :: 'terminals_' ::=
+    | \                   ::   :: lambda     {{ tex \lambda }}
+    | -->                 ::   :: red        {{ tex \longrightarrow }}
+    |  ->                 ::   :: arrow      {{ tex \rightarrow }}
+    | |-                  ::   :: turnstile  {{ tex \vdash }}
+    | in                  ::   :: in         {{ tex \in }}
+    | Pi                  ::   :: pi         {{ tex \Pi }}
+    | otimes              ::   :: otimes     {{ tex \otimes }}
+
+  formula :: 'formula_' ::=          
+    | judgement           ::   :: judgement
+    | not ( formula )     ::   :: not  
+    | x = x'              ::   :: eqv 
+    | x : A in D          ::   :: xAD 
+
+
+subrules
+  v <:: M
+
+freevars
+  M x :: fv 
+
+substitutions
+  single M x :: tsubst 
+
+defns
+  Jtype :: '' ::= 
+
+defn
+    D |- M : A :: :: DMA :: DMA_ by
+        
+    x:A in D
+    -------- :: value_name
+    D |- x:A
+
+    D |- M : A->B
+    D |- N : A 
+    ---------------- :: apply
+    D |- M N : B
+
+    D,x: A |- M : B
+    ------------------ :: lambda
+    D |- \x.M : A->B
+
+
+defns
+  Jop :: '' ::=
+
+    defn
+    M --> M' ::  :: reduce :: ''       {{ com $[[M]]$ reduces to $[[M']]$ }} by 
+
+
+    --------------------------  :: ax_app
+    (\x.M) v -->  {v/x}M
+
+    M --> M'
+    -------------- :: ctx_app_fun
+    M N --> M' N
+
+    N --> N'
+    -------------- :: ctx_app_arg
+    v N --> v N'

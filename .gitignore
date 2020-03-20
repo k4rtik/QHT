@@ -314,3 +314,9 @@ nra.cache
 
 Makefile.coq
 Makefile.coq.conf
+
+## LaTeX Makefile related
+*.*.make
+*.d
+ott/qhtt.tex
+paper/lstqht.tex
