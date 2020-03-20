@@ -1,40 +1,103 @@
 metavar termvar, x ::=
   {{ tex \mathit{[[termvar]]} }} {{ com term variable }}
+metavar heapvar, h ::=
+  {{ tex \mathit{[[heapvar]]} }} {{ com heap variable }}
+
 
 grammar
-  M, N :: 'M_' ::=                                         {{ com term }}
-    | x                   ::   :: Var                     {{ com variable }}         
-    | \ x . M             ::   :: Lam  (+ bind x in M +)  {{ com abstraction }}      
-    | M N                 ::   :: App                     {{ com application }}      
-    | ( M )               :: S :: paren
-    | { M / x } M'        :: M :: tsub
-
-  v :: 'v_' ::=                                         {{ com  value }}
-    | \ x . M             ::   :: Lam                     {{ com abstraction }}
-
-  A, B :: Ty ::=                                           {{ com type }}
+  A, B :: Ty ::=                                        {{ com Types }}
     | Unit                ::   :: Unit                    {{ com unit }}
     | Bool                ::   :: Bool                    {{ com booleans }}
     | Qbit                ::   :: Qubit                   {{ com qubits }}
     | U                   ::   :: Unitary                 {{ com unitary }}
-    | Pi x : A . B        ::   :: Pi  (+ bind x in B +)   {{ com dependent function }}
-    | A -> B              :: S :: arrow                   {{ com function }}
-    | A otimes B          ::   :: pair                    {{ com product }}
-    | { P } x : A { Q }   ::   :: Hoare                   {{ com hoare type }}
+    | A otimes B                  ::   :: pair                    {{ com product }}
+    | Pi x : A . B                ::   :: Pi    (+ bind x in B +) {{ com dependent function }}
+    | A -> B                      :: S :: arrow                   {{ com function }}
+    | D . Psi . { P } x : A { Q } ::   :: Hoare (+ bind x in Q +) {{ com hoare type }}
     | ( A )               :: S :: paren
 
-  D {{ tex \Delta }} :: D_ ::= {{ com type environment }}
-    | empty               ::   :: em         {{ tex \cdot }} {{ com empty }}
+  P, Q :: Ass ::= {{ com Assertions }}
+    | top               :: :: Top
+    | bot               :: :: Bot
+    | P /\ Q            :: :: And
+    | P \/ Q            :: :: Or
+    | P imp Q           :: :: Imply
+    | not P             :: :: Not
+    | ex x : A . P      :: :: Exists  (+ bind x in P +)
+    | all x : A . P     :: :: Forall  (+ bind x in P +)
+    | ex h : heap . P   :: :: ExistsH (+ bind h in P +)
+    | all h : heap . P  :: :: ForallH (+ bind h in P +)
+    | Id_A ( M , N )    :: :: TermId
+    | HId ( H , G )     :: :: HeapId
+    | indom ( H , M )   :: :: InDomain
+
+  H, G :: Heap ::= {{ com Quantum Heaps }}
+    | h                   :: :: HeapVar
+    | emp                 :: :: Empty
+    | upd ( H , M , N )   :: :: Update
+
+  M, N, K :: Tm ::=                                      {{ com Terms (both intro and elim) }}
+    | x                   ::   :: Var                     {{ com variable }}
+    | K M                 ::   :: App                     {{ com application }}
+    | M : A               ::   :: Annot
+    | \ x . M             ::   :: Lam  (+ bind x in M +)  {{ com abstraction }}
+    | ()                  ::   :: unit
+    | do E                ::   :: Computation
+    | true                ::   :: True
+    | false               ::   :: False
+    | ( M )               :: S :: paren
+    | { M / x } M'        :: M :: tsub
+
+  % v :: 'v_' ::=                                         {{ com  value TODO }}
+  %   | \ x . M             ::   :: Lam                     {{ com abstraction }}
+  %   | ()                  ::   :: unit
+  %   | true                ::   :: True
+  %   | false               ::   :: False
+
+  c :: Cmd ::= {{ com Quantum Commands }}
+    | mkQbit M    :: :: init
+    | applyU M    :: :: apply
+    | measQbit M  :: :: measure
+    | ifQ M N     :: :: control
+
+  E, F :: Comp ::=  {{ com Computations }}
+    | return M    :: :: lift
+    | x <- K ; E  :: :: bindK     (+ bind x in E +)
+    | x <= c ; E  :: :: bindC     (+ bind x in E +)
+    | x =_A M ; E :: :: bindPure  (+ bind x in E +)
+
+  D {{ tex \Delta }} :: VCtx ::= {{ com Variable Context }}
+    | empty               ::   :: em  {{ tex \cdot }}
     | D , x : A           ::   :: vn 
+
+  Psi {{ tex \Psi }} :: HCtx ::= {{ com Quantum Heap Context }}
+    | empty               ::   :: em  {{ tex \cdot }}
+    | Psi , h             ::   :: vn
+
+  Gm {{ tex \Gamma }} :: ACtx ::= {{ com Assertion Context }}
+    | empty               ::   :: em  {{ tex \cdot }}
+    | Gm , P              ::   :: vn
 
   terminals :: 'terminals_' ::=
     | \                   ::   :: lambda     {{ tex \lambda }}
     | -->                 ::   :: red        {{ tex \longrightarrow }}
     |  ->                 ::   :: arrow      {{ tex \rightarrow }}
+    | <-                  ::   :: larrow     {{ tex \leftarrow }}
+    | <=                  ::   :: lbarrow    {{ tex \Leftarrow }}
     | |-                  ::   :: turnstile  {{ tex \vdash }}
     | in                  ::   :: in         {{ tex \in }}
     | Pi                  ::   :: pi         {{ tex \Pi }}
     | otimes              ::   :: otimes     {{ tex \otimes }}
+    | top                 ::   :: top        {{ tex \top }}
+    | bot                 ::   :: bot        {{ tex \bot }}
+    | /\                  ::   :: and        {{ tex \wedge }}
+    | \/                  ::   :: or         {{ tex \vee }}
+    | imp                 ::   :: imp        {{ tex \supset }}
+    | not                 ::   :: not        {{ tex \neg }}
+    | ex                  ::   :: exists     {{ tex \exists }}
+    | all                 ::   :: forall     {{ tex \forall }}
+    | Id_A                ::   :: IdA        {{ tex Id_A }}
+    | =_A                 ::   :: AssA       {{ tex =_A }}
 
   formula :: 'formula_' ::=          
     | judgement           ::   :: judgement
@@ -43,8 +106,8 @@ grammar
     | x : A in D          ::   :: xAD 
 
 
-subrules
-  v <:: M
+% subrules
+%   v <:: M
 
 freevars
   M x :: fv 
@@ -62,10 +125,10 @@ defn
     -------- :: value_name
     D |- x:A
 
-    D |- M : A->B
-    D |- N : A 
+    D |- K : A->B
+    D |- M : A
     ---------------- :: apply
-    D |- M N : B
+    D |- K M : B
 
     D,x: A |- M : B
     ------------------ :: lambda
@@ -79,13 +142,13 @@ defns
     M --> M' ::  :: reduce :: ''       {{ com $[[M]]$ reduces to $[[M']]$ }} by 
 
 
-    --------------------------  :: ax_app
-    (\x.M) v -->  {v/x}M
+    % --------------------------  :: ax_app
+    % (\x.M) v -->  {v/x}M
 
-    M --> M'
+    K --> K'
     -------------- :: ctx_app_fun
-    M N --> M' N
+    K M --> K' M
 
-    N --> N'
-    -------------- :: ctx_app_arg
-    v N --> v N'
+    % N --> N'
+    % -------------- :: ctx_app_arg
+    % v N --> v N'
