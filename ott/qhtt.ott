@@ -39,17 +39,20 @@ grammar
     | upd ( H , M , N )   ::   :: Update
     | [ H / h ]           :: S :: hsub
 
-  M, N, K :: Tm ::=                                      {{ com Terms (both intro and elim) }}
+  K, L :: ElimTm ::=                                    {{ com Elim Terms }}
     | x                   ::   :: Var                     {{ com variable }}
     | K M                 ::   :: App                     {{ com application }}
     | M : A               ::   :: Annot
+    | ( K )               :: S :: paren
+    | [ K / x ] M         :: M :: tsub
+
+  M, N :: IntroTm ::=                                   {{ com Intro Terms }}
+    | K                   ::   :: Elim
     | \ x . M             ::   :: Lam  (+ bind x in M +)  {{ com abstraction }}
     | ()                  ::   :: unit
     | do E                ::   :: Computation
     | true                ::   :: True
     | false               ::   :: False
-    | ( M )               :: S :: paren
-    | [ K / x ] M         :: M :: tsub
 
   c :: Cmd ::= {{ com Quantum Commands }}
     | mkQbit M    :: :: init
