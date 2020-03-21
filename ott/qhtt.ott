@@ -1,6 +1,6 @@
 metavar termvar, x, y ::=
   {{ tex \mathit{[[termvar]]} }} {{ com term variable }}
-metavar heapvar, h ::=
+metavar heapvar, h, init, mem ::=
   {{ tex \mathit{[[heapvar]]} }} {{ com heap variable }}
 
 
@@ -17,7 +17,7 @@ grammar
     | { P } x : A { Q }   :: S :: HoareS
     | ( A )               :: S :: paren
 
-  P, Q :: Ass ::= {{ com Assertions }}
+  P, Q, R :: Ass ::= {{ com Assertions }}
     | top                 ::   :: Top
     | bot                 ::   :: Bot
     | P /\ Q              ::   :: And
@@ -75,21 +75,25 @@ grammar
   Psi {{ tex \Psi }} :: HCtx ::= {{ com Quantum Heap Context }}
     | empty               ::   :: em  {{ tex \cdot }}
     | Psi , h             ::   :: vn
+    | h                   :: S :: single
 
   Gm {{ tex \Gamma }} :: ACtx ::= {{ com Assertion Context }}
     | empty               ::   :: em  {{ tex \cdot }}
     | Gm , P              ::   :: vn
+    | P                   :: S :: single
 
   terminals :: 'terminals_' ::=
     | \                   ::   :: lambda     {{ tex \lambda }}
     | -->                 ::   :: red        {{ tex \longrightarrow }}
+    | ==>                 ::   :: seqimp     {{ tex \Longrightarrow }}
     | ==>b                ::   :: bred       {{ tex \Longrightarrow_\beta }}
-    | ==>                 ::   :: expand     {{ tex \Longrightarrow_\eta }}
+    | ==>e                ::   :: expand     {{ tex \Longrightarrow_\eta }}
     |  ->                 ::   :: arrow      {{ tex \rightarrow }}
     | <-                  ::   :: larrow     {{ tex \leftarrow }}
     | <=                  ::   :: lbarrow    {{ tex \Leftarrow }}
+    |  =>                 ::   :: rbarrow    {{ tex \Rightarrow }}
     | <                   ::   :: langle     {{ tex \langle }}
-    | >                   ::   :: rangle    {{ tex \rangle }}
+    | >                   ::   :: rangle     {{ tex \rangle }}
     | |-                  ::   :: turnstile  {{ tex \vdash }}
     | in                  ::   :: in         {{ tex \in }}
     | Pi                  ::   :: pi         {{ tex \Pi }}
@@ -119,21 +123,35 @@ defns
   Jtype :: '' ::= 
 
 defn
-    D |- M : A :: :: DMA :: DMA_ by
-        
-    x:A in D
-    -------- :: value_name
-    D |- x:A
+    D |- K => A [ N' ] :: :: TElim :: TElim         {{ com Elim term $[[K]]$ has type $[[A]]$,
+                                                           and canonical form $[[N']]$ }} by
+    ------------------- :: Var
+    D, x:A |- x => A[x]
 
-    D |- K : A->B
-    D |- M : A
-    ---------------- :: apply
-    D |- K M : B
+defn
+    D |- M <= A [ M' ] :: :: Tintro :: TIntro       {{ com Intro term $[[M]]$ has type $[[A]]$,
+                                                           and canonical form $[[M']]$ }} by
+    ------------------- :: Unit
+    D |- () <= Unit[()]
 
-    D,x: A |- M : B
-    ------------------ :: lambda
-    D |- \x.M : A->B
+    D, x:A |- M <= B[M']
+    --------------------------- :: Pi
+    D |- \x.M <= Pi x:A.B[\x.M']
 
+defn
+    D ; P |- E => x : A . Q [ E' ] :: :: SPC :: SPC {{ com $[[E]]$ has strongest postcond. $[[Q]]$
+                                                           and canonical form $[[E']]$ }} by
+
+defn
+    D ; P |- E <= x : A . Q [ E' ] :: :: PC :: PC   {{ com $[[E]]$ has postcond. $[[Q]]$
+                                                           and canonical form $[[E']]$ }} by
+    D; P |- E => x:A.R[E']
+    D, x:A; init, mem; R ==> Q
+    -------------------------- :: Consequent
+    D; P |- E <= x:A.Q[E']
+
+defn
+    D ; Psi ; Gm1 ==> Gm2 :: :: SeqImp :: SeqImp_ by
 
 defns
   Jop :: '' ::=
@@ -145,16 +163,16 @@ defns
     (\x.M:Pi x:A.B) N ==>b [N:A/x]M
 
     defn
-    M ==> M' ::  :: expand :: 'E'       {{ com $[[M]]$ eta expands to $[[M']]$ }} by
+    M ==>e M' ::  :: expand :: 'E'       {{ com $[[M]]$ eta expands to $[[M']]$ }} by
 
-    --------------- :: Unit
-    M : Unit ==> ()
+    ---------------- :: Unit
+    M : Unit ==>e ()
 
-    ------------------------------- :: Abs
-    M:Pi x:A.B ==> \y.(M:Pi x:A.B)y
+    -------------------------------- :: Abs
+    M:Pi x:A.B ==>e \y.(M:Pi x:A.B)y
 
-    ------------------------------------- :: Comp
-    K:{P}x:A{Q} ==> do (x <- K; return x)
+    -------------------------------------- :: Comp
+    K:{P}x:A{Q} ==>e do (x <- K; return x)
 
     defn
     E ==>b E' ::  :: creduce :: 'B'       {{ com Computation $[[E]]$ beta reduces to $[[E']]$ }} by
