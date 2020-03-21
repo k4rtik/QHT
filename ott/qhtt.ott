@@ -75,12 +75,12 @@ grammar
   Psi {{ tex \Psi }} :: HCtx ::= {{ com Quantum Heap Context }}
     | empty               ::   :: em  {{ tex \cdot }}
     | Psi , h             ::   :: vn
-    | h                   :: S :: single
+    | h                   :: S :: alone
 
   Gm {{ tex \Gamma }} :: ACtx ::= {{ com Assertion Context }}
     | empty               ::   :: em  {{ tex \cdot }}
     | Gm , P              ::   :: vn
-    | P                   :: S :: single
+    | P                   :: S :: alone
 
   terminals :: 'terminals_' ::=
     | \                   ::   :: lambda     {{ tex \lambda }}
@@ -138,6 +138,10 @@ defn
     --------------------------- :: Pi
     D |- \x.M <= Pi x:A.B[\x.M']
 
+    D; HId(init, mem) /\ P |- E <= x:A.Q[E']
+    ---------------------------------------- :: Hoare
+    D |- do E <= {P}x:A{Q}[do E']
+
 defn
     D ; P |- E => x : A . Q [ E' ] :: :: SPC :: SPC {{ com $[[E]]$ has strongest postcond. $[[Q]]$
                                                            and canonical form $[[E']]$ }} by
@@ -147,7 +151,7 @@ defn
                                                            and canonical form $[[E']]$ }} by
     D; P |- E => x:A.R[E']
     D, x:A; init, mem; R ==> Q
-    -------------------------- :: Consequent
+    -------------------------- :: Consq
     D; P |- E <= x:A.Q[E']
 
 defn
