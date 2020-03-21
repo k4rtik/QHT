@@ -28,8 +28,8 @@ grammar
     | all x : A . P       ::   :: Forall  (+ bind x in P +)
     | ex h : heap . P     ::   :: ExistsH (+ bind h in P +)
     | all h : heap . P    ::   :: ForallH (+ bind h in P +)
-    | Id_A ( M , N )      ::   :: TermId
-    | HId ( H , G )       ::   :: HeapId
+    | Id_A ( M , N )      ::   :: TermId {{ com propositional equality }}
+    | HId ( H , G )       ::   :: HeapId {{ com propositional heap equality }}
     | indom ( H , M )     ::   :: InDomain
     | seleq ( H , M , N ) :: S :: SelEq
 
@@ -54,7 +54,7 @@ grammar
     | true                ::   :: True
     | false               ::   :: False
 
-  c :: Cmd ::= {{ com Quantum Commands }}
+  c :: Cmd ::= {{ com Primitive Quantum Commands }}
     | mkQbit M    :: :: init
     | applyU M    :: :: apply
     | measQbit M  :: :: measure
