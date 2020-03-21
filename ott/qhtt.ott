@@ -155,8 +155,18 @@ defn
     D; P |- E <= x:A.Q[E']
 
 defn
-    D ; Psi ; Gm1 ==> Gm2 :: :: SeqImp :: SeqImp_ by
+    D ; Psi ; Gm1 ==> Gm2 :: :: SeqImp :: SeqImp by
 
+    D; Psi; Gm1 ==> Gm2, P
+    D; Psi; Gm1, P ==> Gm2
+    ---------------------- :: Cut
+    D; Psi; Gm1 ==> Gm2
+
+    ------------------------------- :: ReflEqR
+    D; Psi; Gm1 ==> Gm2, Id_A(M, M)
+
+    ------------------------------- :: HReflEqR
+    D; Psi; Gm1 ==> Gm2, HId(H, H)
 defns
   Jop :: '' ::=
 
