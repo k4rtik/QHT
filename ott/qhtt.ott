@@ -1,4 +1,4 @@
-metavar termvar, x ::=
+metavar termvar, x, y ::=
   {{ tex \mathit{[[termvar]]} }} {{ com term variable }}
 metavar heapvar, h ::=
   {{ tex \mathit{[[heapvar]]} }} {{ com heap variable }}
@@ -14,6 +14,7 @@ grammar
     | Pi x : A . B                ::   :: Pi    (+ bind x in B +) {{ com dependent function }}
     | A -> B                      :: S :: arrow                   {{ com function }}
     | D . Psi . { P } x : A { Q } ::   :: Hoare (+ bind x in Q +) {{ com hoare type }}
+    | { P } x : A { Q }   :: S :: HoareS
     | ( A )               :: S :: paren
 
   P, Q :: Ass ::= {{ com Assertions }}
@@ -33,9 +34,10 @@ grammar
     | seleq ( H , M , N ) :: S :: SelEq
 
   H, G :: Heap ::= {{ com Quantum Heaps }}
-    | h                   :: :: HeapVar
-    | emp                 :: :: Empty
-    | upd ( H , M , N )   :: :: Update
+    | h                   ::   :: HeapVar
+    | emp                 ::   :: Empty
+    | upd ( H , M , N )   ::   :: Update
+    | [ H / h ]           :: S :: hsub
 
   M, N, K :: Tm ::=                                      {{ com Terms (both intro and elim) }}
     | x                   ::   :: Var                     {{ com variable }}
@@ -56,10 +58,12 @@ grammar
     | ifQ M N     :: :: control
 
   E, F :: Comp ::=  {{ com Computations }}
-    | return M    :: :: lift
-    | x <- K ; E  :: :: bindK     (+ bind x in E +)
-    | x <= c ; E  :: :: bindC     (+ bind x in E +)
-    | x =_A M ; E :: :: bindPure  (+ bind x in E +)
+    | return M        ::   :: lift
+    | x <- K ; E      ::   :: bindK     (+ bind x in E +)
+    | x <= c ; E      ::   :: bindC     (+ bind x in E +)
+    | x =_A M ; E     ::   :: bindPure  (+ bind x in E +)
+    | ( E )           :: S :: paren
+    | < E / x : A > F :: M :: msub                        {{ com monadic substitution }}
 
   D {{ tex \Delta }} :: VCtx ::= {{ com Variable Context }}
     | empty               ::   :: em  {{ tex \cdot }}
@@ -77,9 +81,12 @@ grammar
     | \                   ::   :: lambda     {{ tex \lambda }}
     | -->                 ::   :: red        {{ tex \longrightarrow }}
     | ==>b                ::   :: bred       {{ tex \Longrightarrow_\beta }}
+    | ==>                 ::   :: expand     {{ tex \Longrightarrow_\eta }}
     |  ->                 ::   :: arrow      {{ tex \rightarrow }}
     | <-                  ::   :: larrow     {{ tex \leftarrow }}
     | <=                  ::   :: lbarrow    {{ tex \Leftarrow }}
+    | <                   ::   :: langle     {{ tex \langle }}
+    | >                   ::   :: rangle    {{ tex \rangle }}
     | |-                  ::   :: turnstile  {{ tex \vdash }}
     | in                  ::   :: in         {{ tex \in }}
     | Pi                  ::   :: pi         {{ tex \Pi }}
@@ -105,9 +112,6 @@ grammar
 freevars
   M x :: fv 
 
-substitutions
-  single M x :: tsubst 
-
 defns
   Jtype :: '' ::= 
 
@@ -132,7 +136,25 @@ defns
   Jop :: '' ::=
 
     defn
-    M ==>b M' ::  :: reduce :: ''       {{ com $[[M]]$ beta reduces to $[[M']]$ }} by
+    M ==>b M' ::  :: reduce :: 'B'       {{ com $[[M]]$ beta reduces to $[[M']]$ }} by
 
     ------------------------------- :: AppAbs
     (\x.M:Pi x:A.B) N ==>b [N:A/x]M
+
+    defn
+    M ==> M' ::  :: expand :: 'E'       {{ com $[[M]]$ eta expands to $[[M']]$ }} by
+
+    --------------- :: Unit
+    M : Unit ==> ()
+
+    ------------------------------- :: Abs
+    M:Pi x:A.B ==> \y.(M:Pi x:A.B)y
+
+    ------------------------------------- :: Comp
+    K:{P}x:A{Q} ==> do (x <- K; return x)
+
+    defn
+    E ==>b E' ::  :: creduce :: 'B'       {{ com Computation $[[E]]$ beta reduces to $[[E']]$ }} by
+
+    ------------------------------------- :: Comp
+    x <- do E:{P}x:A{Q}; F ==>b <E/x:A> F
