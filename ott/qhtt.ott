@@ -35,7 +35,7 @@ grammar
 
   H, G :: Heap ::= {{ com Quantum Heaps }}
     | h                   ::   :: HeapVar
-    | emp                 ::   :: Empty
+    | empty               ::   :: Empty
     | upd ( H , M , N )   ::   :: Update
     | [ H / h ]           :: S :: hsub
 
@@ -46,7 +46,7 @@ grammar
     | ( K )               :: S :: paren
     | [ K / x ] M         :: M :: tsub
 
-  M, N :: IntroTm ::=                                   {{ com Intro Terms }}
+  M, N, O :: IntroTm ::=                                {{ com Intro Terms }}
     | K                   ::   :: Elim
     | \ x . M             ::   :: Lam  (+ bind x in M +)  {{ com abstraction }}
     | ()                  ::   :: unit
@@ -55,10 +55,10 @@ grammar
     | false               ::   :: False
 
   c :: Cmd ::= {{ com Primitive Quantum Commands }}
-    | mkQbit M    :: :: init
-    | applyU M    :: :: apply
-    | measQbit M  :: :: measure
-    | ifQ M N     :: :: control
+    | mkQbit M           :: :: init
+    | applyU M           :: :: apply
+    | measQbit M         :: :: measure
+    | if M then N else O :: :: conditional
 
   E, F :: Comp ::=  {{ com Computations }}
     | return M        ::   :: lift
@@ -70,7 +70,7 @@ grammar
 
   D {{ tex \Delta }} :: VCtx ::= {{ com Variable Context }}
     | empty               ::   :: em  {{ tex \cdot }}
-    | D , x : A           ::   :: vn 
+    | D , x : A           ::   :: vn
 
   Psi {{ tex \Psi }} :: HCtx ::= {{ com Quantum Heap Context }}
     | empty               ::   :: em  {{ tex \cdot }}
@@ -109,18 +109,18 @@ grammar
     | Id_A                ::   :: IdA        {{ tex Id_A }}
     | =_A                 ::   :: AssA       {{ tex =_A }}
 
-  formula :: 'formula_' ::=          
+  formula :: 'formula_' ::=
     | judgement           ::   :: judgement
-    | not ( formula )     ::   :: not  
-    | x = x'              ::   :: eqv 
-    | x : A in D          ::   :: xAD 
+    | not ( formula )     ::   :: not
+    | x = x'              ::   :: eqv
+    | x : A in D          ::   :: xAD
 
 
 freevars
-  M x :: fv 
+  M x :: fv
 
 defns
-  Jtype :: '' ::= 
+  Jtype :: '' ::=
 
 defn
     D |- K => A [ N' ] :: :: TElim :: TElim         {{ com Elim term $[[K]]$ has type $[[A]]$,
