@@ -12,6 +12,9 @@
 \usepackage{mathpartir}
 \usepackage{mathtools}
 \usepackage{xspace}
+\usepackage{fancyvrb}
+\usepackage{cleveref}
+\crefformat{section}{\S#2#1#3}
 
 \usepackage{listings}
 \usepackage{lstcoq}
@@ -32,9 +35,18 @@
 \newcommand{\qdenote}[1]{(\!| #1 |\!)\xspace}
 
 \newcommand{\type}[1]{\textrm{\textbf{#1}}}
+\newcommand{\kw}[1]{\,\mathrm{\texttt{#1}}\,}
+\newcommand{\todo}[1]{\textcolor{red}{#1}}
 
-\title{Quantum Hoare Types}
-\subtitle{A Master's Thesis}
+\newcommand{\cket}[1]{{$\ket{#1}$}}
+\newcommand\cin{{$\in$}}
+\newcommand\cmt{{$\mapsto$}}
+\newcommand\cmm{{$\multimap$}}
+\newcommand\ccc{{$\circ$}}
+\newcommand{\cpi}{$\Pi$}
+
+\title{Quantum Hoare Type Theory}
+\subtitle{Master's Paper}
 
 \author{Kartik Singhal}
 \orcid{0000-0003-1132-269X}
@@ -54,7 +66,23 @@
 \begin{document}
 
 \begin{abstract}
-Quantum Computing is a new and upcoming way to utilize quantum mechanics for computation. It is easy to introduce bugs while programming quantum computers similar to classical computing. Strong static type systems have prevented a lot of bugs from being introduced in the classical paradigm. There is a similar need for well-designed static types in the domain of quantum computing. We propose Quantum Hoare Types that let programmers reason statically about certain semantic properties of their quantum programs and further allow a limited form of formal verification.
+	% Foreward
+	%Context and Need
+	As quantum computers become real, it is high time we come up with effective techniques that help programmers write correct quantum programs.
+	%Need
+	In classical computing, formal verification and sound static type systems prevent several classes of bugs from being introduced. There is a need for similar techniques in the quantum regime.
+	%Task
+	Inspired by Hoare Type Theory in the classical paradigm, we propose Quantum Hoare Types by extending the Quantum IO Monad by indexing it with pre- and post-conditions that serve as program specifications.
+	%Object
+	In this paper, we introduce Quantum Hoare Type Theory (QHTT), present its syntax and typing rules, and demonstrate its effectiveness with the help of examples.
+	% Summary
+	%Findings
+
+	%Conclusion
+	QHTT has the potential to be a unified system for programming, specifying, and reasoning about quantum programs.
+	%Perspectives
+%	This is a work in progress.
+%Quantum Computing is a new and upcoming way to utilize quantum mechanics for computation. It is easy to introduce bugs while programming quantum computers similar to classical computing. Strong static type systems have prevented a lot of bugs from being introduced in the classical paradigm. There is a similar need for well-designed static types in the domain of quantum computing. We propose Quantum Hoare Types that let programmers reason statically about certain semantic properties of their quantum programs and further allow a limited form of formal verification.
 \end{abstract}
 
 \maketitle
@@ -62,20 +90,28 @@ Quantum Computing is a new and upcoming way to utilize quantum mechanics for com
 \renewcommand*\contentsname{Table of Contents}
 \tableofcontents
 
-\listoffigures
+%\listoffigures
 
-\newpage
+%\newpage
 
 \section{Introduction}
 It is difficult to reason about the correctness of quantum programs. Sound static type systems help prevent a huge class of bugs from occurring but since the realm of quantum programming is still new there is not a lot of consensus on what kind of types make the most sense. Further, it is unclear how much they help programmers reason about the semantic properties associated with the quantum algorithms that they are implementing.
 
 Recent work~\cite{huang_qdb:_2018,huang_statistical_2019} as part of EPiQC\footnote{EPiQC: Enabling Practical-Scale Quantum Computation:  \url{https://epiqc.cs.uchicago.edu}} has identified several classes of bugs in quantum programs and proposed approaches to tackle them. The technique that holds the most promise is assertion checking using preconditions and postconditions. But assertions are usually checked dynamically during runtime, which can be wasteful of precious quantum computing or simulation resources.
 
-As programming language researchers, we think it will be more useful to encode such assertions into a static type system both for formal verification and to aid the programmers in writing correct programs from the start. Inspired by the use of Hoare triples in the verification of imperative programs and building on the idea of Hoare Types in classical programming languages~\cite{nanevski_hoare_2008}, we propose Quantum Hoare Types aimed at enabling both sound static type checking and formal verification of quantum programs.
+As programming languages researchers, we think it will be better to encode such assertions into a static type system both for formal verification and to aid the programmers in writing correct programs from the start. Inspired by the use of Hoare triples in the verification of imperative programs and building on the idea of Hoare Type Theory (HTT) for classical programming languages~\cite{nanevski_hoare_2008}, we propose Quantum Hoare Type Theory (by extending the Quantum IO Monad interface\cite{qio}) aimed at enabling both sound static type checking and formal verification of quantum programs.
+
+The main idea is that instead of just indexing the QIO monad type with the type of computation result, we can also index it with pre-conditions and post-conditions so as to integrate Hoare-style reasoning into the type system itself. The resulting Quantum Hoare Type, $\{P\} x{ : }A \{Q\}$, specifies the preconditions, $P$, that hold on the quantum state before execution; the result, $x$, and its type, $A$, on successful execution; and, the postconditions, $Q$, that are true for the quantum state after successful execution. In this way the effectful quantum fragment of the program is effectively encapsulated inside the Quantum Hoare monad. Our theory, like HTT, allows the usual equational reasoning for the pure classical fragments of the program and uses syntax-directed type checking for generating strongest postconditions for the quantum fragment.
+
+This paper is organized as follows. We discuss background in the next section (\cref{sec:bg}); specifically, quantum computing (\cref{sec:qc}),  Hoare Type Theory in the classical setting (\cref{sec:htt}) and then the Quantum IO Monad interface (\cref{sec:qio}). Then we introduce our contributions in merging these ideas together for specification and enforcement of useful semantic properties in section \cref{sec:qhtt} along with its syntax (\cref{sec:syntax}), typing (\cref{sec:typing}) and, some examples (\cref{sec:examples}). Some related work follows in \cref{related}. Finally, we conclude and share ideas for future work in the final section (\cref{sec:conclusion}).
 
 \section{Background}
+\label{sec:bg}
+In this section, we provide background on the core ideas from existing literature that form the foundation for our work -- Hoare Type Theory (HTT) and the Quantum IO Monad interface. We start with some basics of quantum computing.
+% and refer the reader to Nielsen's excellent series of essays~\cite{matuschak2019} for a first introduction and to the standard textbook~\cite{nielsen2010} for advanced material.
 
 \subsection{Quantum Computing}
+\label{sec:qc}
 The basic unit of information in quantum computing is a qubit, that can be represented using a unit vector in a two-dimensional complex vector space. Using Dirac's bra-ket notation, we can write an arbitrary qubit, $\ket{\psi}$, as a linear combination of the computational basis vectors: $\ket{\psi} = \alpha\ket{0} + \beta\ket{1}$, where $\ket{0}=\begin{bsmallmatrix}
 1 \\
 0
@@ -84,197 +120,384 @@ The basic unit of information in quantum computing is a qubit, that can be repre
 1
 \end{bsmallmatrix}$, and the two constants are complex amplitudes that are normalized using the constraint $|\alpha|^2 +|\beta|^2 = 1$. This means that when measured, the probability of the qubit being in the state 0 is $|\alpha|^2$ and that for the state 1 is $|\beta|^2$. To work with multiple qubits, we need to take their tensor product, denoted by $\otimes$. Computation is performed by the application of unitary quantum gates, such as the Hadamard (H) gate or the controlled NOT (CX) gate, that can be represented as square matrices. Mathematically, a gate application is equivalent to multiplying the matrix representing the gate with the state vector of the qubit(s).
 
-This basic unit of information is not the only reason why quantum computing is fundamentally different from classical computing---certain quantum mechanical phenomenon are highly counterintuitive! One such phenomenon is \textit{quantum entanglement} which, at its most basic level, involves a correlation between two qubits such that when one is measured, the outcome obtained necessarily influences the measurement outcome of the other qubit (even if the two qubits are far apart). We will see how this property can be utilized for computation in the quantum teleportation algorithm that we describe and program in \S\ref{telep}. We refer the reader to the standard textbook~\cite{nielsen_quantum_2010} or Nielsen's excellent series of essays~\cite{matuschak2019} for more background.
+This basic unit of information is not the only reason why quantum computing is fundamentally different from classical computing---certain quantum mechanical phenomenon are highly counterintuitive! One such phenomenon is \textit{quantum entanglement} which, at its most basic level, involves a correlation between two qubits such that when one is measured, the outcome obtained necessarily influences the measurement outcome of the other qubit (even if the two qubits are far apart). %We will see how this property can be utilized for computation in the quantum teleportation algorithm that we describe and program in \S\ref{telep}.
+We refer the reader to the standard textbook~\cite{nielsen_quantum_2010} or Nielsen's excellent series of essays~\cite{matuschak2019} for more background.
 
-\subsection{Hoare Style Reasoning}
-\textit{Basics of Hoare-triples for non-specialists\ldots}
-
-\subsection{Program Proof and HTT}
-\textit{Basics of program proof and techniques for non-specialists\ldots}
-
-\section{Hoare Types for Quantum Programming Languages}
-% In this section we describe Quantum Hoare Types using an example of programming quantum teleportation protocol. We start with the background necessary to understand teleportation and then present how Quantum Hoare Types help us write and verify the  correctness of the protocol.
-
-\subsection{Hoare Types}
-A Hoare type encodes preconditions and postconditions in the same spirit as Hoare triples. The type shown on the left below can be read as `for a stateful computation executed in a heap that satisfies precondition $P$, return a value of type $A$ in a heap that satisfies postcondition $Q$.' We show an example, the \lstinline{alloc} primitive from HTT~\cite{nanevski_hoare_2008}, to demonstrate the expressiveness of a Hoare type:
+\subsection{Hoare Type Theory}
+\label{sec:htt}
+A Hoare type encodes preconditions and postconditions in the same spirit as Hoare triples to allow both specification and verification of effectful classical programs. The type shown on the left below can be read as `for a stateful computation executed in a heap that satisfies precondition $P$, return a value of type $A$ in a heap that satisfies postcondition $Q$.' We show an example, the \texttt{alloc} primitive from HTT~\cite{nanevski_hoare_2008}, to demonstrate the expressiveness of a Hoare type:
 \begin{mathpar}
-
 	\{P\}\; \texttt{x}:A\; \{Q\}
 
 	\and
 
 	\texttt{alloc} : \forall \alpha. \Pi x:\alpha. \{\texttt{emp}\}\; y:\texttt{nat}\; \{y \mapsto_{\alpha} x\}
-
 \end{mathpar}
 
-Figure \ref{fig:syntax} shows syntax of Quantum HTT, inspired by the syntax of Proto-Quipper for the quantum parts. Symbol $c$ ranges over constants of the language such as primitive quantum gates (Hadamard, X, Y, Z, CNOT, etc), while $l$ identifies wires (bits or qubits). $!A$ represents duplicable/reusable data. The Pi type can be simplified to $A \multimap B$ if $B$ does not depend on $x$. $\mathrm{Id_A}(M, N)$ is propositional equality. $\mathrm{box_S}$ converts a circuit-producing function of type $S \multimap U$ into a circuit treated as data of type $\type{Circ}(S, U)$; $\mathrm{unbox}$ does the reverse. lift and force convert between linear and reusable types.
+Type checking in HTT involves generation of strongest postconditions at each step of the program. Verification is a two-step process: the first phase does basic type checking and verification condition generation which is decidable, the second phase needs to show the validity of the generated verification conditions, which is undecidable. This second phase can be deferred to an automated theorem prover.
 
-\begin{figure}[h]
+We provide more details when we introduce QHTT in section \cref{sec:qhtt}.
+
+\subsection{Quantum IO Monad}
+\label{sec:qio}
+
+The Quantum IO (QIO) monad~\cite{qio} is a purely functional interface for quantum programming that provides a separation between the unitary (reversible) and non-unitary (irreversible) fragments of quantum computation. It provides isolation of quantum effects inside a monad similar to what we need to provide in our Quantum Hoare monad.
+
+Here we discuss the relevant bits from the QIO interface. QIO provides a type for referring to qubits, \texttt{Qbit}; a type for unitary operations, \texttt{U}; and, the \texttt{QIO} type operator which is a monad indexed by the result of the quantum computation. The primitive quantum operations defined using the QIO monad below (Haskell syntax) are:
+\begin{verbatim}
+mkQbit : Bool -> QIO Qbit       -- initialization
+applyU : U -> QIO ()            -- apply a unitary to quantum state
+measQbit : Qbit -> QIO Bool     -- measurement
+\end{verbatim}
+
+Further, \texttt{U} is defined as a monoid with neutral element, \texttt{mempty}, and operation, \texttt{mappend}, that encodes reversible operations on quantum state. Here are the core unitary primitives that we will need:
+
+\begin{verbatim}
+rot :: Qbit -> ((Bool, Bool) -> C) -> U
+cond :: Qbit -> (Bool -> U) -> U
+\end{verbatim}
+
+Here, \texttt{rot} takes a qubit and a two-by-two complex-valued unitary matrix (represented as a function from the matrix indices to $\mathbb{C}$) and lets one define arbitrary rotation on a single qubit. \texttt{rot} can then be used to define standard gates such as the hadamard, H, and the Pauli gates, X, Y and Z. \texttt{cond} is the unitary conditional that is used to perform branching unitary operations. For the present paper, we use a simpler conditional, \texttt{ifQ}, that is defined as follows:
+
+\begin{verbatim}
+ifQ :: Qbit -> U -> U
+ifQ q u = cond q (\x -> if x then u else mempty)
+\end{verbatim}
+
+That is, \texttt{ifQ} acts as the standard control operator in the quantum circuit model that runs its second argument based on the truth value of its first argument. Then, it is easy to define controlled gates such as CNOT with the expression $\kw{ifQ q1 (X q2)}$.
+
+Quantum state in the QIO interface is modeled as a normalized vector that intuitively stores pairs representing complex amplitudes associated with each basis state (represented as a map from Qbit to Bool types). The operations defined over the vector class ensure that the quantum state is kept normalized throughout.
+
+QIO further ensures that the monoidal structure of unitary operations lets one run a unitary operation over the complete quantum state. We elide details here and refer the reader to \cite{qio} for more.
+
+%\subsection{Hoare Style Reasoning}
+%\textit{Basics of Hoare-triples for non-specialists\ldots}
+%
+%\subsection{Program Proof and HTT}
+%\textit{Basics of program proof and techniques for non-specialists\ldots}
+
+\section{Quantum Hoare Type Theory}
+\label{sec:qhtt}
+In this section, we introduce the Quantum Hoare Type inspired by the QIO monad and its type theory (QHTT) by replacing the classical effectful portion of Hoare Type Theory with quantum effects. The core idea is to encapsulate any quantum effect inside a monadic Quantum Hoare type, $\Delta. \Psi .\{P\} x{ : }A \{Q\}$, and formalize reasoning of quantum effects using strongest postconditions in a similar fashion as HTT in the classical setting.
+
+The next two sections discuss the syntax and typing of QHTT. The last section show examples written in QHTT.
+
+\subsection{Syntax}
+\label{sec:syntax}
+
+Figure \ref{fig:syntax} shows the syntax of Quantum Hoare Type Theory. Our presentation closely follows that of HTT~\cite{nanevski_hoare_2008}.
+
+Complete grammar written using Ott tool at \url{https://github.com/k4rtik/QHT/blob/master/ott/qhtt.ott}.
+
+\begin{figure}[ht]
 	\begin{tabular}{lrcl}
-		\textit{Types} & $A, B, C$ & ::= & \begin{minipage}[t]{0.5\columnwidth}%
-			$ \type{Unit} \mid \type{Bit} \mid \type{Qubit} \mid A \otimes B \mid \Pi x{ : }A.B \mid ~!A  \mid \type{Circ}(S, U) \mid \{P\} x{ : }A \{Q\}$
-					\end{minipage}\\
-		\textit{Wire Types} & $S, U$ & ::= & $ \type{Unit} \mid \type{Bit} \mid \type{Qubit} \mid S \otimes U$ \\
-		\textit{Propositions} & $P, Q, R$ & ::= & \begin{minipage}[t]{0.5\columnwidth}%
-			$ \top \mid \bot \mid P \wedge Q \mid P \vee Q \mid P \supset Q \mid \neg P \mid \exists x{:}A.P \mid \forall x{:}A.P \mid \mathrm{Id_A}(M, N)$
+		\textit{Types} & $A, B, C$ & ::= &
+		\begin{minipage}[t]{0.45\columnwidth}%
+			$ \type{1} \mid \type{Bool} \mid \type{Qbit} \mid \type{U} \mid \type{Pure} \mid A \otimes B \mid \Pi x{ : }A.B \mid \Delta. \Psi .\{P\} x{ : }A \{Q\}$
+		\end{minipage}\\ \\
+		\textit{Assertions} & $P, Q, R$ & ::= &
+		\begin{minipage}[t]{0.45\columnwidth}%
+			$ \top \mid \bot \mid P \wedge Q \mid P \vee Q \mid P \supset Q \mid \neg P \mid \exists x{:}A.P \mid \forall x{:}A.P \mid \exists h{:}\kw{heap}.P \mid \forall h{:}\kw{heap}.P \mid \kw{Id}_A(M, N) \mid \kw{HId}(H, G) \mid \kw{indom}(H,M) $
+		\end{minipage}\\ \\
+		\textit{Q. Heaps} & $H, G$ & ::= & $ h \mid \kw{empty} \mid \kw{upd}(H, M, N) $\\ \\
+		\textit{Elim terms} & $K, L$ & ::= & $ x \mid K M \mid M : A $\\
+		\textit{Intro terms} & $M, N, O$ & ::= & $ K \mid () \mid \lambda x.M \mid \kw{do} E \mid \kw{true} \mid \kw{false} $\\ \\
+		\textit{Q. Commands} & $c$ & ::= &
+		\begin{minipage}[t]{0.45\columnwidth}%
+			$ \kw{mkQbit} M \mid \kw{measQbit} M \mid \kw{applyU} M \mid \kw{if} M \kw{then} N \kw{else} O$
 		\end{minipage}\\
-%		\textit{(Quantum) Heaps} & $H, G$ & ::= & $ h \mid \mathrm{empty} \mid \mathrm{upd}_{\tau}(H, M, N) $\\
-%		\textit{Elim terms} & $K, L$ & ::= & $ x \mid K\ M \mid M : \tau $\\
-		\textit{Terms} & $M, N$ & ::= & \begin{minipage}[t]{0.55\columnwidth}%
-			$ c \mid l \mid x \mid \lambda x.M \mid MN \mid \mathrm{unit} \mid (a, \mathcal{C}, b) \mid \mathrm{box_S}~M \mid \mathrm{unbox}~M \mid \mathrm{force}~M \mid \mathrm{lift}~M \mid (M, N) \mid \mathrm{let}~ x = N ~\mathrm{in}~ M $
-		\end{minipage}\\
-		\textit{Simple Terms} & $a, b$ & ::= & $ l \mid \mathrm{unit} \mid (a, b)$ \\
-		\textit{Circuits} & $\mathcal{C}, \mathcal{D}$ & : & $ \Sigma \to \Sigma' $ \\
-		\textit{Proposition Contexts} & $\Delta$ & ::= & $ \cdot \mid P, \Delta$ \\
-		\textit{Label Contexts} & $\Sigma$ & ::= & $ \cdot \mid l : \type{Qubit}, \Sigma$ \\
-%		\textit{Commands} & $c$ & ::= & \begin{minipage}[t]{0.5\columnwidth}%
-%			$ \mathrm{alloc}_\tau\ M \mid \mathrm{dealloc}\ M \mid \mathrm{if}_\tau\ M\ \mathrm{then}\ E_1\ \mathrm{else}\ E_2 \mid
-%			\mathrm{fix}\ f(y{:}\tau){:}\sigma = \mathrm{do}\ E\ \mathrm{in\ eval}\ f M \mid \mathrm{apply}(M, N) \mid \mathrm{capply}(M, N, O) $
-%		\end{minipage}\\
-%		\textit{Computations} & $E, F$ & ::= & $ \mathrm{return}\ M \mid x \gets K; E \mid x \Leftarrow c; E \mid x =_\tau M; E $\\
-%		\textit{Variable context} & $\Delta, \Psi$ & ::= & $ \cdot \mid \Delta, x{:}\tau $\\
-%		\textit{Heap context} & $X$ & ::= & $ \cdot \mid X, h $\\
-		\textit{Contexts} & $\Gamma$ & ::= & $ \cdot \mid x : A, \Gamma \mid l : \type{Qubit}, \Gamma$ \\
-		\textit{Values} & $V$ & ::= & \begin{minipage}[t]{0.5\columnwidth}%
-	$ x \mid l \mid \lambda x.M \mid \mathrm{lift}~M \mid (a, \mathcal{C}, b) \mid \mathrm{unbox}~V \mid \mathrm{force}(\mathrm{unbox}~V) \mid $
-\end{minipage}\\
+		\textit{Computations} & $E, F$ & ::= & $ \kw{return} M \mid x \leftarrow K; E \mid x \Leftarrow c; E \mid x =_A M; E $\\ \\
+		\textit{Variable context} & $\Delta$ & ::= & $ \cdot \mid x : A, \Delta $ \\
+		\textit{Q. Heap context} & $\Psi$ & ::= & $ \cdot \mid h, \Psi$ \\
+		\textit{Assertion context} & $\Gamma$ & ::= & $ \cdot \mid P, \Gamma$ \\
 	\end{tabular}
-	\Description{Syntax of Hoare Type Theory from \cite{nanevski_hoare_2008}}
-	\caption{Syntax of Quantum (Linear) Hoare Type Theory}
+	\Description{Syntax of Quantum Hoare Type Theory}
+	\caption{Syntax of Quantum Hoare Type Theory}
 	\label{fig:syntax}
 \end{figure}
 
-%In order to extend HTT to support quantum circuits, we augment its syntax with that of \qwire\cite{paykin_qwire:_2017,rand_formally_2018}. \qwire is a core quantum circuit language that can cooperate with an arbitrary classical host language. This requires minimal support from the host language to interface with the circuit language. In our case, HTT acts as the classical host language for \qwire.
-%
-%\qwire's circuit language has a wire type W that can be a unit, a bit, a qubit or a tuple of wires. The host language (HTT) is augmented with additional types to support interaction between the two languages and to treat circuits as data:
-%\begin{mathpar}
-%
-%	W ::= 1 \mid \texttt{bit} \mid \texttt{qbit} \mid W1 \otimes W2
-%
-%	\and
-%
-%	A ::= \ldots \mid \texttt{Unit} \mid \texttt{Bool} \mid A \times A \mid \texttt{Circuit}(W1, W2)
-%
-%\end{mathpar}
+\paragraph{Types} We include primitive types for unit, booleans, qubits and unitary operations, and a type \type{Pure} for representing pure quantum state vectors (complex valued vectors in Hilbert space); these correspond to similar types in the QIO work. There are also type constructors for pairs, dependent functions and the Hoare type from HTT.
 
-The primitive quantum gates that are treated as constants in the language have types such as follows:
+\paragraph{Assertions}
+Apart from the usual first order logic, we have assertions for reasoning about propositional equality of terms, $\kw{Id}_A(M, N)$, and heaps, $\kw{HId}(H, G)$.
+
+As done in HTT, some common convenience assertions can be defined using the base primitives. Particularly, $\kw{emp}$ denotes that the heap is empty. M $\mapsto$ N represents that this is the only mapping in the heap. M $\hookrightarrow$ N represents that looking up M in the heap returns N. $\kw{seleq}$(H, M, N) asserts that in heap H, location M points to N.
+
+\paragraph{Quantum State}
+
+We use the terms quantum state and quantum heaps interchangeably throughout. A quantum heap is a partial function from qubits (that can in turn be thought of as locations, represented using natural numbers) to at most one quantum state vector.
+
+For the purpose of the type theory, heaps are functional, so that, for example, $\kw{upd}(H, M, N)$ returns a new heap after updating heap H at location M with N.
+
+\paragraph{Terms}
+The terms are divided into introduction and elimination sorts for the purpose of bidirectional typechecking like in HTT.
+
+The pure fragment allows higher-order functions while the impure (effectful) fragment is encapsulated within the monadic \texttt{do} $E$ construct and supports a simple imperative quantum language inspired by QIO constructs. It is worth noting that \texttt{do} $E$ represents suspended computation and is considered pure.
+
+\paragraph{Quantum Commands}
+These are the quantum-specific effectful commands from QIO for initialization, unitary application and measurement of qubits. We also support classical control using the \texttt{if} $M$ \texttt{then} $N$ \texttt{else} $O$ construct similar to HTT.
+
+\paragraph{Computations} The computations are the usual monadic return and (three) bind operations as in HTT.
+
+\paragraph{Contexts} Contexts are modelled exactly the same way as in HTT. The only difference is that instead of classical heaps, we have quantum heaps.
+
+\subsection{Typing Rules}
+\label{sec:typing}
+
+In this section, we provide some details about type checking in HTT and how it is different in the quantum case.
+
+\subsubsection{Judgments}
+The type system is designed to be bidirectional and syntax directed and hences include separate judgements for intro and elim terms. We are able to use them unchanged for QHTT.
+
+The type checking process also involves generating canonical forms for each term. A canonical form in HTT means a beta-normal (containing no beta-redexes) and eta-long (all intro terms are eta-expanded) form. We elide much detail here.
+
+As usual elim terms synthesize types ($\Rightarrow$) and intro terms are checked against the given type ($\Leftarrow$). Canonical forms are always synthesized. For the pure fragment:
+
+\begin{center}
+	\begin{tabular}{ll}
+		$\Delta \vdash K \Rightarrow A [N']$ & Elim term K has type A and canonical form $N'$ \\
+		$\Delta \vdash M \Leftarrow A [M']$ & Intro term M has type A and canonical form $M'$
+	\end{tabular}
+\end{center}
+
+The judgments for computations involve synthesizing the strongest postconditions and checking whether a given postcondition applies:
+
+\begin{center}
+	\begin{tabular}{ll}
+		$\Delta; P \vdash E \Rightarrow x:A.Q[E']$ & Computation E with precondition P has \textit{strongest} postcondition Q\\ & and returns value x of type A. Its canonical form is $E'$. \\
+		$\Delta; P \vdash E \Leftarrow x:A.Q[E']$ & Computation E with precondition P has postcondition Q\\ & and returns value x of type A. Its canonical form is $E'$.
+	\end{tabular}
+\end{center}
+
+The type system includes rules for primitive effectful commands and those for structuring composition such as monadic unit and bind. We reuse most of the HTT rules except those for primitives for quantum effects that need to specify the strongest postconditions for each primitive, we discuss that next.
+
+\subsubsection{Strongest Postconditions}
+Here we show the strongest postconditions for the primitive quantum commands of QHTT encoded in their typing rules. Given a quantum command for initialization, unitary application or measurement, its strongest postcondition is an assertion that most precisely captures the relationship between the initial state and the modified state after the execution. These rules along with the \texttt{consq} (consequent) rule of HTT (that ensures weakening of the given strongest postcondition to an arbitrary postcondition) work together to ensure composition of verification.
+
+We need to use the relational composition connective from HTT ($P \circ Q$) that captures how heap evolves with computation. It basically reads: $Q$ holds of the current heap which is obtained after modification of a prior heap for which P holds.
+
+We also use HTT's difference operator ($\multimap$) below that captures changes to only the interesting fragment of the heap without modifying the rest of the heap.
+
+We can now show some typing rules:
+
+\paragraph{Initialization}
+$x \Leftarrow \kw{mkQbit} M; E$
+
 \begin{mathpar}
-	\mathrm{H} : \type{Qubit} \multimap \type{Qubit}
-	\and
-	\mathrm{CNOT} : \type{Qubit} \otimes \type{Qubit} \multimap \type{Qubit}  \otimes \type{Qubit}
-	\\
-	\mathrm{Init0} : \type{Unit} \multimap \type{Qubit}
-	\and
-	\mathrm{meas} : \type{Qubit} \multimap \type{Bit}
+	\inferrule
+	{\Delta \vdash M : \type{Bool}
+		\\ \Delta, x : \type{Qbit}; P \circ (x \mapsto \kw{state}(M)) \vdash E \Rightarrow y:B . Q}
+	{\Delta; P \vdash x \Leftarrow \kw{mkQbit} M; E \Rightarrow y:B. (\exists x:\type{Qbit}.Q)}
+\end{mathpar}
+where x is fresh and \texttt{state} is a function that translates a classical representation of quantum state (such as boolean here) to the equivalent quantum state vector.
+
+\paragraph{Measurement}
+$x \Leftarrow \kw{measQbit} M; E$
+
+\begin{mathpar}
+	\inferrule
+	{\Delta \vdash M : \type{Qbit}
+		\\ \Delta \vdash P \supset (M \hookrightarrow -)
+		\\ \Delta; P \circ ((M \mapsto -) \multimap \kw{emp}) \vdash E \Rightarrow y:B . Q}
+	{\Delta; P \vdash x \Leftarrow \kw{measQbit} M; E \Rightarrow y:B. Q}
 \end{mathpar}
 
-Simple quantum programs can be written using the above syntax, for example, cointoss:
+In measurement, we first need to ensure that the precondition P implies that M is allocated in the heap and that the fragment of heap that only refers to location M becomes empty.
 
-\begin{lstlisting}
-cointoss : Unit ⊸ Bit
-cointoss = let
-					q = Init0 unit
-					q = H q
-					b = meas q
-				in b
-\end{lstlisting}
+As may be apparent, initialization and measurement are analogous to HTT's \texttt{alloc} and \texttt{dealloc} primitives. We are working out precise details for unitary application, but at a high-level, they involve ensuring that the given unitary term actually represents a unitary matrix and updating the quantum state with the result of unitary application. This involves incorporating the monoidal structure of unitaries into our theory (as is done in QIO). This step also involves generating verification conditions that cannot be checked during this first phase of typechecking.
 
-To write a Hoare type, we need to box the circuit as follows:
+\subsection{Sample programs}
+\label{sec:examples}
 
-\begin{lstlisting}
-boxed_cointoss : {⊤} c : Circ(Unit, Bit) {⊤}
-boxed_cointoss = box_unit cointoss
-\end{lstlisting}
+In this section, we show some simple examples from the QIO work~\cite{qio} translated in our language and annotated with their program specifications using their Quantum Hoare types. An observation is that translating the programs was a very simple process except for coming up with the right specifications for the programs. We take some liberty in writing our typeset syntax as plain text for convenience and provide some commentary on assertions specified for these programs.
 
-The propositions shown above are trivial. More interesting examples will follow.
+At the end of this section, we show a sample verification using QHTT for Bell pair generation.
 
-\subsection{Example: Quantum Teleportation}\label{telep}
-Teleportation is a simple quantum algorithm that is used to communicate a quantum state using two classical bits and a shared entangled pair of qubits. Alice is trying to send a message encoded in the qubit to Bob. There are three broad steps in the protocol: 1) preparation, ie, entanglement creation between two qubits to be shared between Alice and Bob in advance; 2) sending the message by Alice; and, 3) reconstruction of the message by Bob.
-\begin{figure}[h]
-	\begin{subfigure}{3in}
-		% 	a       ← init0 ();
-		%     b       ← init0 ();
-		\begin{lstlisting}
-		teleport : Π\kp:qbit.{q↦qbit\kp /\ a↦qbit|0⟩ /\ b↦qbit|0⟩} c:Circuit(qbit⊗qbit⊗qbit, qbit) {b↦qbit\kp} =
-		box (q, a, b) ⇒
-		(* 1. Bell state preparation for Alice and Bob *)
-		a       ← H a;
-		(a, b)  ← CX (a, b);
-		(* 2. Bell measurement by Alice *)
-		(q, a)  ← CX (q, a);
-		q       ← H q;
-		x       ← meas q;
-		y       ← meas a;
-		(* 3. Correction by Bob *)
-		(y, b)  ← CX (y, b);
-		(x, b)  ← CZ (x, b);
-		output b
-		\end{lstlisting}
-		% ()      ← discard y;
-		%     ()      ← discard x;
-	\end{subfigure}
-	\begin{subfigure}{1in}
-		% 	\centerline{
-		\Qcircuit @C=.4em @R=.4em @! {
-			\lstick{q=\ket{\psi}} & \qw & \qw & \ctrl{1} & \gate{H} & \meter & \cw & \control \cw\\
-			\lstick{a=\ket{0}} & \gate{H} & \ctrl{1} & \gate{X} & \qw & \meter & \control \cw & \\
-			\lstick{b=\ket{0}} & \qw & \gate{X} & \qw & \qw & \qw & \gate{X} \cwx & \gate{Z} \cwx[-2] & \rstick{\ket{\psi}} \qw
-			\gategroup{2}{2}{3}{3}{.7em}{.}
-			\gategroup{1}{4}{2}{6}{.7em}{.}
-		}
-		% }
-	\end{subfigure}
-	\Description{On the left, \qwire code to implement Quantum Teleportation algorithm annotated by its Hoare Type that provides specification for the algorithm. On the right, the corresponding quantum circuit.}
-	\caption{Quantum Teleportation (Code and Circuit)}
-	\label{fig:teleport}
-\end{figure}
+\subsubsection*{Hello Quantum World}
+\begin{verbatim}
+hqw : {emp} r : Bool {emp /\ Id(r, false)}
+    = do q <= mkQbit false;
+         measQbit q
+\end{verbatim}
 
-In Fig. \ref{fig:teleport}, on the left, we show a function \lstinline{teleport} written in \qwire-like syntax (TODO: add ref) that implements the quantum teleportation circuit shown on the right. It returns one qubit and takes three qubits as arguments: one qubit \lstinline{q} that could be in any unknown state $\ket{\psi}$ which Alice is trying to send to Bob; and two qubits, \lstinline{a} and \lstinline{b}, initially in the state $\ket{0}$. The function first entangles the latter two qubits into a Bell state. Then, Alice performs a Bell measurement of her two qubits \lstinline{q} and \lstinline{a} and sends the resulting classical bits (\lstinline{x} and \lstinline{y}) to Bob. Finally, Bob applies corrective measurement using the quantum gates X and Z controlled by the classical bits that he received from Alice. The result is that Bob's qubit is now in the same state as the initial state of the message qubit \lstinline{q}. The specification that the function must meet is written using a Hoare type, which we described in the previous section.
+We start out in an empty state and assert that the result is equal to \texttt{false}.
 
-\subsection{Verification}
-Here we describe how HTT lets us verify the correctness of teleportation based on the specification provided as the type of the function. Type checking in HTT involves generation of strongest postconditions at each step of the program with the initial precondition as input. Verification is a two-step process: the first phase does basic type checking and verification condition generation which is decidable, the second phase needs to show the validity of the generated verification conditions, which is undecidable. This second phase can be deferred to an automated theorem prover. For illustration, we show the assertions as we step through the first step of teleportation. The final state here is that qubits \lstinline{a} and \lstinline{b} are entangled into the first Bell state, $\ket{\phi^+} = \frac{1}{\sqrt{2}}(\ket{00} + \ket{11})$.
+\subsubsection*{Coin Toss}
+\begin{verbatim}
+rnd : {emp} r : Bool {emp}
+    = do q <= mkQbit false;
+         applyU (H q);
+         measQbit q
+\end{verbatim}
 
-% \lstset{aboveskip=1pt,belowskip=1pt}
-\begin{lstlisting}
-(* P0 (given): {q↦qbit\kp /\ a↦qbit|0⟩ /\ b↦qbit|0⟩} *)
-a      ← H a;
-(* P1: {q↦qbit\kp /\ a↦qbit1/sqrt2(|0⟩+|1⟩) /\ b↦qbit|0⟩} *)
-(a, b) ← CX (a, b);
-(* P2: {q↦qbit\kp /\ (a,b)↦qbit|φ+⟩ *)
-\end{lstlisting}
+As the result can be in either of its two values \texttt{false} or \texttt{true}, we need not specify any special postcondition as type checking the result will be sufficient for correctness.
 
-\subsection{Soundness / Type Checking Algorithm}
+\subsubsection*{Testing Bell Pair}
+\begin{Verbatim}[commandchars=\$\[\]]
+testBell : {emp} (a, b) : (Bool, Bool) {emp /\ Id(a, b)}  -- a,b $cin {true, false}
+         = do qa <= mkQbit false;
+              applyU (H qa);
+              qb <= mkQbit false;
+              applyU (ifQ qa (X qb));
+              (measQbit qa, measQbit qb)
+\end{Verbatim}
 
-\section{Evaluation}
+Here, we are asserting that the returned booleans $a$ and $b$ hold the same value, which is what we expect from a Bell pair.
 
-\subsection{More Examples}
-\textit{add at least one example with scaling knob}
+\paragraph{Verification}
+We would like to describe how QHTT lets us verify the correctness of the above program based on the specification provided as the type of the function. For illustration, we show the assertions annotated as comments as we step through the \texttt{testBell} program below. We have elided specific details about unitary application and definition of the previously mentioned \texttt{state} function as they are still being worked out.
 
-\subsection{Circuit-complexity Considerations}
+\begin{Verbatim}[commandchars=\$\[\]]
+testBell : {emp} (a, b) : (Bool, Bool) {emp /\ Id(a, b)}
+              -- P0: emp
+         = do qa <= mkQbit false;
+              -- P1: P0 $ccc (qa $cmt state(false))
+              applyU (H qa);
+              -- P2: P1 $ccc (qa $cmt state({(0.5, false), (0.5, true)}))
+              qb <= mkQbit false;
+              -- P3: P2 $ccc (qa $cmt state(false))
+              applyU (ifQ qa (X qb));
+              -- P4: P3 $ccc ((qa, qb) $cmt state({(0.5, (false, false),
+              --                              (0.5, (true, true))}))
+                (measQbit qa, measQbit qb)
+              -- P5: P4 $ccc ((qa $cmt -) $cmm emp) $ccc ((qb $cmt -) $cmm emp)
+\end{Verbatim}
+Finally, the \texttt{consq} rule should ensure that the assertion P5 can lead to the specified postcondition in the type of the program.
+
+We show some two more examples in the appendix for a modular version of Bell pair generation (\cref{app:mbp}) that shows use of higher-order features of QHTT and another for teleportation protocol (\cref{app:teleport}). Both of these involve specifying assertions over quantum state whose theory we still need to work out.
+
+
+
+%Figure \ref{fig:syntax} shows syntax of Quantum HTT, inspired by the syntax of Proto-Quipper for the quantum parts. Symbol $c$ ranges over constants of the language such as primitive quantum gates (Hadamard, X, Y, Z, CNOT, etc), while $l$ identifies wires (bits or qubits). $!A$ represents duplicable/reusable data. The Pi type can be simplified to $A \multimap B$ if $B$ does not depend on $x$. $\mathrm{Id_A}(M, N)$ is propositional equality. $\mathrm{box_S}$ converts a circuit-producing function of type $S \multimap U$ into a circuit treated as data of type $\type{Circ}(S, U)$; $\mathrm{unbox}$ does the reverse. lift and force convert between linear and reusable types.
+
+%The primitive quantum gates that are treated as constants in the language have types such as follows:
+%\begin{mathpar}
+%	\mathrm{H} : \type{Qubit} \multimap \type{Qubit}
+%	\and
+%	\mathrm{CNOT} : \type{Qubit} \otimes \type{Qubit} \multimap \type{Qubit}  \otimes \type{Qubit}
+%	\\
+%	\mathrm{Init0} : \type{Unit} \multimap \type{Qubit}
+%	\and
+%	\mathrm{meas} : \type{Qubit} \multimap \type{Bit}
+%\end{mathpar}
+%
+%Simple quantum programs can be written using the above syntax, for example, cointoss:
+%
+%\begin{lstlisting}
+%cointoss : Unit ⊸ Bit
+%cointoss = let
+%					q = Init0 unit
+%					q = H q
+%					b = meas q
+%				in b
+%\end{lstlisting}
+%
+%To write a Hoare type, we need to box the circuit as follows:
+%
+%\begin{lstlisting}
+%boxed_cointoss : {⊤} c : Circ(Unit, Bit) {⊤}
+%boxed_cointoss = box_unit cointoss
+%\end{lstlisting}
+%
+%The propositions shown above are trivial. More interesting examples will follow.
+%
+%\subsection{Example: Quantum Teleportation}\label{telep}
+%Teleportation is a simple quantum algorithm that is used to communicate a quantum state using two classical bits and a shared entangled pair of qubits. Alice is trying to send a message encoded in the qubit to Bob. There are three broad steps in the protocol: 1) preparation, ie, entanglement creation between two qubits to be shared between Alice and Bob in advance; 2) sending the message by Alice; and, 3) reconstruction of the message by Bob.
+%\begin{figure}[h]
+%	\begin{subfigure}{3in}
+%		% 	a       ← init0 ();
+%		%     b       ← init0 ();
+%		\begin{lstlisting}
+%		teleport : Π\kp:qbit.{q↦qbit\kp /\ a↦qbit|0⟩ /\ b↦qbit|0⟩} c:Circuit(qbit⊗qbit⊗qbit, qbit) {b↦qbit\kp} =
+%		box (q, a, b) ⇒
+%		(* 1. Bell state preparation for Alice and Bob *)
+%		a       ← H a;
+%		(a, b)  ← CX (a, b);
+%		(* 2. Bell measurement by Alice *)
+%		(q, a)  ← CX (q, a);
+%		q       ← H q;
+%		x       ← meas q;
+%		y       ← meas a;
+%		(* 3. Correction by Bob *)
+%		(y, b)  ← CX (y, b);
+%		(x, b)  ← CZ (x, b);
+%		output b
+%		\end{lstlisting}
+%		% ()      ← discard y;
+%		%     ()      ← discard x;
+%	\end{subfigure}
+%	\begin{subfigure}{1in}
+%		% 	\centerline{
+%		\Qcircuit @C=.4em @R=.4em @! {
+%			\lstick{q=\ket{\psi}} & \qw & \qw & \ctrl{1} & \gate{H} & \meter & \cw & \control \cw\\
+%			\lstick{a=\ket{0}} & \gate{H} & \ctrl{1} & \gate{X} & \qw & \meter & \control \cw & \\
+%			\lstick{b=\ket{0}} & \qw & \gate{X} & \qw & \qw & \qw & \gate{X} \cwx & \gate{Z} \cwx[-2] & \rstick{\ket{\psi}} \qw
+%			\gategroup{2}{2}{3}{3}{.7em}{.}
+%			\gategroup{1}{4}{2}{6}{.7em}{.}
+%		}
+%		% }
+%	\end{subfigure}
+%	\Description{On the left, \qwire code to implement Quantum Teleportation algorithm annotated by its Hoare Type that provides specification for the algorithm. On the right, the corresponding quantum circuit.}
+%	\caption{Quantum Teleportation (Code and Circuit)}
+%	\label{fig:teleport}
+%\end{figure}
+%
+%In Fig. \ref{fig:teleport}, on the left, we show a function \lstinline{teleport} written in \qwire-like syntax (TODO: add ref) that implements the quantum teleportation circuit shown on the right. It returns one qubit and takes three qubits as arguments: one qubit \lstinline{q} that could be in any unknown state $\ket{\psi}$ which Alice is trying to send to Bob; and two qubits, \lstinline{a} and \lstinline{b}, initially in the state $\ket{0}$. The function first entangles the latter two qubits into a Bell state. Then, Alice performs a Bell measurement of her two qubits \lstinline{q} and \lstinline{a} and sends the resulting classical bits (\lstinline{x} and \lstinline{y}) to Bob. Finally, Bob applies corrective measurement using the quantum gates X and Z controlled by the classical bits that he received from Alice. The result is that Bob's qubit is now in the same state as the initial state of the message qubit \lstinline{q}. The specification that the function must meet is written using a Hoare type, which we described in the previous section.
+%
+%\subsection{Verification}
+%Here we describe how HTT lets us verify the correctness of teleportation based on the specification provided as the type of the function. Type checking in HTT involves generation of strongest postconditions at each step of the program with the initial precondition as input. Verification is a two-step process: the first phase does basic type checking and verification condition generation which is decidable, the second phase needs to show the validity of the generated verification conditions, which is undecidable. This second phase can be deferred to an automated theorem prover. For illustration, we show the assertions as we step through the first step of teleportation. The final state here is that qubits \lstinline{a} and \lstinline{b} are entangled into the first Bell state, $\ket{\phi^+} = \frac{1}{\sqrt{2}}(\ket{00} + \ket{11})$.
+%
+%% \lstset{aboveskip=1pt,belowskip=1pt}
+%\begin{lstlisting}
+%(* P0 (given): {q↦qbit\kp /\ a↦qbit|0⟩ /\ b↦qbit|0⟩} *)
+%a      ← H a;
+%(* P1: {q↦qbit\kp /\ a↦qbit1/sqrt2(|0⟩+|1⟩) /\ b↦qbit|0⟩} *)
+%(a, b) ← CX (a, b);
+%(* P2: {q↦qbit\kp /\ (a,b)↦qbit|φ+⟩ *)
+%\end{lstlisting}
+
+%\subsection{Soundness / Type Checking Algorithm}
+
+%\section{Evaluation}
+
+%\subsection{More Examples}
+%\textit{add at least one example with scaling knob}
+
+%\subsection{Circuit-complexity Considerations}
 
 \section{Related Work}
-\textit{Objective of this section\ldots}
+\label{related}
+%\textit{Objective of this section\ldots}
 
-\subsection{Quantum Languages and Types}
-\textit{A chronology of language developments wrt to usefulness of types\ldots}
+%\subsection{Quantum Languages and Types}
+%\textit{A chronology of language developments wrt to usefulness of types\ldots}
 
 \subsection{Verification of Quantum Programs}
-Previous work such as Proto-Quipper~\cite{ross_algebraic_2015,mahmoud_formalization_2019,rios_categorical_2017} and \qwire~\cite{paykin_qwire:_2017,rand_qwire_2017,rand_formally_2018} utilize a linear type system and dependent types to enforce a small subset of semantic properties, such as the no-cloning theorem and whether a unitary gate is of the right dimension. These advances in quantum type systems, although helpful, still fall short in encoding and enforcing even more useful properties that one would like to be able to express for the purpose of verification.
+Previous work, such as Proto-Quipper~\cite{ross_algebraic_2015,rios_categorical_2017} and \qwire~\cite{paykin_qwire:_2017,rand_qwire_2017,rand_formally_2018} utilize a linear type system and dependent types to enforce a small subset of semantic properties, such as the no-cloning restriction and whether a unitary gate is of the right dimension. These advances in quantum type systems, although helpful, still fall short in encoding and enforcing even more useful properties that one would like to be able to express for the purpose of verification.
 
-Our approach builds upon previous work in reasoning about quantum programs such as Quantum Weakest Preconditions~\cite{dhondt_quantum_2006} and Quantum Hoare Logic~\cite{ying_floydhoare_2012} in the spirit of \citet{hoare_axiomatic_1969} and \citet{dijkstra_discipline_1976} but attempts to bring those reasoning techniques into the type system. The hope is that programmers will be able to encode some of the semantic properties that they expect of their programs as specifications in their code and type checking will ensure correctness of some of those properties. In the classical setting, Hoare Type Theory (HTT)~\cite{nanevski_hoare_2008} accomplishes exactly this goal. Here, we attempt to merge these ideas for the quantum realm.
+Our approach builds upon previous work in reasoning about quantum programs such as Quantum Weakest Preconditions~\cite{dhondt_quantum_2006} and Quantum Hoare Logic~\cite{ying_floydhoare_2012} in the spirit of \citet{hoare_axiomatic_1969} and \citet{dijkstra_discipline_1976} but attempts to bring those reasoning techniques into the type system. The hope is that programmers will be able to encode some of the semantic properties that they expect of their programs as specifications in their code and type checking will ensure correctness of some of those properties. In the classical setting, Hoare Type Theory (HTT)~\cite{nanevski_hoare_2008} accomplishes exactly this goal. Our attempt is to merge these ideas for the quantum realm.
 
-\textit{Add from Mingsheng Ying's book, papers, etc.}
+%\textit{Add from Mingsheng Ying's book, papers, etc.}
 
 \section{Conclusion and Perspectives}
-This approach has the potential to be a unified system for programming, specification and reasoning about quantum programs. We need to overcome challenges such as compactly specifying properties of quantum state when dealing with more than a few qubits. We also need to maintain the syntax directed nature of HTT's bidirectional typechecking while incorporating quantum wire types.
+\label{sec:conclusion}
+In this paper, we have described our ongoing work on Quantum Hoare Type Theory, which modifies HTT for quantum computing using ideas from the Quantum IO monad work. This approach has the potential to be a unified system for programming, specification, and reasoning about quantum programs. We need to overcome challenges such as compactly specifying properties of quantum state when dealing with more than a few qubits. We also need to maintain the syntax directed nature of HTT's bidirectional typechecking while incorporating quantum wire types.
 
-We are working on programming other interesting quantum algorithms that can serve as a litmus test for this technique, specifically, a cryptographic protocol called Quantum Key Distribution and the well-known Grover's search algorithm. These examples involve some form of classical control or iteration that makes them non-trivial for our technique.
+There are several avenues of future work to explore:
 
-We also look to explore how our types will evolve when we start incorporating higher-order constructs in our quantum language such as those demonstrated in languages like quantum lambda calculus~\cite{selinger_lambda_2006} and Quipper~\cite{green_quipper:_2013}.
+\paragraph{Mechanization} There are multiple implementations of HTT in Coq such as Ynot~\cite{ynot2008}. We are similarly working on mechanizing QHTT in Coq for higher assurance of the usefulness and soundness of our theory. This will also enable us to extract verified circuits in a lower level quantum language such as OpenQASM for execution on real machines.
 
-Another venue for exploration is to incorporate more precise types that can distinguish between qubits in pure classical state vs. those in superposition vs. those in entanglement inspired by the various quantum resource theories (see \cite{rand_type_2019} and references therein).
+\paragraph{Quantum Assertion Logic} An obvious need is to come up with an assertion logic similar to Separation Logic~\cite{reynolds2002} for quantum computing so as to be able to reason about only the interesting portions of the quantum state while still ensuring correctness of non-local effects such as entanglement. Various Quantum Hoare Logics that exist~\cite{ying_floydhoare_2012} currently do not support frame rules that provide Separation Logic its power.
 
-\textit{Future work about using Proto-Quipper/\qwire as languages, then extraction into QASM and checking generated verification conditions.}
+\paragraph{Linearity} Peter Selinger and collaborators have recently proposed a linear dependent typed version of Proto-Quipper (dubbed Proto-Quipper-D)~\cite{selinger2020}. It is an interesting challenge to reconcile linearity in our theory based on their proposal.
+
+\paragraph{Circuits as Arrows} Further, Proto-Quipper treats quantum circuits as first class citizens of the language. We would like to explore modifying our theory to treat Quantum Hoare types as arrows instead of as monads as was suggested by Vizzotto et al~\cite{so-arrows}. It makes sense from the perspective of sequential composition as arrows can have an arbitrary number of input/outputs as opposed to monads.
+
+\paragraph{Behavioural Types} Another venue for exploration is to incorporate more precise types that can distinguish between qubits in pure classical state vs. those in superposition vs. those in entanglement~\cite{JorrandPerdrix2009} such as those inspired by the various quantum resource theories (see \cite{rand_type_2019} and references therein). This may help us provide more specific postconditions that quantum programmers expect to hold true of their programs.
+
+\paragraph{Classical Effects} Finally, it will be an interesting challenge to reconcile both classical and quantum effects together in a single grand unified theory for effects.
+
+%\textit{Future work about using Proto-Quipper/\qwire as languages, then extraction into QASM and checking generated verification conditions.}
 
 \begin{acks}
 %	I would like to thank my advisor John Reppy for suggesting me to look at Hoare Type Theory that led to this master's thesis and for his constant support and encouragement to see it through. I also thank my committee members Fred Chong and Ravi Chugh for reading drafts of this document and providing useful feedback.
@@ -294,8 +517,91 @@ Another venue for exploration is to incorporate more precise types that can dist
 
 \newpage
 
+\newpage
+
 \appendix
-\section{Sample Proof}
-\textit{Coq code / Annotated proof objects from implementation\ldots}
+
+\section{Modular Bell Pair}
+\label{app:mbp}
+Writing a modular version of \texttt{testBell}.
+
+\subsection{Hadamard basis states}
+\begin{Verbatim}[commandchars=\$\[\]]
+qplus : {emp} r : Qbit {Id(r, $cket[+])}
+      = do q <= mkQbit false;
+           applyU (H q);
+           return q
+
+qminus : {emp} r : Qbit {Id(r, $cket[-])}
+       = do q <= mkQbit true;
+            applyU (H q);
+            return q
+\end{Verbatim}
+
+\subsection{Creating entanglement}
+\begin{Verbatim}[commandchars=\$\[\]]
+share : $cpi a : Qbit.
+        {a $cin {$cket[+], $cket[-]}}   -- a $cin {b, c} is short for Id(a,b) \/ Id(a,c)
+           b : Qbit
+        {Id(a, b) /\ a $cin {$cket[0], $cket[1]}}
+      = \a.do b <= mkQbit false;
+              applyU (ifQ a (X b));
+              return b
+\end{Verbatim}
+
+\subsection{Bell pair}
+\begin{Verbatim}[commandchars=\$\[\]]
+bell : {emp} (a, b) : (Qbit, Qbit) {Id(a, b) /\ a $cin {$cket[0], $cket[1]}}
+     = do qa <- qplus;
+          qb <- share qa;
+          return (qa, qb)
+\end{Verbatim}
+
+\subsection{Testing modular Bell pair}
+\begin{Verbatim}[commandchars=\$\[\]]
+testBell : {emp} (a, b) : (Bool, Bool) {emp /\ Id(a, b)}
+         = do (qa, qb) <- bell;
+              (measQbit qa, measQbit qb)
+\end{Verbatim}
+
+\section{Teleportation}
+\label{app:teleport}
+% \todo{TODO: Refine assertions}
+\subsection{Alice's circuit}
+\begin{Verbatim}[commandchars=\$\[\]]
+alice : $cpi a : Qbit. $cpi e : Qbit
+        {(Id(a, -) /\ entangled(e)}
+           r : (Bool, Bool)
+        {emp}
+      = \a.\e.do applyU (ifQ a (X e));
+                 applyU (H a);
+                 (measQbit a, measQbit e)
+\end{Verbatim}
+
+\subsection{Bob's circuit}
+\begin{Verbatim}[commandchars=\$\[\]]
+bob : $cpi m1 m2 : Bool. $cpi e : Qbit
+      {entangled(e)}
+         r : Qbit
+      {(Id(r, -)}
+      = \m1.\m2.\e.do if m1 then applyU (Z e) else ();
+                      if m2 then applyU (X e) else ();
+                      return e
+\end{Verbatim}
+
+\subsection{Teleport}
+\begin{Verbatim}[commandchars=\$\[\]]
+teleport : $cpi q : Qbit. x : Pure.
+      {Id(q, x)}
+         r : Qbit
+      {Id(r, x)}
+      = \q.do (a, b) <- bell;
+              (m1, m2) <- alice q a;
+              tq <- bob m1 m2 b;
+              return tq
+\end{Verbatim}
+
+%\section{Sample Proof}
+%\textit{Coq code / Annotated proof objects from implementation\ldots}
 
 \end{document}
