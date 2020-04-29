@@ -5,9 +5,6 @@
 \bibliographystyle{ACM-Reference-Format}
 \citestyle{acmauthoryear}
 
-\usepackage{booktabs}
-\usepackage{subcaption}
-
 \usepackage[braket]{qcircuit}
 \usepackage{mathpartir}
 \usepackage{mathtools}
@@ -15,12 +12,7 @@
 \usepackage{cleveref}
 \crefformat{section}{\S#2#1#3}
 
-\usepackage{color}
-\definecolor{ltblue}{rgb}{0,0.4,0.4}
-\definecolor{dkblue}{rgb}{0,0,1}
 \definecolor{dkgreen}{rgb}{0,0.35,0}
-\definecolor{dkviolet}{rgb}{0.3,0,0.5}
-\definecolor{dkred}{rgb}{0.5,0,0}
 
 \usepackage{listings}
 \lstloadlanguages{Haskell}
@@ -34,8 +26,8 @@
 	flexiblecolumns=false,
 	basewidth={0.5em,0.45em},
 	commentstyle=\color{dkgreen},
-	keywordstyle=\bfseries\color{dkblue},
-	stringstyle=\color{dkviolet},
+	keywordstyle=\bfseries\color{blue},
+	stringstyle=\color{violet},
 	literate={+}{{$+$}}1 {/}{{$/$}}1 {*}{{$*$}}1 {=}{{$=$}}1
 	{>}{{$>$}}1 {<}{{$<$}}1 {\\}{{$\lambda$}}1
 	{\\\\}{{\char`\\\char`\\}}1
