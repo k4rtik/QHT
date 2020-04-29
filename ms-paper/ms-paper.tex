@@ -24,14 +24,11 @@
 
 \usepackage{listings}
 \lstloadlanguages{Haskell}
-\lstdefinelanguage{QHaskell}{%
+\lstdefinelanguage{QHaskell}{
 	language     = Haskell,
 	morekeywords = {Qbit, U, C, Pure},
 }
-\lstnewenvironment{QCode}
-{\lstset{language=QHaskell}%
-	\csname lst@SetFirstLabel\endcsname}
-{\csname lst@SaveFirstLabel\endcsname}
+
 \lstset{
 	basicstyle=\small\ttfamily,
 	flexiblecolumns=false,
@@ -160,25 +157,25 @@ We provide more details when we introduce QHTT in section \cref{sec:qhtt}.
 The Quantum IO (QIO) monad~\cite{qio} is a purely functional interface for quantum programming that provides a separation between the unitary (reversible) and non-unitary (irreversible) fragments of quantum computation. It provides isolation of quantum effects inside a monad similar to what we need to provide in our Quantum Hoare monad.
 
 Here we discuss the relevant bits from the QIO interface. QIO provides a type for referring to qubits, \texttt{Qbit}; a type for unitary operations, \texttt{U}; and, the \texttt{QIO} type operator which is a monad indexed by the result of the quantum computation. The primitive quantum operations defined using the QIO monad below (Haskell syntax) are:
-\begin{QCode}
+\begin{lstlisting}[language=QHaskell]
 mkQbit : Bool -> QIO Qbit       -- initialization
 applyU : U -> QIO ()            -- apply a unitary to quantum state
 measQbit : Qbit -> QIO Bool     -- measurement
-\end{QCode}
+\end{lstlisting}
 
 Further, \texttt{U} is defined as a monoid with neutral element, \texttt{mempty}, and operation, \texttt{mappend}, that encodes reversible operations on quantum state. Here are the core unitary primitives that we will need:
 
-\begin{QCode}
+\begin{lstlisting}[language=QHaskell]
 rot :: Qbit -> ((Bool, Bool) -> C) -> U
 cond :: Qbit -> (Bool -> U) -> U
-\end{QCode}
+\end{lstlisting}
 
 Here, \texttt{rot} takes a qubit and a two-by-two complex-valued unitary matrix (represented as a function from the matrix indices to $\mathbb{C}$) and lets one define arbitrary rotation on a single qubit. \texttt{rot} can then be used to define standard gates such as the hadamard, H, and the Pauli gates, X, Y and Z. \texttt{cond} is the unitary conditional that is used to perform branching unitary operations. For the present paper, we use a simpler conditional, \texttt{ifQ}, that is defined as follows:
 
-\begin{QCode}
+\begin{lstlisting}[language=QHaskell]
 ifQ :: Qbit -> U -> U
 ifQ q u = cond q (\x -> if x then u else mempty)
-\end{QCode}
+\end{lstlisting}
 
 That is, \texttt{ifQ} acts as the standard control operator in the quantum circuit model that runs its second argument based on the truth value of its first argument. Then, it is easy to define controlled gates such as CNOT with the expression $\kw{ifQ q1 (X q2)}$.
 
@@ -330,40 +327,40 @@ In this section, we show some simple examples from the QIO work~\cite{qio} trans
 At the end of this section, we show a sample verification using QHTT for Bell pair generation.
 
 \subsubsection*{Hello Quantum World}
-\begin{QCode}
+\begin{lstlisting}[language=QHaskell]
 hqw : {emp} r : Bool {emp /\ Id(r, false)}
     = do q <= mkQbit false;
          measQbit q
-\end{QCode}
+\end{lstlisting}
 
 We start out in an empty state and assert that the result is equal to \texttt{false}.
 
 \subsubsection*{Coin Toss}
-\begin{QCode}
+\begin{lstlisting}[language=QHaskell]
 rnd : {emp} r : Bool {emp}
     = do q <= mkQbit false;
          applyU (H q);
          measQbit q
-\end{QCode}
+\end{lstlisting}
 
 As the result can be in either of its two values \texttt{false} or \texttt{true}, we need not specify any special postcondition as type checking the result will be sufficient for correctness.
 
 \subsubsection*{Testing Bell Pair}
-\begin{QCode}
+\begin{lstlisting}[language=QHaskell]
 testBell : {emp} (a, b) : (Bool, Bool) {emp /\ Id(a, b)}  -- a,b \in {true, false}
          = do qa <= mkQbit false;
               applyU (H qa);
               qb <= mkQbit false;
               applyU (ifQ qa (X qb));
               (measQbit qa, measQbit qb)
-\end{QCode}
+\end{lstlisting}
 
 Here, we are asserting that the returned booleans $a$ and $b$ hold the same value, which is what we expect from a Bell pair.
 
 \paragraph{Verification}
 We would like to describe how QHTT lets us verify the correctness of the above program based on the specification provided as the type of the function. For illustration, we show the assertions annotated as comments as we step through the \texttt{testBell} program below. We have elided specific details about unitary application and definition of the previously mentioned \texttt{state} function as they are still being worked out.
 
-\begin{QCode}
+\begin{lstlisting}[language=QHaskell]
 testBell : {emp} (a, b) : (Bool, Bool) {emp /\ Id(a, b)}
               -- P0: emp
          = do qa <= mkQbit false;
@@ -377,100 +374,10 @@ testBell : {emp} (a, b) : (Bool, Bool) {emp /\ Id(a, b)}
               --                              (0.5, (true, true))}))
                 (measQbit qa, measQbit qb)
               -- P5: P4 \o ((qa |-> -) -o emp) \o ((qb |-> -) -o emp)
-\end{QCode}
+\end{lstlisting}
 Finally, the \texttt{consq} rule should ensure that the assertion P5 can lead to the specified postcondition in the type of the program.
 
 We show some two more examples in the appendix for a modular version of Bell pair generation (\cref{app:mbp}) that shows use of higher-order features of QHTT and another for teleportation protocol (\cref{app:teleport}). Both of these involve specifying assertions over quantum state whose theory we still need to work out.
-
-
-
-%Figure \ref{fig:syntax} shows syntax of Quantum HTT, inspired by the syntax of Proto-Quipper for the quantum parts. Symbol $c$ ranges over constants of the language such as primitive quantum gates (Hadamard, X, Y, Z, CNOT, etc), while $l$ identifies wires (bits or qubits). $!A$ represents duplicable/reusable data. The Pi type can be simplified to $A \multimap B$ if $B$ does not depend on $x$. $\mathrm{Id_A}(M, N)$ is propositional equality. $\mathrm{box_S}$ converts a circuit-producing function of type $S \multimap U$ into a circuit treated as data of type $\type{Circ}(S, U)$; $\mathrm{unbox}$ does the reverse. lift and force convert between linear and reusable types.
-
-%The primitive quantum gates that are treated as constants in the language have types such as follows:
-%\begin{mathpar}
-%	\mathrm{H} : \type{Qubit} \multimap \type{Qubit}
-%	\and
-%	\mathrm{CNOT} : \type{Qubit} \otimes \type{Qubit} \multimap \type{Qubit}  \otimes \type{Qubit}
-%	\\
-%	\mathrm{Init0} : \type{Unit} \multimap \type{Qubit}
-%	\and
-%	\mathrm{meas} : \type{Qubit} \multimap \type{Bit}
-%\end{mathpar}
-%
-%Simple quantum programs can be written using the above syntax, for example, cointoss:
-%
-%\begin{QCode}
-%cointoss : Unit ⊸ Bit
-%cointoss = let
-%					q = Init0 unit
-%					q = H q
-%					b = meas q
-%				in b
-%\end{QCode}
-%
-%To write a Hoare type, we need to box the circuit as follows:
-%
-%\begin{QCode}
-%boxed_cointoss : {⊤} c : Circ(Unit, Bit) {⊤}
-%boxed_cointoss = box_unit cointoss
-%\end{QCode}
-%
-%The propositions shown above are trivial. More interesting examples will follow.
-%
-%\subsection{Example: Quantum Teleportation}\label{telep}
-%Teleportation is a simple quantum algorithm that is used to communicate a quantum state using two classical bits and a shared entangled pair of qubits. Alice is trying to send a message encoded in the qubit to Bob. There are three broad steps in the protocol: 1) preparation, ie, entanglement creation between two qubits to be shared between Alice and Bob in advance; 2) sending the message by Alice; and, 3) reconstruction of the message by Bob.
-%\begin{figure}[h]
-%	\begin{subfigure}{3in}
-%		% 	a       ← init0 ();
-%		%     b       ← init0 ();
-%		\begin{QCode}
-%		teleport : Π\kp:qbit.{q↦qbit\kp /\ a↦qbit|0⟩ /\ b↦qbit|0⟩} c:Circuit(qbit⊗qbit⊗qbit, qbit) {b↦qbit\kp} =
-%		box (q, a, b) ⇒
-%		(* 1. Bell state preparation for Alice and Bob *)
-%		a       ← H a;
-%		(a, b)  ← CX (a, b);
-%		(* 2. Bell measurement by Alice *)
-%		(q, a)  ← CX (q, a);
-%		q       ← H q;
-%		x       ← meas q;
-%		y       ← meas a;
-%		(* 3. Correction by Bob *)
-%		(y, b)  ← CX (y, b);
-%		(x, b)  ← CZ (x, b);
-%		output b
-%		\end{QCode}
-%		% ()      ← discard y;
-%		%     ()      ← discard x;
-%	\end{subfigure}
-%	\begin{subfigure}{1in}
-%		% 	\centerline{
-%		\Qcircuit @C=.4em @R=.4em @! {
-%			\lstick{q=\ket{\psi}} & \qw & \qw & \ctrl{1} & \gate{H} & \meter & \cw & \control \cw\\
-%			\lstick{a=\ket{0}} & \gate{H} & \ctrl{1} & \gate{X} & \qw & \meter & \control \cw & \\
-%			\lstick{b=\ket{0}} & \qw & \gate{X} & \qw & \qw & \qw & \gate{X} \cwx & \gate{Z} \cwx[-2] & \rstick{\ket{\psi}} \qw
-%			\gategroup{2}{2}{3}{3}{.7em}{.}
-%			\gategroup{1}{4}{2}{6}{.7em}{.}
-%		}
-%		% }
-%	\end{subfigure}
-%	\Description{On the left, \qwire code to implement Quantum Teleportation algorithm annotated by its Hoare Type that provides specification for the algorithm. On the right, the corresponding quantum circuit.}
-%	\caption{Quantum Teleportation (Code and Circuit)}
-%	\label{fig:teleport}
-%\end{figure}
-%
-%In Fig. \ref{fig:teleport}, on the left, we show a function \lstinline{teleport} written in \qwire-like syntax (TODO: add ref) that implements the quantum teleportation circuit shown on the right. It returns one qubit and takes three qubits as arguments: one qubit \lstinline{q} that could be in any unknown state $\ket{\psi}$ which Alice is trying to send to Bob; and two qubits, \lstinline{a} and \lstinline{b}, initially in the state $\ket{0}$. The function first entangles the latter two qubits into a Bell state. Then, Alice performs a Bell measurement of her two qubits \lstinline{q} and \lstinline{a} and sends the resulting classical bits (\lstinline{x} and \lstinline{y}) to Bob. Finally, Bob applies corrective measurement using the quantum gates X and Z controlled by the classical bits that he received from Alice. The result is that Bob's qubit is now in the same state as the initial state of the message qubit \lstinline{q}. The specification that the function must meet is written using a Hoare type, which we described in the previous section.
-%
-%\subsection{Verification}
-%Here we describe how HTT lets us verify the correctness of teleportation based on the specification provided as the type of the function. Type checking in HTT involves generation of strongest postconditions at each step of the program with the initial precondition as input. Verification is a two-step process: the first phase does basic type checking and verification condition generation which is decidable, the second phase needs to show the validity of the generated verification conditions, which is undecidable. This second phase can be deferred to an automated theorem prover. For illustration, we show the assertions as we step through the first step of teleportation. The final state here is that qubits \lstinline{a} and \lstinline{b} are entangled into the first Bell state, $\ket{\phi^+} = \frac{1}{\sqrt{2}}(\ket{00} + \ket{11})$.
-%
-%% \lstset{aboveskip=1pt,belowskip=1pt}
-%\begin{QCode}
-%(* P0 (given): {q↦qbit\kp /\ a↦qbit|0⟩ /\ b↦qbit|0⟩} *)
-%a      ← H a;
-%(* P1: {q↦qbit\kp /\ a↦qbit1/sqrt2(|0⟩+|1⟩) /\ b↦qbit|0⟩} *)
-%(a, b) ← CX (a, b);
-%(* P2: {q↦qbit\kp /\ (a,b)↦qbit|φ+⟩ *)
-%\end{QCode}
 
 %\subsection{Soundness / Type Checking Algorithm}
 
@@ -542,7 +449,7 @@ There are several avenues of future work to explore:
 Writing a modular version of \texttt{testBell}.
 
 \subsection{Hadamard basis states}
-\begin{QCode}
+\begin{lstlisting}[language=QHaskell]
 qplus : {emp} r : Qbit {Id(r, |+\>)}
       = do q <= mkQbit false;
            applyU (H q);
@@ -552,10 +459,10 @@ qminus : {emp} r : Qbit {Id(r, |-\>)}
        = do q <= mkQbit true;
             applyU (H q);
             return q
-\end{QCode}
+\end{lstlisting}
 
 \subsection{Creating entanglement}
-\begin{QCode}
+\begin{lstlisting}[language=QHaskell]
 share : \Pi a : Qbit.
         {a \in {|+\>, |-\>}}   -- a \in {b, c} is short for Id(a,b) \/ Id(a,c)
            b : Qbit
@@ -563,28 +470,28 @@ share : \Pi a : Qbit.
       = \a.do b <= mkQbit false;
               applyU (ifQ a (X b));
               return b
-\end{QCode}
+\end{lstlisting}
 
 \subsection{Bell pair}
-\begin{QCode}
+\begin{lstlisting}[language=QHaskell]
 bell : {emp} (a, b) : (Qbit, Qbit) {Id(a, b) /\ a \in {|0\>, |1\>}}
      = do qa <- qplus;
           qb <- share qa;
           return (qa, qb)
-\end{QCode}
+\end{lstlisting}
 
 \subsection{Testing modular Bell pair}
-\begin{QCode}
+\begin{lstlisting}[language=QHaskell]
 testBell : {emp} (a, b) : (Bool, Bool) {emp /\ Id(a, b)}
          = do (qa, qb) <- bell;
               (measQbit qa, measQbit qb)
-\end{QCode}
+\end{lstlisting}
 
 \section{Teleportation}
 \label{app:teleport}
 % \todo{TODO: Refine assertions}
 \subsection{Alice's circuit}
-\begin{QCode}
+\begin{lstlisting}[language=QHaskell]
 alice : \Pi a : Qbit. \Pi e : Qbit
         {(Id(a, -) /\ entangled(e)}
            r : (Bool, Bool)
@@ -592,10 +499,10 @@ alice : \Pi a : Qbit. \Pi e : Qbit
       = \a.\e.do applyU (ifQ a (X e));
                  applyU (H a);
                  (measQbit a, measQbit e)
-\end{QCode}
+\end{lstlisting}
 
 \subsection{Bob's circuit}
-\begin{QCode}
+\begin{lstlisting}[language=QHaskell]
 bob : \Pi m1 m2 : Bool. \Pi e : Qbit
       {entangled(e)}
          r : Qbit
@@ -603,10 +510,10 @@ bob : \Pi m1 m2 : Bool. \Pi e : Qbit
       = \m1.\m2.\e.do if m1 then applyU (Z e) else ();
                       if m2 then applyU (X e) else ();
                       return e
-\end{QCode}
+\end{lstlisting}
 
 \subsection{Teleport}
-\begin{QCode}
+\begin{lstlisting}[language=QHaskell]
 teleport : \Pi q : Qbit. x : Pure.
       {Id(q, x)}
          r : Qbit
@@ -615,7 +522,7 @@ teleport : \Pi q : Qbit. x : Pure.
               (m1, m2) <- alice q a;
               tq <- bob m1 m2 b;
               return tq
-\end{QCode}
+\end{lstlisting}
 
 %\section{Sample Proof}
 %\textit{Coq code / Annotated proof objects from implementation\ldots}
