@@ -26,7 +26,7 @@
 \lstloadlanguages{Haskell}
 \lstdefinelanguage{QHaskell}{%
 	language     = Haskell,
-	morekeywords = {Qbit, U, C},
+	morekeywords = {Qbit, U, C, Pure},
 }
 \lstnewenvironment{QCode}
 {\lstset{language=QHaskell}%
@@ -46,8 +46,10 @@
 	{<=}{{$\Leftarrow$}}2 {=>}{{$\Rightarrow$}}2
 	{\ .}{{$\circ$}}2 {\ .\ }{{$\circ$}}2
 	{>>}{{>>}}2 {>>=}{{>>=}}2
-	{|}{{$\mid$}}1
-	{/\\}{{$\wedge$}}1 {\\in}{{$\in$}}1
+	{|}{{$\vert$}}1 {\\>}{{$\rangle$}}1
+	{/\\}{{$\wedge$}}1 {\\/}{{$\vee$}}1
+	{\\in}{{$\in$}}1 {\\o}{{$\circ$}}1 {\\Pi}{{$\Pi$}}1
+	{|->}{{$\mapsto$}}2 {-o}{{$\multimap$}}2
 }
 
 \newcommand{\sqir}{\ensuremath{s\textsc{qir}}\xspace}
@@ -58,13 +60,6 @@
 \newcommand{\type}[1]{\textrm{\textbf{#1}}}
 \newcommand{\kw}[1]{\,\mathrm{\texttt{#1}}\,}
 \newcommand{\todo}[1]{\textcolor{red}{#1}}
-
-\newcommand{\cket}[1]{{$\ket{#1}$}}
-\newcommand\cin{{$\in$}}
-\newcommand\cmt{{$\mapsto$}}
-\newcommand\cmm{{$\multimap$}}
-\newcommand\ccc{{$\circ$}}
-\newcommand{\cpi}{$\Pi$}
 
 \title{Quantum Hoare Type Theory}
 \subtitle{Master's Paper}
@@ -354,14 +349,14 @@ rnd : {emp} r : Bool {emp}
 As the result can be in either of its two values \texttt{false} or \texttt{true}, we need not specify any special postcondition as type checking the result will be sufficient for correctness.
 
 \subsubsection*{Testing Bell Pair}
-\begin{Verbatim}[commandchars=\$\[\]]
-testBell : {emp} (a, b) : (Bool, Bool) {emp /\ Id(a, b)}  -- a,b $cin {true, false}
+\begin{QCode}
+testBell : {emp} (a, b) : (Bool, Bool) {emp /\ Id(a, b)}  -- a,b \in {true, false}
          = do qa <= mkQbit false;
               applyU (H qa);
               qb <= mkQbit false;
               applyU (ifQ qa (X qb));
               (measQbit qa, measQbit qb)
-\end{Verbatim}
+\end{QCode}
 
 Here, we are asserting that the returned booleans $a$ and $b$ hold the same value, which is what we expect from a Bell pair.
 
@@ -372,16 +367,16 @@ We would like to describe how QHTT lets us verify the correctness of the above p
 testBell : {emp} (a, b) : (Bool, Bool) {emp /\ Id(a, b)}
               -- P0: emp
          = do qa <= mkQbit false;
-              -- P1: P0 $ccc (qa $cmt state(false))
+              -- P1: P0 \o (qa |-> state(false))
               applyU (H qa);
-              -- P2: P1 $ccc (qa $cmt state({(0.5, false), (0.5, true)}))
+              -- P2: P1 \o (qa |-> state({(0.5, false), (0.5, true)}))
               qb <= mkQbit false;
-              -- P3: P2 $ccc (qa $cmt state(false))
+              -- P3: P2 \o (qa |-> state(false))
               applyU (ifQ qa (X qb));
-              -- P4: P3 $ccc ((qa, qb) $cmt state({(0.5, (false, false),
+              -- P4: P3 \o ((qa, qb) |-> state({(0.5, (false, false),
               --                              (0.5, (true, true))}))
                 (measQbit qa, measQbit qb)
-              -- P5: P4 $ccc ((qa $cmt -) $cmm emp) $ccc ((qb $cmt -) $cmm emp)
+              -- P5: P4 \o ((qa |-> -) -o emp) \o ((qb |-> -) -o emp)
 \end{QCode}
 Finally, the \texttt{consq} rule should ensure that the assertion P5 can lead to the specified postcondition in the type of the program.
 
@@ -548,12 +543,12 @@ Writing a modular version of \texttt{testBell}.
 
 \subsection{Hadamard basis states}
 \begin{QCode}
-qplus : {emp} r : Qbit {Id(r, $cket[+])}
+qplus : {emp} r : Qbit {Id(r, |+\>)}
       = do q <= mkQbit false;
            applyU (H q);
            return q
 
-qminus : {emp} r : Qbit {Id(r, $cket[-])}
+qminus : {emp} r : Qbit {Id(r, |-\>)}
        = do q <= mkQbit true;
             applyU (H q);
             return q
@@ -561,10 +556,10 @@ qminus : {emp} r : Qbit {Id(r, $cket[-])}
 
 \subsection{Creating entanglement}
 \begin{QCode}
-share : $cpi a : Qbit.
-        {a $cin {$cket[+], $cket[-]}}   -- a $cin {b, c} is short for Id(a,b) \/ Id(a,c)
+share : \Pi a : Qbit.
+        {a \in {|+\>, |-\>}}   -- a \in {b, c} is short for Id(a,b) \/ Id(a,c)
            b : Qbit
-        {Id(a, b) /\ a $cin {$cket[0], $cket[1]}}
+        {Id(a, b) /\ a \in {|0\>, |1\>}}
       = \a.do b <= mkQbit false;
               applyU (ifQ a (X b));
               return b
@@ -572,7 +567,7 @@ share : $cpi a : Qbit.
 
 \subsection{Bell pair}
 \begin{QCode}
-bell : {emp} (a, b) : (Qbit, Qbit) {Id(a, b) /\ a $cin {$cket[0], $cket[1]}}
+bell : {emp} (a, b) : (Qbit, Qbit) {Id(a, b) /\ a \in {|0\>, |1\>}}
      = do qa <- qplus;
           qb <- share qa;
           return (qa, qb)
@@ -590,7 +585,7 @@ testBell : {emp} (a, b) : (Bool, Bool) {emp /\ Id(a, b)}
 % \todo{TODO: Refine assertions}
 \subsection{Alice's circuit}
 \begin{QCode}
-alice : $cpi a : Qbit. $cpi e : Qbit
+alice : \Pi a : Qbit. \Pi e : Qbit
         {(Id(a, -) /\ entangled(e)}
            r : (Bool, Bool)
         {emp}
@@ -601,7 +596,7 @@ alice : $cpi a : Qbit. $cpi e : Qbit
 
 \subsection{Bob's circuit}
 \begin{QCode}
-bob : $cpi m1 m2 : Bool. $cpi e : Qbit
+bob : \Pi m1 m2 : Bool. \Pi e : Qbit
       {entangled(e)}
          r : Qbit
       {(Id(r, -)}
@@ -612,7 +607,7 @@ bob : $cpi m1 m2 : Bool. $cpi e : Qbit
 
 \subsection{Teleport}
 \begin{QCode}
-teleport : $cpi q : Qbit. x : Pure.
+teleport : \Pi q : Qbit. x : Pure.
       {Id(q, x)}
          r : Qbit
       {Id(r, x)}
