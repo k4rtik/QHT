@@ -404,7 +404,7 @@ There are several avenues of future work to explore:
 
 \paragraph{Quantum Assertion Logic} An obvious need is to come up with an assertion logic similar to Separation Logic~\cite{reynolds2002} for quantum computing so as to be able to reason about only the interesting portions of the quantum state while still ensuring correctness of non-local effects such as entanglement. Various Quantum Hoare Logics that exist~\cite{ying_floydhoare_2012} currently do not support frame rules that provide Separation Logic its power.
 
-\paragraph{Linearity} Peter Selinger and collaborators have recently proposed a linear dependent typed version of Proto-Quipper (dubbed Proto-Quipper-D)~\cite{selinger2020}. It is an interesting challenge to reconcile linearity in our theory based on their proposal.
+\paragraph{Linearity} Peter Selinger and collaborators have recently proposed a linear dependent typed version of Proto-Quipper (dubbed Proto-Quipper-D)~\cite{selinger2020,fu2020linear}. It is an interesting challenge to reconcile linearity in our theory based on their proposal.
 
 \paragraph{Circuits as Arrows} Further, Proto-Quipper treats quantum circuits as first class citizens of the language. We would like to explore modifying our theory to treat Quantum Hoare types as arrows instead of as monads as was suggested by Vizzotto et al~\cite{so-arrows}. It makes sense from the perspective of sequential composition as arrows can have an arbitrary number of input/outputs as opposed to monads.
 
