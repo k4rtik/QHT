@@ -319,15 +319,16 @@ In this section, we show some simple examples from the QIO work~\cite{qio} trans
 At the end of this section, we show a sample verification using QHTT for Bell pair generation.
 
 \subsubsection*{Hello Quantum World}
+We start out in an empty state and assert that the result is equal to \texttt{false}.
 \begin{lstlisting}[language=QHaskell]
 hqw : {emp} r : Bool {emp /\ Id(r, false)}
     = do q <= mkQbit false;
          measQbit q
 \end{lstlisting}
 
-We start out in an empty state and assert that the result is equal to \texttt{false}.
-
 \subsubsection*{Coin Toss}
+As the result can be in either of its two values \texttt{false} or \texttt{true}, we need not specify any special postcondition as type checking the result will be sufficient for correctness.
+
 \begin{lstlisting}[language=QHaskell]
 rnd : {emp} r : Bool {emp}
     = do q <= mkQbit false;
@@ -335,9 +336,10 @@ rnd : {emp} r : Bool {emp}
          measQbit q
 \end{lstlisting}
 
-As the result can be in either of its two values \texttt{false} or \texttt{true}, we need not specify any special postcondition as type checking the result will be sufficient for correctness.
-
 \subsubsection*{Testing Bell Pair}
+Here, we are asserting that the returned booleans $a$ and $b$ hold the same value, which is what we expect from a Bell pair.
+
+\todo{The type should be \type{Bool} $\otimes$ \type{Bool}}
 \begin{lstlisting}[language=QHaskell]
 testBell : {emp} (a, b) : (Bool, Bool) {emp /\ Id(a, b)}  -- a,b \in {true, false}
          = do qa <= mkQbit false;
@@ -346,8 +348,6 @@ testBell : {emp} (a, b) : (Bool, Bool) {emp /\ Id(a, b)}  -- a,b \in {true, fals
               applyU (ifQ qa (X qb));
               (measQbit qa, measQbit qb)
 \end{lstlisting}
-
-Here, we are asserting that the returned booleans $a$ and $b$ hold the same value, which is what we expect from a Bell pair.
 
 \paragraph{Verification}
 We would like to describe how QHTT lets us verify the correctness of the above program based on the specification provided as the type of the function. For illustration, we show the assertions annotated as comments as we step through the \texttt{testBell} program below. We have elided specific details about unitary application and definition of the previously mentioned \texttt{state} function as they are still being worked out.
@@ -465,6 +465,7 @@ share : \Pi a : Qbit.
 \end{lstlisting}
 
 \subsection{Bell pair}
+\todo{The type should be \type{Qbit} $\otimes$ \type{Qbit}}
 \begin{lstlisting}[language=QHaskell]
 bell : {emp} (a, b) : (Qbit, Qbit) {Id(a, b) /\ a \in {|0\>, |1\>}}
      = do qa <- qplus;
