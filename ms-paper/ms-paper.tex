@@ -1,4 +1,4 @@
-\documentclass[acmsmall,nonacm,timestamp]{acmart}
+\documentclass[acmsmall,nonacm,timestamp,review=false,anonymous=false]{acmart}
 
 \acmJournal{PACMPL}
 
@@ -161,7 +161,7 @@ rot :: Qbit -> ((Bool, Bool) -> C) -> U
 cond :: Qbit -> (Bool -> U) -> U
 \end{lstlisting}
 
-Here, \texttt{rot} takes a qubit and a two-by-two complex-valued unitary matrix (represented as a function from the matrix indices to $\mathbb{C}$) and lets one define arbitrary rotation on a single qubit. \texttt{rot} can then be used to define standard gates such as the hadamard, H, and the Pauli gates, X, Y and Z. \texttt{cond} is the unitary conditional that is used to perform branching unitary operations. For the present paper, we use a simpler conditional, \texttt{ifQ}, that is defined as follows:
+Here, \texttt{rot} takes a qubit and a two-by-two complex-valued unitary matrix (represented as a function from the matrix indices to $\mathbb{C}$) and lets one define arbitrary rotation on a single qubit. \texttt{rot} can then be used to define standard gates such as the Hadamard, H, and the Pauli gates, X, Y and Z. \texttt{cond} is the unitary conditional that is used to perform branching unitary operations. For the present paper, we use a simpler conditional, \texttt{ifQ}, that is defined as follows:
 
 \begin{lstlisting}[language=QHaskell]
 ifQ :: Qbit -> U -> U
@@ -251,7 +251,7 @@ These are the quantum-specific effectful commands from QIO for initialization, u
 In this section, we provide some details about type checking in HTT and how it is different in the quantum case.
 
 \subsubsection{Judgments}
-The type system is designed to be bidirectional and syntax directed and hence includes separate judgements for intro and elim terms. We are able to use them unchanged for QHTT.
+The type system is designed to be bidirectional and syntax directed and hence it includes separate judgements for intro and elim terms. We are able to use them unchanged for QHTT.
 
 The type checking process also involves generating canonical forms for each term. A canonical form in HTT means a beta-normal (containing no beta-redexes) and eta-long (all intro terms are eta-expanded) form. We elide much detail here.
 
