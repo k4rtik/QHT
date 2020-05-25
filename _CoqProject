@@ -1,15 +1,8 @@
--Q htt HTT
 -Q vqc VQC
+-Q src QHTT
 
-htt/domain.v
-htt/heaptac.v
-htt/stmod.v
-htt/stsep.v
-htt/stlog.v
-htt/stlogR.v
-htt/array.v
-htt/llistR.v
-htt/llist_map_demo.v
+src/Axioms.v
+src/State.v
 
 vqc/Complex.v
 vqc/Matrix.v
