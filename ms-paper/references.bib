@@ -1,6 +1,6 @@
 % Encoding: UTF-8
 
-@inbook{qio,
+@incollection{qio,
 	author={Altenkirch, Thorsten and Green, Alexander S.},
 	year={2009},
 	title={The Quantum IO Monad},
@@ -8,8 +8,9 @@
 	DOI={10.1017/CBO9781139193313.006},
 	booktitle={Semantic Techniques in Quantum Computation},
 	publisher={Cambridge University Press},
-  address={Cambridge, UK},
-	pages={173–205},
+	address={Cambridge, UK},
+	editor={Gay, Simon and Mackie, Ian},
+	pages={173--205},
 	NOcrossref={SemQC2009},
 	url = {http://www.cs.nott.ac.uk/~psztxa/g5xnsc/chapter.pdf}
 }
@@ -23,7 +24,7 @@
 	url = {https://software.imdea.org/~aleks/htt/ynot08.pdf},
 	doi = {10.1145/1411204.1411237},
 	booktitle = {Proc. ICFP ’08},
-	pages = {229–240},
+	pages = {229--240},
 }
 
 @inproceedings{reynolds2002,
@@ -33,10 +34,10 @@
 	year={2002},
 	volume={},
 	number={},
-	pages={55-74},
+	pages={55--74},
 	doi={10.1109/LICS.2002.1029817},
 	url = {https://www.cs.cmu.edu/~jcr/seplogic.pdf},
-	ISSN={1043-6871},
+	ISSN={1043--6871},
 	month={July},
     publisher = {IEEE},
     address = {USA},
@@ -63,6 +64,14 @@
     note = {To appear}
 }
 
+@inproceedings{rssl20,
+	author    = {Robert Rand and Aarthi Sundaram and Kartik Singhal and Brad Lackey},
+	title     = {Gottesman Types for Quantum Programs},
+	booktitle = {Proc. {QPL} '20},
+	year      = {2020},
+	note      = {To appear}
+}
+
 @article{so-arrows,
 	author = {Vizzotto, Juliana and Altenkirch, Thorsten and Sabry, Amr},
 	title = {Structuring Quantum Effects: Superoperators as Arrows},
@@ -76,12 +85,12 @@
 	doi = {10.1017/S0960129506005287},
 	journal = {Math. Struct. Comput. Sci.},
 	month = jun,
-	NOpages = {453–468},
+	NOpages = {453--468},
 	numpages = {16},
 	url = {https://arxiv.org/abs/quant-ph/0501151}
 }
 
-@inbook{JorrandPerdrix2009,
+@incollection{JorrandPerdrix2009,
 	author={Jorrand, Philippe and Perdrix, Simon},
 	year={2009},
 	title={Abstract Interpretation Techniques for Quantum Computation},
@@ -89,11 +98,51 @@
 	DOI={10.1017/CBO9781139193313.007},
 	booktitle={Semantic Techniques in Quantum Computation},
 	publisher={Cambridge University Press},
-  address={Cambridge, UK},
-	NOeditor={Gay, Simon and Mackie, IanEditors},
-	pages={206–234},
+	address={Cambridge, UK},
+	editor={Gay, Simon and Mackie, Ian},
+	pages={206--234},
 	NOcrossref={SemQC2009}
 }
+
+@article{fqc06,
+	title = "From Reversible to Irreversible Computations",
+	journal = "Electron. Notes Theor. Comput. Sci.",
+	volume = "210",
+	pages = "65--74",
+	year = "2008",
+	note = "Proc. QPL '06",
+	issn = "1571-0661",
+	doi = "10.1016/j.entcs.2008.04.018",
+	author = "Alexander S. Green and Thorsten Altenkirch",
+}
+
+@misc{dunfield2019bidirectional,
+	title={Bidirectional Typing},
+	author={Joshua Dunfield and Neel Krishnaswami},
+	year={2019},
+	eprint={1908.05839},
+	archivePrefix={arXiv},
+	primaryClass={cs.PL},
+	url={https://arxiv.org/abs/1908.05839},
+	note={submitted to ACM Computing Surveys}
+}
+
+@misc{perconti2012,
+	title = {Hoare Type Theory: Dependent Types for State},
+	author = {James T. Perconti},
+	year = {2012},
+	url = {http://www.ccs.neu.edu/home/amal/course/7480-s12/HTT-notes.pdf}
+}
+
+@phdthesis{asg2010,
+	month = {July},
+	title = {Towards a formally verified functional quantum programming language},
+	author = {Alexander S. Green},
+	year = {2010},
+	school = {University of Nottingham},
+	url = {http://eprints.nottingham.ac.uk/11457/},
+}
+
 
 @Article{hoare_axiomatic_1969,
   author  = {Hoare, C. A. R.},
@@ -2531,15 +2580,17 @@
   pages         = {41},
 }
 
-@InProceedings{DBLP:journals/corr/abs-1805-06908,
+@InProceedings{amy18,
   author    = {Amy, Matthew},
-  title     = {Towards large-scale functional verification of universal quantum circuits},
-  booktitle = {Proceedings 15\textsuperscript{th} international conference on quantum physics and logic, {QPL} 2018, halifax, canada, 3-7\textsuperscript{th} june 2018.},
+  title={Towards Large-scale Functional Verification of Universal Quantum Circuits},
+  booktitle = {Proceedings 15\textsuperscript{th} International Conference on Quantum Physics and Logic, {QPL} 2018, Halifax, Canada, 3-7\textsuperscript{th} June 2018.},
   year      = {2018},
   volume    = {287},
   pages     = {1--21},
-  doi       = {10/ggb9cz},
+  DOI={10.4204/eptcs.287.1},
   url       = {https://doi.org/10.4204/EPTCS.287.1},
+  publisher={Open Publishing Association},
+  address   = {Waterloo, NSW, Australia},
 }
 
 @Article{downen_ariola_2018,

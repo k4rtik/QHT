@@ -50,6 +50,16 @@
 \newcommand{\kw}[1]{\,\mathrm{\texttt{#1}}\,}
 \newcommand{\todo}[1]{\textcolor{red}{#1}}
 
+% modified from bidir-survey
+\definecolor{dRed}{rgb}{0.85, 0.0, 0.0}
+\definecolor{dBlue}{rgb}{0.0, 0.0, 0.85}
+
+\newcommand{\chkcolor}{dBlue}
+\newcommand{\syncolor}{dRed}
+\newcommand{\chk}{\,\textcolor{\chkcolor}{\Leftarrow}\,}
+\newcommand{\uncoloredsyn}{{\Rightarrow}}
+\newcommand{\syn}{\,\textcolor{\syncolor}{\uncoloredsyn}\,}
+
 \title{Quantum Hoare Type Theory}
 \subtitle{Master's Paper}
 
@@ -107,7 +117,7 @@ As programming languages researchers, we think it will be better to encode such 
 
 The main idea is that instead of just indexing the QIO monad type with the type of computation result, we can also index it with pre-conditions and post-conditions so as to integrate Hoare-style reasoning into the type system itself. The resulting Quantum Hoare Type, $\{P\} x{ : }A \{Q\}$, specifies the preconditions, $P$, that hold on the quantum state before execution; the result, $x$, and its type, $A$, on successful execution; and, the postconditions, $Q$, that are true for the quantum state after successful execution. In this way the effectful quantum fragment of the program is effectively encapsulated inside the Quantum Hoare monad. Our theory, like HTT, allows the usual equational reasoning for the pure classical fragments of the program and uses syntax-directed type checking for generating strongest postconditions for the quantum fragment.
 
-This paper is organized as follows. We discuss background in the next section (\cref{sec:bg}); specifically, quantum computing (\cref{sec:qc}),  Hoare Type Theory in the classical setting (\cref{sec:htt}) and then the Quantum IO Monad interface (\cref{sec:qio}). Then we introduce our contributions in merging these ideas together for specification and enforcement of useful semantic properties in section \cref{sec:qhtt} along with its syntax (\cref{sec:syntax}), typing (\cref{sec:typing}) and, some examples (\cref{sec:examples}). Some related work follows in \cref{related}. Finally, we conclude and share ideas for future work in the final section (\cref{sec:conclusion}).
+This paper is organized as follows. We discuss background in the next section (\cref{sec:bg}); specifically, quantum computing (\cref{sec:qc}),  Hoare Type Theory in the classical setting (\cref{sec:htt}) and then the Quantum IO Monad interface (\cref{sec:qio}). Then we introduce our contributions in merging these ideas together for specification and enforcement of useful semantic properties in section \cref{sec:qhtt} along with its syntax (\cref{sec:syntax}), typing (\cref{sec:typing}) and, some examples (\cref{sec:examples}). Some related work follows in \cref{sec:related}. Finally, we conclude and share ideas for future work in the final section (\cref{sec:conclusion}).
 
 \section{Background}
 \label{sec:bg}
@@ -308,7 +318,7 @@ $x \Leftarrow \kw{measQbit} M; E$
 
 In measurement, we first need to ensure that the precondition P implies that M is allocated in the heap and that the fragment of heap that only refers to location M becomes empty.
 
-As may be apparent, initialization and measurement are analogous to HTT's \texttt{alloc} and \texttt{dealloc} primitives. We are working out precise details for unitary application, but at a high-level, they involve ensuring that the given unitary term actually represents a unitary matrix and updating the quantum state with the result of unitary application. This involves incorporating the monoidal structure of unitaries into our theory (as is done in QIO). This step also involves generating verification conditions that cannot be checked during this first phase of typechecking.
+As may be apparent, initialization and measurement are analogous to HTT's \texttt{alloc} and \texttt{dealloc} primitives. We are working out precise details for unitary application, but at a high-level, they involve ensuring that the given unitary term actually represents a unitary matrix and updating the quantum state with the result of unitary application. This involves incorporating the monoidal structure of unitaries into our theory (as is done in QIO). This step also involves generating verification conditions that cannot be checked during this first phase of typechecking. We are also looking at alternatives such as the recently proposed sum-over-paths action semantics \cite{amy18}.
 
 \subsection{Sample programs}
 \label{sec:examples}
@@ -380,7 +390,7 @@ We show some two more examples in the appendix for a modular version of Bell pai
 %\subsection{Circuit-complexity Considerations}
 
 \section{Related Work}
-\label{related}
+\label{sec:related}
 %\textit{Objective of this section\ldots}
 
 %\subsection{Quantum Languages and Types}
@@ -414,7 +424,7 @@ There are several avenues of future work to explore:
 %\textit{Future work about using Proto-Quipper/\qwire as languages, then extraction into QASM and checking generated verification conditions.}
 
 \begin{acks}
-%	I would like to thank my advisor John Reppy for suggesting me to look at Hoare Type Theory that led to this master's thesis and for his constant support and encouragement to see it through. I also thank my committee members Fred Chong and Ravi Chugh for reading drafts of this document and providing useful feedback.
+	I thank John Reppy, Robert Rand and the anonymous reviewers of QPL 2020 for their feedback on an earlier presentation of this work.
 
 	This material is based upon work supported by
 	EPiQC, an \grantsponsor{GS100000001}{NSF}{http://dx.doi.org/10.13039/100000001}
