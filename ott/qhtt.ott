@@ -16,6 +16,7 @@ grammar
     | D . Psi . { P } x : A { Q } ::   :: Hoare (+ bind x in Q +) {{ com hoare type }}
     | { P } x : A { Q }   :: S :: HoareS
     | ( A )               :: S :: paren
+    | [ M / x ] A         :: M :: tsub
 
   P, Q, R :: Ass ::= {{ com Assertions }}
     | top                 ::   :: Top
@@ -128,6 +129,12 @@ defn
     ------------------- :: Var
     D, x:A |- x => A
 
+    D |- K => Pi x:A.B
+    D |- M <= A
+    --------------------------- :: Pi
+    D |- K M => [M/x](B)
+
+
 defn
     D |- M <= A :: :: Tintro :: TIntro       {{ com Intro term $[[M]]$ has type $[[A]]$ }} by
 
@@ -143,10 +150,10 @@ defn
     D |- do E <= {P}x:A{Q}
 
 defn
-    D ; P |- E => x : A . Q :: :: SPC :: SPC {{ com $[[E]]$ has strongest postcond. $[[Q]]$ }} by
+    D ; P |- E => x : A . Q :: :: SPC :: SPC {{ com $[[E]]$ has strongest postcondition $[[Q]]$ }} by
 
 defn
-    D ; P |- E <= x : A . Q :: :: PC :: PC   {{ com $[[E]]$ has postcond. $[[Q]]$ }} by
+    D ; P |- E <= x : A . Q :: :: PC :: PC   {{ com $[[E]]$ has postcondition $[[Q]]$ }} by
 
     D; P |- E => x:A.R
     D, x:A; init, mem; R ==> Q
