@@ -123,36 +123,35 @@ defns
   Jtype :: '' ::=
 
 defn
-    D |- K => A [ N' ] :: :: TElim :: TElim         {{ com Elim term $[[K]]$ has type $[[A]]$,
-                                                           and canonical form $[[N']]$ }} by
+    D |- K => A :: :: TElim :: TElim         {{ com Elim term $[[K]]$ has type $[[A]]$ }} by
+
     ------------------- :: Var
-    D, x:A |- x => A[x]
+    D, x:A |- x => A
 
 defn
-    D |- M <= A [ M' ] :: :: Tintro :: TIntro       {{ com Intro term $[[M]]$ has type $[[A]]$,
-                                                           and canonical form $[[M']]$ }} by
+    D |- M <= A :: :: Tintro :: TIntro       {{ com Intro term $[[M]]$ has type $[[A]]$ }} by
+
     ------------------- :: Unit
-    D |- () <= Unit[()]
+    D |- () <= Unit
 
-    D, x:A |- M <= B[M']
+    D, x:A |- M <= B
     --------------------------- :: Pi
-    D |- \x.M <= Pi x:A.B[\x.M']
+    D |- \x.M <= Pi x:A.B
 
-    D; HId(init, mem) /\ P |- E <= x:A.Q[E']
+    D; HId(init, mem) /\ P |- E <= x:A.Q
     ---------------------------------------- :: Hoare
-    D |- do E <= {P}x:A{Q}[do E']
+    D |- do E <= {P}x:A{Q}
 
 defn
-    D ; P |- E => x : A . Q [ E' ] :: :: SPC :: SPC {{ com $[[E]]$ has strongest postcond. $[[Q]]$
-                                                           and canonical form $[[E']]$ }} by
+    D ; P |- E => x : A . Q :: :: SPC :: SPC {{ com $[[E]]$ has strongest postcond. $[[Q]]$ }} by
 
 defn
-    D ; P |- E <= x : A . Q [ E' ] :: :: PC :: PC   {{ com $[[E]]$ has postcond. $[[Q]]$
-                                                           and canonical form $[[E']]$ }} by
-    D; P |- E => x:A.R[E']
+    D ; P |- E <= x : A . Q :: :: PC :: PC   {{ com $[[E]]$ has postcond. $[[Q]]$ }} by
+
+    D; P |- E => x:A.R
     D, x:A; init, mem; R ==> Q
     -------------------------- :: Consq
-    D; P |- E <= x:A.Q[E']
+    D; P |- E <= x:A.Q
 
 defn
     D ; Psi ; Gm1 ==> Gm2 :: :: SeqImp :: SeqImp by
