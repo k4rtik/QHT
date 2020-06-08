@@ -225,7 +225,7 @@ Complete grammar written using Ott tool at \url{https://github.com/k4rtik/QHT/bl
 		\textit{Intro terms} & $M, N, O$ & ::= & $ K \mid () \mid \lambda x.M \mid \kw{do} E \mid \kw{true} \mid \kw{false} $\\ \\
 		\textit{Q. Commands} & $c$ & ::= &
 		\begin{minipage}[t]{0.45\columnwidth}%
-			$ \kw{mkQbit} M \mid \kw{measQbit} M \mid \kw{applyU} M \mid \kw{if} M \kw{then} N \kw{else} O$
+			$ \kw{mkQbit} M \mid \kw{measQbit} M \mid \kw{applyU} M$
 		\end{minipage}\\
 		\textit{Computations} & $E, F$ & ::= & $ \kw{return} M \mid x \leftarrow K; E \mid x \Leftarrow c; E \mid x =_A M; E $\\ \\
 		\textit{Variable context} & $\Delta$ & ::= & $ \cdot \mid x : A, \Delta $ \\
@@ -256,7 +256,7 @@ The terms are divided into introduction and elimination sorts for the purpose of
 The pure fragment allows higher-order functions while the impure (effectful) fragment is encapsulated within the monadic \texttt{do} $E$ construct and supports a simple imperative quantum language inspired by QIO constructs. It is worth noting that \texttt{do} $E$ represents suspended computation and is considered pure.
 
 \paragraph{Quantum Commands}
-These are the quantum-specific effectful commands from QIO for initialization, unitary application and measurement of qubits. We also support classical control using the \texttt{if} $M$ \texttt{then} $N$ \texttt{else} $O$ construct similar to HTT.
+These are the quantum-specific effectful commands from QIO for initialization, unitary application and measurement of qubits.
 
 \paragraph{Computations} The computations are the usual monadic return and three sequencing operations that bind their result to a variable similar to HTT. The first, $x \leftarrow K$, executes a suspended computation (such as applying a function that includes a \texttt{do} $E$ in its body); the second, $x \Leftarrow c$ executes a primitive command $c$; and the last, $x =_A M$, is just syntactic sugar for let-binding.
 
@@ -440,6 +440,8 @@ Our approach builds upon previous work in reasoning about quantum programs such 
 In this paper, we have described our ongoing work on Quantum Hoare Type Theory, which modifies HTT for quantum computing using ideas from the Quantum IO monad work. This approach has the potential to be a unified system for programming, specification, and reasoning about quantum programs. We need to overcome challenges such as compactly specifying properties of quantum state when dealing with more than a few qubits. We also need to maintain the syntax directed nature of HTT's bidirectional typechecking while incorporating quantum wire types.
 
 There are several avenues of future work to explore:
+
+\paragraph{Quantum Language} Our programming language currently does not support conditionals or any iterative or recursive constructs. We would like to add those in future.
 
 \paragraph{Mechanization} There are multiple implementations of HTT in Coq such as Ynot~\cite{ynot2008}. We are similarly working on mechanizing QHTT in Coq for higher assurance of the usefulness and soundness of our theory. This will also enable us to extract verified circuits in a lower level quantum language such as OpenQASM for execution on real machines.
 
