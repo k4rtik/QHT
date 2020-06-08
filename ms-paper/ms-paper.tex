@@ -347,11 +347,26 @@ At the end of this section, we show a sample verification using QHTT for Bell pa
 \subsubsection*{Hello Quantum World}
 \leavevmode
 
+\textbf{Code:}
+
 \begin{minipage}{0.95\linewidth}
 \begin{lstlisting}[language=QHaskell]
 hqw : {emp} r : Bool {emp /\ Id(r, false)}
     = do q <= mkQbit false;
          measQbit q
+\end{lstlisting}
+\end{minipage}
+
+\textbf{Verification steps:}
+
+\begin{minipage}{0.95\linewidth}
+\begin{lstlisting}[language=QHaskell]
+hqw : {emp} r : Bool {emp /\ Id(r, false)}
+-- P0: emp
+	= do q <= mkQbit false;
+-- P1: P0 \o (q |-> |0\>)
+		 measQbit q
+-- P2: P1 \o ((q |-> -) -o emp)
 \end{lstlisting}
 \end{minipage}
 
