@@ -340,14 +340,12 @@ As may be apparent, initialization and measurement are analogous to HTT's \textt
 \subsection{Sample programs}
 \label{sec:examples}
 
-In this section, we show some simple examples from the QIO work~\cite{qio} translated in our language and annotated with their program specifications using their Quantum Hoare types. An observation is that translating the programs was a very simple process except for coming up with the right specifications for the programs. We take some liberty in writing our typeset syntax as plain text for convenience and provide some commentary on assertions specified for these programs.
+In this section, we show some simple examples from the QIO work~\cite{qio} translated in our language and annotated with their program specifications using their Quantum Hoare types. An observation is that translating the programs was a very simple process except for coming up with the right specifications for the programs. We provide some commentary on assertions specified for these programs.
 
 At the end of this section, we show a sample verification using QHTT for Bell pair generation.
 
-\subsubsection*{Hello Quantum World}
+\subsubsection{Hello Quantum World}
 \leavevmode
-
-\textbf{Code:}
 
 \begin{minipage}{0.95\linewidth}
 \begin{lstlisting}[language=QHaskell]
@@ -357,22 +355,22 @@ hqw : {emp} r : Bool {emp /\ Id(r, false)}
 \end{lstlisting}
 \end{minipage}
 
-\textbf{Verification steps:}
+In this trivial program where we initialize a new qubit with \texttt{false} and then immediately measure it, we assert that the result is equal to \texttt{false}. The complete specification also implicitly says that the existing quantum state is not affected in any way as both the pre and postcondition include the \texttt{emp} assertion.
+
+Verification steps follow:
 
 \begin{minipage}{0.95\linewidth}
 \begin{lstlisting}[language=QHaskell]
 hqw : {emp} r : Bool {emp /\ Id(r, false)}
 -- P0: emp
-	= do q <= mkQbit false;
+    = do q <= mkQbit false;
 -- P1: P0 \o (q |-> |0\>)
-		 measQbit q
+         measQbit q
 -- P2: P1 \o ((q |-> -) -o emp)
 \end{lstlisting}
 \end{minipage}
 
-In this trivial program where we initialize a new qubit with \texttt{false} and then immediately measure it, we assert that the result is equal to \texttt{false}. The complete specification also implicitly says that the existing quantum state is not affected in any way as both the pre and postcondition include the \texttt{emp} assertion.
-
-\subsubsection*{Coin Toss}
+\subsubsection{Coin Toss}
 \leavevmode
 
 \begin{minipage}{0.95\linewidth}
@@ -386,7 +384,22 @@ rnd : {emp} r : Bool {emp}
 
 In the case of quantum coin toss, the result can be in either of its two boolean values \texttt{false} or \texttt{true}, hence, we need not specify any special postcondition as type checking the result will be sufficient for correctness.
 
-\subsubsection*{Testing Bell Pair}
+Verification steps follow:
+
+\begin{minipage}{0.95\linewidth}
+\begin{lstlisting}[language=QHaskell]
+rnd : {emp} r : Bool {emp}
+-- P0: emp
+    = do q <= mkQbit false;
+-- P1: P0 \o (q |-> |0\>)
+         applyU (H q);
+-- P2: P1 \o ((q |-> |0\>) -o (q |-> |+\>))
+         measQbit q
+-- P3: P2 \o ((q |-> -) -o emp)
+\end{lstlisting}
+\end{minipage}
+
+\subsubsection{Testing Bell Pair}
 \leavevmode
 \todo{TODO: Should the type be \type{Bool} $\otimes$ \type{Bool}?}
 
