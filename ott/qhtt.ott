@@ -23,16 +23,22 @@ grammar
     | bot                 ::   :: Bot
     | P /\ Q              ::   :: And
     | P \/ Q              ::   :: Or
+    | P * Q               ::   :: SepCon
     | P imp Q             ::   :: Imply
     | not P               ::   :: Not
     | ex x : A . P        ::   :: Exists  (+ bind x in P +)
     | all x : A . P       ::   :: Forall  (+ bind x in P +)
     | ex h : heap . P     ::   :: ExistsH (+ bind h in P +)
+    | ex D . Psi . P      :: S :: CExistsH
+    | all D . Psi . P     :: S :: CForallH
     | all h : heap . P    ::   :: ForallH (+ bind h in P +)
     | Id_A ( M , N )      ::   :: TermId {{ com propositional equality }}
     | HId ( H , G )       ::   :: HeapId {{ com propositional heap equality }}
     | indom ( H , M )     ::   :: InDomain
     | seleq ( H , M , N ) :: S :: SelEq
+    | this ( H )          :: S :: This
+    | P -o Q              :: S :: Difference
+    | ( P )               :: S :: Paren
 
   H, G :: Heap ::= {{ com Quantum Heaps }}
     | h                   ::   :: HeapVar
@@ -108,8 +114,9 @@ grammar
     | not                 ::   :: not        {{ tex \neg }}
     | ex                  ::   :: exists     {{ tex \exists }}
     | all                 ::   :: forall     {{ tex \forall }}
-    | Id_A                ::   :: IdA        {{ tex Id_A }}
+    | Id_A                ::   :: IdA        {{ tex \mathbf{Id}_A }}
     | =_A                 ::   :: AssA       {{ tex =_A }}
+    | -o                  ::   :: Lollipop   {{ tex \multimap }}
 
   formula :: 'formula_' ::=
     | judgement           ::   :: judgement
@@ -156,6 +163,10 @@ defn
     D; HId(init, mem) /\ P |- E chk x:A.Q
     ------------------------------------- :: Hoare
     D |- do E chk {P}x:A{Q}
+
+    D; this(init) /\ ex D'.Psi.(R1 * top) |- E chk x:A. all D'.Psi.R1 -o R2
+    ----------------------------------------------------------------------- :: DoE
+    D |- do E chk D'.Psi.{R1} x:A {R2}
 
 defn
     D ; P |- E syn x : A . Q :: :: SPC :: SPC {{ com $[[E]]$ synthesizes strongest postcondition $[[Q]]$ }} by
