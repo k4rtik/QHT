@@ -560,10 +560,10 @@ alice : \Pi a : Qbit. \Pi e : Qbit
         {emp}
       = \a.\e.do applyU (ifQ a (X e));
                  applyU (H a);
-                 (measQbit a, measQbit e)
+                 return (measQbit a, measQbit e)
 \end{lstlisting}
 
-\subsection{Bob's circuit}
+\subsection{Bob's circuit} \todo{TODO: With \texttt{if ... then ... else} removed, this will not work}
 \begin{lstlisting}[language=QHaskell]
 bob : \Pi m1 m2 : Bool. \Pi e : Qbit
       {entangled(e)}
