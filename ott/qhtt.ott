@@ -59,7 +59,6 @@ grammar
     | mkQbit M           :: :: init
     | applyU M           :: :: apply
     | measQbit M         :: :: measure
-    | if M then N else O :: :: conditional
 
   E, F :: Comp ::=  {{ com Computations }}
     | return M        ::   :: lift
@@ -96,6 +95,8 @@ grammar
     | <                   ::   :: langle     {{ tex \langle }}
     | >                   ::   :: rangle     {{ tex \rangle }}
     | |-                  ::   :: turnstile  {{ tex \vdash }}
+    | syn                 ::   :: syn        {{ tex \textcolor{red}{\stackrel{\rightarrow}{\in} } }}
+    | chk                 ::   :: chk        {{ tex \textcolor{blue}{\stackrel{\leftarrow}{\in} } }}
     | in                  ::   :: in         {{ tex \in }}
     | Pi                  ::   :: pi         {{ tex \Pi }}
     | otimes              ::   :: otimes     {{ tex \otimes }}
@@ -124,41 +125,40 @@ defns
   Jtype :: '' ::=
 
 defn
-    D |- K => A :: :: TElim :: TElim         {{ com Elim term $[[K]]$ has type $[[A]]$ }} by
+    D |- K syn A :: :: TElim :: TElim         {{ com Elim term $[[K]]$ synthesizes type $[[A]]$ }} by
 
-    ------------------- :: Var
-    D, x:A |- x => A
+    ----------------- :: Var
+    D, x:A |- x syn A
 
-    D |- K => Pi x:A.B
-    D |- M <= A
-    --------------------------- :: Pi
-    D |- K M => [M/x](B)
-
-
-defn
-    D |- M <= A :: :: Tintro :: TIntro       {{ com Intro term $[[M]]$ has type $[[A]]$ }} by
-
-    ------------------- :: Unit
-    D |- () <= Unit
-
-    D, x:A |- M <= B
-    --------------------------- :: Pi
-    D |- \x.M <= Pi x:A.B
-
-    D; HId(init, mem) /\ P |- E <= x:A.Q
-    ---------------------------------------- :: Hoare
-    D |- do E <= {P}x:A{Q}
+    D |- K syn Pi x:A.B
+    D |- M chk A
+    --------------------- :: Pi
+    D |- K M syn [M/x](B)
 
 defn
-    D ; P |- E => x : A . Q :: :: SPC :: SPC {{ com $[[E]]$ has strongest postcondition $[[Q]]$ }} by
+    D |- M chk A :: :: Tintro :: TIntro       {{ com Intro term $[[M]]$ checks against type $[[A]]$ }} by
+
+    ---------------- :: Unit
+    D |- () chk Unit
+
+    D, x:A |- M chk B
+    ---------------------- :: Pi
+    D |- \x.M chk Pi x:A.B
+
+    D; HId(init, mem) /\ P |- E chk x:A.Q
+    ------------------------------------- :: Hoare
+    D |- do E chk {P}x:A{Q}
 
 defn
-    D ; P |- E <= x : A . Q :: :: PC :: PC   {{ com $[[E]]$ has postcondition $[[Q]]$ }} by
+    D ; P |- E syn x : A . Q :: :: SPC :: SPC {{ com $[[E]]$ synthesizes strongest postcondition $[[Q]]$ }} by
 
-    D; P |- E => x:A.R
+defn
+    D ; P |- E chk x : A . Q :: :: PC :: PC   {{ com $[[E]]$ satisfies postcondition $[[Q]]$ }} by
+
+    D; P |- E syn x:A.R
     D, x:A; init, mem; R ==> Q
     -------------------------- :: Consq
-    D; P |- E <= x:A.Q
+    D; P |- E chk x:A.Q
 
 defn
     D ; Psi ; Gm1 ==> Gm2 :: :: SeqImp :: SeqImp by
