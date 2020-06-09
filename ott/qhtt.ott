@@ -37,6 +37,7 @@ grammar
     | indom ( H , M )     ::   :: InDomain
     | seleq ( H , M , N ) :: S :: SelEq
     | this ( H )          :: S :: This
+    | P o Q               :: S :: RelComp
     | P -o Q              :: S :: Difference
     | ( P )               :: S :: Paren
 
@@ -116,6 +117,7 @@ grammar
     | all                 ::   :: forall     {{ tex \forall }}
     | Id_A                ::   :: IdA        {{ tex \mathbf{Id}_A }}
     | =_A                 ::   :: AssA       {{ tex =_A }}
+    | o                   ::   :: RelComp    {{ tex \circ }}
     | -o                  ::   :: Lollipop   {{ tex \multimap }}
 
   formula :: 'formula_' ::=
@@ -174,6 +176,12 @@ defn
     D |- M chk A
     ------------------------------------------- :: return
     D; P |- return M syn x:A. P /\ Id_A(x, M)
+
+    D |- K syn D'.Psi.{R1} x:A {R2}
+    D; init, mem; P ==> ex D'.Psi.(R1 * top)
+    D, x:A; P o (all D'.Psi.R1 -o R2) |- E syn y:B.Q
+    ------------------------------------------------ :: composeSuspended
+    D; P |- x <- K; E syn y:B.(ex x:A.Q)
 
 defn
     D ; P |- E chk x : A . Q :: :: PC :: PC   {{ com $[[E]]$ satisfies postcondition $[[Q]]$ }} by
