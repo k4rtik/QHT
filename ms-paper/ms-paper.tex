@@ -349,7 +349,7 @@ At the end of this section, we show a sample verification using QHTT for Bell pa
 \begin{lstlisting}[language=QHaskell]
 hqw : {emp} r : Bool {emp /\ Id(r, false)}
     = do q <= mkQbit false;
-         measQbit q
+         return measQbit q
 \end{lstlisting}
 \end{minipage}
 
@@ -363,7 +363,7 @@ hqw : {emp} r : Bool {emp /\ Id(r, false)}
 -- P0: emp
     = do q <= mkQbit false;
 -- P1: P0 \o (q |-> |0\>)
-         measQbit q
+         return measQbit q
 -- P2: P1 \o ((q |-> -) -o emp)
 \end{lstlisting}
 \end{minipage}
@@ -376,7 +376,7 @@ hqw : {emp} r : Bool {emp /\ Id(r, false)}
 rnd : {emp} r : Bool {emp}
     = do q <= mkQbit false;
          applyU (H q);
-         measQbit q
+         return measQbit q
 \end{lstlisting}
 \end{minipage}
 
@@ -392,7 +392,7 @@ rnd : {emp} r : Bool {emp}
 -- P1: P0 \o (q |-> |0\>)
          applyU (H q);
 -- P2: P1 \o ((q |-> |0\>) -o (q |-> |+\>))
-         measQbit q
+         return measQbit q
 -- P3: P2 \o ((q |-> -) -o emp)
 \end{lstlisting}
 \end{minipage}
@@ -408,7 +408,7 @@ testBell : {emp} (a, b) : (Bool, Bool) {emp /\ Id(a, b)}  -- a,b \in {true, fals
               applyU (H qa);
               qb <= mkQbit false;
               applyU (ifQ qa (X qb));
-              (measQbit qa, measQbit qb)
+              return (measQbit qa, measQbit qb)
 \end{lstlisting}
 \end{minipage}
 
@@ -428,7 +428,7 @@ testBell : {emp} (a, b) : (Bool, Bool) {emp /\ Id(a, b)}
               -- P3: P2 \o (qb |-> |0\>)
               applyU (ifQ qa (X qb));
               -- P4: P3 \o ((qa |-> |+\>, qb |-> |0\>) -o (qa, qb) |-> |\Phi+\>)
-              (measQbit qa, measQbit qb)
+              return (measQbit qa, measQbit qb)
               -- P5: P4 \o ((qa |-> -) -o emp) \o ((qb |-> -) -o emp)
 \end{lstlisting}
 
@@ -546,7 +546,7 @@ bell : {emp} (a, b) : (Qbit, Qbit) {Id(a, b) /\ a \in {|0\>, |1\>}}
 \begin{lstlisting}[language=QHaskell]
 testBell : {emp} (a, b) : (Bool, Bool) {emp /\ Id(a, b)}
          = do (qa, qb) <- bell;
-              (measQbit qa, measQbit qb)
+              return (measQbit qa, measQbit qb)
 \end{lstlisting}
 
 \section{Teleportation}
