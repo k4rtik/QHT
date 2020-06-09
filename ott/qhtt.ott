@@ -125,6 +125,9 @@ defns
   Jtype :: '' ::=
 
 defn
+    D |- A chk type :: :: Type :: Type {{ com $[[A]]$ is a well-formed type }} by
+
+defn
     D |- K syn A :: :: TElim :: TElim         {{ com Elim term $[[K]]$ synthesizes type $[[A]]$ }} by
 
     ----------------- :: Var
@@ -135,8 +138,13 @@ defn
     --------------------- :: Pi
     D |- K M syn [M/x](B)
 
+   D |- A chk type
+   D |- M chk A
+   -------------- :: Annot
+   D |- M:A syn A
+
 defn
-    D |- M chk A :: :: Tintro :: TIntro       {{ com Intro term $[[M]]$ checks against type $[[A]]$ }} by
+    D |- M chk A :: :: TIntro :: TIntro       {{ com Intro term $[[M]]$ checks against type $[[A]]$ }} by
 
     ---------------- :: Unit
     D |- () chk Unit
