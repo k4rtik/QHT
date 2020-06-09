@@ -37,8 +37,13 @@ grammar
     | indom ( H , M )     ::   :: InDomain
     | seleq ( H , M , N ) :: S :: SelEq
     | this ( H )          :: S :: This
+    | M |-> N             :: S :: SingleMap
+    | M |-> -             :: S :: SingleMap'
+    | M C-> N             :: S :: AtLeastMaps
+    | M C-> -             :: S :: AtLeastMaps'
     | P o Q               :: S :: RelComp
     | P -o Q              :: S :: Difference
+    | emp                 :: S :: Empty
     | ( P )               :: S :: Paren
 
   H, G :: Heap ::= {{ com Quantum Heaps }}
@@ -119,6 +124,8 @@ grammar
     | =_A                 ::   :: AssA       {{ tex =_A }}
     | o                   ::   :: RelComp    {{ tex \circ }}
     | -o                  ::   :: Lollipop   {{ tex \multimap }}
+    | |->                 ::   :: SMapsto    {{ tex \mapsto }}
+    | C->                 ::   :: SAtLeastMT {{ tex \hookrightarrow }}
 
   formula :: 'formula_' ::=
     | judgement           ::   :: judgement
@@ -182,6 +189,18 @@ defn
     D, x:A; P o (all D'.Psi.R1 -o R2) |- E syn y:B.Q
     ------------------------------------------------ :: composeSuspended
     D; P |- x <- K; E syn y:B.(ex x:A.Q)
+
+
+    D |- M chk Bool
+    D, x:Qbit; P * (x |-> M') |- E syn y:B.Q
+    ---------------------------------------------- :: init
+    D; P |- x <= mkQbit M; E syn y:B.(ex x:Qbit.Q)
+
+    D |- M chk Qbit
+    D; Psi; P ==> (M C-> -)
+    D, x:Bool; P o ((M |-> -) -o emp) |- E syn y:B.Q
+    ---------------------------------------------- :: meas
+    D; P |- x <= measQbit M; E syn y:B.(ex x:Bool.Q)
 
 defn
     D ; P |- E chk x : A . Q :: :: PC :: PC   {{ com $[[E]]$ satisfies postcondition $[[Q]]$ }} by
