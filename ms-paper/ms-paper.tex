@@ -56,8 +56,8 @@
 
 \newcommand{\chkcolor}{dBlue}
 \newcommand{\syncolor}{dRed}
-\newcommand{\chk}{\,\textcolor{\chkcolor}{\Leftarrow}\,}
-\newcommand{\uncoloredsyn}{{\Rightarrow}}
+\newcommand{\chk}{\,\textcolor{\chkcolor}{{\stackrel{\leftarrow}{\in}}}\,}
+\newcommand{\uncoloredsyn}{{{\stackrel{\rightarrow}{\in}}}}
 \newcommand{\syn}{\,\textcolor{\syncolor}{\uncoloredsyn}\,}
 
 \title{Quantum Hoare Type Theory}
@@ -280,8 +280,6 @@ As usual, elim terms synthesize types ($\syn$) and intro terms are checked again
 		$\Delta \vdash M \chk A [M']$ & Intro term M has type A and canonical form $M'$
 	\end{tabular}
 \end{center}
-
-Note that the blue colored $\chk$ symbol we use in the typing rules lives in a different syntactic category from the $\Leftarrow$ symbol used in the syntax (\cref{fig:syntax}) that binds the output of primitive commands.
 
 The judgments for computations involve synthesizing the strongest postconditions and checking whether a given postcondition applies:
 
