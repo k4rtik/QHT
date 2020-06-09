@@ -160,12 +160,16 @@ defn
 defn
     D ; P |- E syn x : A . Q :: :: SPC :: SPC {{ com $[[E]]$ synthesizes strongest postcondition $[[Q]]$ }} by
 
+    D |- M chk A
+    ------------------------------------------- :: return
+    D; P |- return M syn x:A. P /\ Id_A(x, M)
+
 defn
     D ; P |- E chk x : A . Q :: :: PC :: PC   {{ com $[[E]]$ satisfies postcondition $[[Q]]$ }} by
 
     D; P |- E syn x:A.R
     D, x:A; init, mem; R ==> Q
-    -------------------------- :: Consq
+    -------------------------- :: consq
     D; P |- E chk x:A.Q
 
 defn
