@@ -61,6 +61,8 @@
 \newcommand{\uncoloredsyn}{{{\stackrel{\rightarrow}{\in}}}}
 \newcommand{\syn}{\,\textcolor{\syncolor}{\uncoloredsyn}\,}
 
+\newcommand{\prove}{\models}
+
 \title{Quantum Hoare Type Theory}
 \subtitle{Master's Paper}
 
@@ -293,7 +295,7 @@ The judgments for computations involve synthesizing the strongest postconditions
 
 Even though, we have shown the full forms of these judgments above, we will omit the canonical forms while presenting typing rules in the next section as they crowd the rules and do not affect the insight to be gained from them.
 
-Finally, the judgement $\Delta; \Psi; \Gamma_1 \Longrightarrow \Gamma_2$ encodes the sequent calculus for the assertion logic. Recall that $\Delta$, $\Psi$, and $\Gamma$ denote the variable context, the quantum heap context and the assertion context, respectively.
+Finally, the judgement $\Delta; \Psi; \Gamma_1 \prove \Gamma_2$ encodes the sequent calculus for the assertion logic. Recall that $\Delta$, $\Psi$, and $\Gamma$ denote the variable context, the quantum heap context and the assertion context, respectively.
 
 The type system includes rules for primitive effectful commands and those for structuring composition such as monadic unit and bind. We reuse most of the HTT rules except those for primitives for quantum effects that need to specify the strongest postconditions for each primitive, we discuss that next.
 
@@ -327,7 +329,7 @@ $x \Leftarrow \kw{measQbit} M; E$
 \begin{mathpar}
 	\inferrule
 	{\Delta \vdash M \chk \type{Qbit}
-		\\ \Delta; \Psi; P \Longrightarrow (M \hookrightarrow -)
+		\\ \Delta; \Psi; P \prove (M \hookrightarrow -)
 		\\ \Delta, x:\type{Bool}; P \circ ((M \mapsto -) \multimap \kw{emp}) \vdash E \syn y:B . Q}
 	{\Delta; P \vdash x \Leftarrow \kw{measQbit} M; E \syn y:B. (\exists x:\type{Bool}.Q)}
 \end{mathpar}
