@@ -369,6 +369,13 @@ hqw : {emp} r : Bool {emp /\ Id(r, false)}
 \end{lstlisting}
 \end{minipage}
 
+
+\begin{mathpar}
+	\inferrule
+	{ \exists \Psi . (emp * \top) \vdash q \Leftarrow mkQbit false; return measQbit q \chk r : Bool . \forall \Psi . (emp \multimap emp \wedge Id(r, false)) }
+	{do (q \Leftarrow mkQbit false; return measQbit q) \chk \{emp\} r : Bool \{emp \wedge Id(r, false)\}}
+\end{mathpar}
+
 \subsubsection{Coin Toss}
 \leavevmode
 
