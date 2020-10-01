@@ -472,6 +472,21 @@ We show some two more examples in the appendix for a modular version of Bell pai
 
 %\subsection{Soundness / Type Checking Algorithm}
 
+\section{Implementation}
+We are implementing QHTT in the F* programming language.
+
+One issue with the original formulation of Hoare Type Theory is that using Hoare triples does not directly lead to a verification condition generation algorithm. This results in requiring a complicated bidirectional typing system for implementation. If we use predicate transformers as demonstrated by the use of Dijkstra monads in F*, we can avoid these issues \cite{swamy2013verifying}.
+
+The current steps for the implementation are:
+
+\begin{itemize}
+	\item Design a memory model for representing quantum state, along with elementary operations such as read, write, lookup, etc
+	\item Expose a new Quantum effect in F* by using the Dijkstra Monads for Free technique \cite{dm4free2017}.
+	\item Port our language to work well with F* syntax.
+\end{itemize}
+
+This will necessarily take us away from the bidirectional typing approach used in the previous section. But the end result for the user would be the same. Indeed, F* system is an evolution of the HTT approach that comes with inherent support for effects and automation using an SMT solver.
+
 %\section{Evaluation}
 
 %\subsection{More Examples}
