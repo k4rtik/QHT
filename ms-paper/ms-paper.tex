@@ -12,6 +12,8 @@
 \usepackage{cleveref}
 \crefformat{section}{\S#2#1#3}
 
+\usepackage{rotating}
+
 \definecolor{dkgreen}{rgb}{0,0.35,0}
 
 \usepackage{listings}
@@ -372,34 +374,6 @@ hqw : {emp} r : Bool {emp /\ Id(r, false)}
 \end{lstlisting}
 \end{minipage}
 
-% WIP derivation tree for above program:
-
-% \begin{mathpar}
-% 	\inferrule*[right=HIntro]
-% 	{\inferrule*[right=consq]
-% 		{\inferrule*[right=mkQbit]
-% 			{\inferrule*[right=measQbit]
-% 				{\inferrule*[right=return]
-% 					{q : \type{Qbit}, r : \type{Bool} \vdash r \chk \type{Bool}}
-% 					{q : \type{Qbit}, r : \type{Bool}; P_1 \circ ((q \mapsto -) \multimap emp) \vdash \kw{return} r \syn r : \type{Bool} . R}
-% 					\\ q : \type{Qbit} \vdash q \chk \type{Qbit}
-% 					\\ \cdot; P_0 * (q \mapsto \ket{0}) \prove (q \hookrightarrow -)
-% 				}
-% 				{q : \type{Qbit}; P_0 * (q \mapsto \ket{0}) \vdash r \Leftarrow \kw{measQbit} q; E_3 \syn r : \type{Bool} . (\exists r : \type{Bool}.R)}
-% 				\\ \cdot \vdash \kw{false} \chk \type{Bool}
-% 			}
-% 			{
-% 				\cdot; P_0 \vdash q \Leftarrow \kw{mkQbit false}; E_{23} \syn r : \type{Bool} . (\exists q : \type{Qbit}.R)
-% 			}
-% 			\\ r : \type{Bool}; i,m ; R \prove emp \multimap emp \wedge Id(r, \kw{false})
-% 		}
-% 		{
-% 			\cdot; \lambda i . \lambda m . i = m \wedge (emp * \lambda m' \top)m \vdash E_1; E_{23} \chk r : \type{Bool} . (emp \multimap emp \wedge Id(r, \kw{false}))
-% 		}
-% 	}
-% 	{\cdot \vdash \kw{do} E \chk \{emp\} r : \type{Bool} \{emp \wedge \kw{Id}(r, \kw{false})\}}
-% \end{mathpar}
-
 \subsubsection{Coin Toss}
 \leavevmode
 
@@ -551,6 +525,38 @@ There are several avenues of future work to explore:
 \newpage
 
 \appendix
+
+\section{Complete derivation tree for Hello Quantum World}
+
+\begin{turn}{90}
+	\begin{minipage}{40pc}
+	\begin{mathpar}
+		\inferrule*[right=HIntro]
+		{\inferrule*[right=consq]
+			{\inferrule*[right=mkQbit]
+				{\inferrule*[right=measQbit]
+					{\inferrule*[right=return]
+						{q : \type{Qbit}, r : \type{Bool} \vdash r \chk \type{Bool}}
+						{q : \type{Qbit}, r : \type{Bool}; P_1 \circ ((q \mapsto -) \multimap emp) \vdash \kw{return} r \syn r : \type{Bool} . R}
+						\\ q : \type{Qbit} \vdash q \chk \type{Qbit}
+						\\ \cdot; P_0 * (q \mapsto \ket{0}) \prove (q \hookrightarrow -)
+					}
+					{q : \type{Qbit}; P_0 * (q \mapsto \ket{0}) \vdash r \Leftarrow \kw{measQbit} q; E_3 \syn r : \type{Bool} . (\exists r : \type{Bool}.R)}
+					\\ \cdot \vdash \kw{false} \chk \type{Bool}
+				}
+				{
+					\cdot; P_0 \vdash q \Leftarrow \kw{mkQbit false}; E_{23} \syn r : \type{Bool} . (\exists q : \type{Qbit}.R)
+				}
+				\\ r : \type{Bool}; i,m ; R \prove emp \multimap emp \wedge Id(r, \kw{false})
+			}
+			{
+				\cdot; \lambda i . \lambda m . i = m \wedge (emp * \lambda m' \top)m \vdash E_1; E_{23} \chk r : \type{Bool} . (emp \multimap emp \wedge Id(r, \kw{false}))
+			}
+		}
+		{\cdot \vdash \kw{do} E \chk \{emp\} r : \type{Bool} \{emp \wedge \kw{Id}(r, \kw{false})\}}
+	\end{mathpar}
+	\end{minipage}
+\end{turn}
 
 \section{Modular Bell Pair}
 \label{app:mbp}
