@@ -493,7 +493,7 @@ There are several avenues of future work to explore:
 
 \paragraph{Mechanization} There are multiple implementations of HTT in Coq such as Ynot~\cite{ynot2008}. We are similarly working on mechanizing QHTT in Coq for higher assurance of the usefulness and soundness of our theory. This will also enable us to extract verified circuits in a lower level quantum language such as OpenQASM for execution on real machines.
 
-\paragraph{Quantum Assertion Logic} An obvious need is to come up with an assertion logic similar to Separation Logic~\cite{reynolds2002} for quantum computing so as to be able to reason about only the interesting portions of the quantum state while still ensuring correctness of non-local effects such as entanglement. Various Quantum Hoare Logics that exist~\cite{ying_floydhoare_2012} currently do not support frame rules that provide Separation Logic its power. The closest approach is that taken by \citet{unruh2019} that allows assertions on quantum state similar to what we would like in our setting, such as whether certain qubits are in classical state, or in uniform superposition, entangled or separable. We hope to incorporate these ideas in this work; this may require us to use a subspace semantics for the quantum state as shown in \citet{unruh2019}.
+\paragraph{Quantum Assertion Logic} An obvious need is to come up with an assertion logic similar to Separation Logic~\cite{reynolds2002} for quantum computing so as to be able to reason about only the interesting portions of the quantum state while still ensuring correctness of non-local effects such as entanglement. Various Quantum Hoare Logics that exist~\cite{ying_floydhoare_2012} currently do not support frame rules that provide Separation Logic its power. The closest approach is that taken by \citet{unruh2019} that allows assertions on quantum state similar to what we would like in our setting, such as whether certain qubits are in classical state, or in uniform superposition, entangled or separable. We hope to incorporate these ideas in this work; this may require us to use a subspace semantics for the quantum state as shown in \citet{unruh2019}. We share preliminary work in that direction in the appendix below.
 
 \paragraph{Linearity} Peter Selinger and collaborators have recently proposed a linear dependent typed version of Proto-Quipper (dubbed Proto-Quipper-D)~\cite{selinger2020,fu2020linear}. It is an interesting challenge to reconcile linearity in our theory based on their proposal.
 
@@ -639,6 +639,58 @@ teleport : \Pi q : Qbit. x : Pure.
                  tq <- bob m1 m2 b;
                  return tq
 \end{lstlisting}
+
+\section{Ideas from Unruh 2019}
+\subsection{Model of the Quantum State}
+A program starts with a fixed but unknown number of qubits. For simplicity, assume they are countably infinite.
+With access to commands for initialization, the program can allocate as many qubits as it needs.
+In our model of the quantum state, the qubits are divided into a few categories: those that are being used (ie, that have been allocated) by the program (program variables), denoted by X; those that are ghosts (only used in the logic, but not available to the program), denoted by G and the rest that are unallocated. The ghost qubits are then further categorized into entangled (E) and unentangled (U), which mean exactly what they are called.
+
+All of these variables draw values from classical sets of values such as {0, 1}, that can be considered as their type. For operations such as substitution, it is important that the types match. At this point, we should make it clear that we are not limited to treating a single variable as a single qubit anymore; a variable can represent many qubits together, for example, if the type of the variable is {0, 1, 2, 3}, it necessarily requires at least two qubits to store these classical values.
+
+Now, the pure quantum state accessible to the program can be considered as the superposition (linear combination) of all of the basis vectors that span the Hilbert space corresponding to the given qubits.
+
+We will also need to talk about mixed states as we deal with measurements that can result in probabilistic outcomes. We represent mixed states using density operators, $\rho = \Sigma_i p_i \mathrm{proj}(\psi_i)$, where $p_i$ represents the probability of the state being $\psi_i$.
+
+Applying unitaries to the quantum state is same as before, in that, we apply the operation to the specified variables and identity to all other program variables.
+
+\subsection{Quantum Assertion Language}
+We need to be explicit about what we mean when we say that a certain state satisifes a certain assertion (predicate) in the quantum setting. In this model, the predicates are subspaces of the Hilbert space corresponding to a quantum state. Here are some examples:
+\begin{itemize}
+	\item $\top$ represents the complete Hilbert space that is always satisfied by any state.
+	\item $\bot$ represents nothing, it is never satisfied.
+	\item $A \wedge B$ represent that both A and B hold (conjunction), it is equivalent to the intersection of the subspaces.
+	\item $A \vee B$ similarly represents disjunction and is modeled as the sum (linear combination) of the subspaces A and B.
+	\item If an operator M is applied to a state satisfying a predicate A, then the new predicate can be written as $M \cdot A$.
+	\item If we want to write that a variable w, or a list of variables W is in a specific state, we can model that predicate as the variable(s) being in the span of the state and use the notation, $W =_q \psi$.
+\end{itemize}
+
+Here are some examples. The postcondition of the program \texttt{qplus} above can be written as $r =_q \ket{+}$. The postcondition for the program \texttt{bell} as $ab =_q \frac{1}{\sqrt{2}}\ket{00}+\frac{1}{\sqrt{2}}\ket{11}$ and the precondition for the program \texttt{share} as $a =_q \ket{+} \vee a =_q \ket{-}$.
+
+What is the relation between the program variables and the subspaces corresponding to the predicates that we are talking about? We need to define the notion of free variables for a predicate $A$. fv(A) consists of those variables that solely describe the predicate A.
+
+There are more predicates that will involve ghosts, described in the section after the next.
+
+\subsection{Improvements to the quantum commands}
+\todo{To Do: add if then else, skip, sequencing, and a simpler form of apply; and the syntactic sugar for quantum and classical assignments}
+
+\subsection{Predicates with Ghosts}
+\todo{To Do: add distrib, uniform, separable, classical, etc}
+
+\subsection{Rules of the Hoare logic}
+
+Core rules:
+
+\todo{To Do: total 11 core rules: 6 for the language primitives, 5 structural. Out of which two are for case distinction and the remaining three deal with ghosts}
+
+Derived rules:
+
+\todo{To Do: conseq and others as needed}
+
+\subsection{Remarks}
+Now, the question is whether we can use this memory model (based on subspsace semantics), assertion logic and rules and still continue to use bidirectional typing for the type system? If so, it's probably worth finishing up the rule for unitary application using this memory model.
+
+The implementation notes suggest that switching to F* seems to require making too many changes, both in the syntax of the language and in the core theory; which is something probably best left for a future implementation project.
 
 %\section{Sample Proof}
 %\textit{Coq code / Annotated proof objects from implementation\ldots}
