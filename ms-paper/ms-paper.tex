@@ -42,6 +42,7 @@
 	{\\in}{{$\in$}}1 {\\o}{{$\circ$}}1 {\\Pi}{{$\Pi$}}1
 	{\\Phi+}{{$\Phi^+$}}2
 	{|->}{{$\mapsto$}}2 {-o}{{$\multimap$}}2
+	{o*}{{$\otimes$}}1
 }
 
 \newcommand{\sqir}{\ensuremath{s\textsc{qir}}\xspace}
@@ -526,7 +527,8 @@ There are several avenues of future work to explore:
 
 \appendix
 
-\section{Complete derivation tree for Hello Quantum World}
+\section{Sample Proof}
+Complete derivation tree for Hello Quantum World:
 
 \begin{turn}{90}
 	\begin{minipage}{40pc}
@@ -587,9 +589,8 @@ share : \Pi a : Qbit.
 \end{lstlisting}
 
 \subsection{Bell pair}
-\todo{TODO: The type should be \type{Qbit} $\otimes$ \type{Qbit}}
 \begin{lstlisting}[language=QHaskell]
-bell : {emp} (a, b) : (Qbit, Qbit) {Id(a, b) /\ a \in {|0\>, |1\>}}
+bell : {emp} (a, b) : (Qbit o* Qbit) {Id(a, b) /\ a \in {|0\>, |1\>}}
      = do qa <- qplus;
           qb <- share qa;
           return (qa, qb)
@@ -597,7 +598,7 @@ bell : {emp} (a, b) : (Qbit, Qbit) {Id(a, b) /\ a \in {|0\>, |1\>}}
 
 \subsection{Testing modular Bell pair}
 \begin{lstlisting}[language=QHaskell]
-testBell : {emp} (a, b) : (Bool, Bool) {emp /\ Id(a, b)}
+testBell : {emp} (a, b) : (Bool o* Bool) {emp /\ Id(a, b)}
          = do (qa, qb) <- bell;
               return (measQbit qa, measQbit qb)
 \end{lstlisting}
@@ -609,7 +610,7 @@ testBell : {emp} (a, b) : (Bool, Bool) {emp /\ Id(a, b)}
 \begin{lstlisting}[language=QHaskell]
 alice : \Pi a : Qbit. \Pi e : Qbit
         {(Id(a, -) /\ entangled(e)}
-           r : (Bool, Bool)
+           r : (Bool o* Bool)
         {emp}
       = \a.\e.do applyU (ifQ a (X e));
                  applyU (H a);
