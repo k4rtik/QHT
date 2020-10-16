@@ -50,6 +50,7 @@ GVarSet, G :: '' ::= {{ com ghost variables }}
     | X inq S             ::   :: VarListInSubspaceS
     | W =q psi            ::   :: VarListEqState
     | P { W / W' }        :: M :: Renaming
+    | uniform ( X )       ::   :: Uniform
     | separable ( X )     ::   :: Separable
     | class ( X )         ::   :: Classical
     | ( P )               :: S :: Paren

@@ -672,10 +672,13 @@ What is the relation between the program variables and the subspaces correspondi
 There are more predicates that will involve ghosts, described in the section after the next.
 
 \subsection{Improvements to the quantum commands}
-\todo{To Do: add if then else, skip, sequencing, and a simpler form of apply; and the syntactic sugar for quantum and classical assignments}
+
+Added if then else, skip, sequencing, and a simpler form of apply; and the syntactic sugar for quantum and classical assignments in the ott document.
 
 \subsection{Predicates with Ghosts}
-\todo{To Do: add distrib, uniform, separable, classical, etc}
+\todo{To Do: consider adding distrib}
+
+Added uniform, separable and classical in the ott document. distrib seems too general for our needs.
 
 \subsection{Rules of the Hoare logic}
 
@@ -686,6 +689,24 @@ Core rules:
 Derived rules:
 
 \todo{To Do: conseq and others as needed}
+
+\subsection{Implementation Options}
+
+The semantics considered in this work uses abstract linear algebra without depending on a concrete representation (such as on matrices) but current library support for such abstract linear algebra (such as vector spaces and subspaces) in dependent type theoretic systems such as Coq seems limited.
+
+I found Georges Gonthiers' ITP 2011 paper ``Point-Free, Set-Free Concrete Linear Algebra'' (\url{https://hal.inria.fr/hal-00805966/document}) that models abstract linear algebra using matrices but still exposes a point-free interface to vector spaces still in line with our needs. The implementation seems to be what is now the mathcomp.algebra.vector library (\url{https://math-comp.github.io/htmldoc/mathcomp.algebra.vector.html}). There are couple of concerns:
+
+\begin{itemize}
+	\item this library is limited to finite dimensional vector spaces which is probably okay for our needs but not the same as the infinite dimension semantics presented in Unruh's work.
+	\item since it is still dependent on a concrete matrix representation, it does not give us complete flexibility in renamings of the quantum variables under consideration. I need to investigate this further.
+	\item It's unclear to me how production-ready this library might be as I could not find examples of it being used in a project. The couple of Coq workshops that I found stop at the matrix algebra library (\url{https://math-comp.github.io/htmldoc/mathcomp.algebra.mxalgebra.html}).
+\end{itemize}
+
+None of these seem completely impossible to overcome for our needs, but we may run into hiccups here and there.
+
+Lean seems to have a better support for linear algebra (\url{https://leanprover-community.github.io/mathlib-overview.html}) but it may require significantly more work to understand that system.
+
+Robert suggests another approach that is to limit the expressivity of the system and implement the limited logic proposed in Häner, Hoefler and Troyer's ``Using Hoare logic for quantum circuit optimization'' (\url{https://arxiv.org/abs/1810.00375}), an improved version of which is going to be presented at OOPSLA in November. This may even be possible in F* with some effort.
 
 \subsection{Remarks}
 Now, the question is whether we can use this memory model (based on subspsace semantics), assertion logic and rules and still continue to use bidirectional typing for the type system? If so, it's probably worth finishing up the rule for unitary application using this memory model.
