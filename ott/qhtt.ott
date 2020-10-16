@@ -1,84 +1,90 @@
-metavar termvar, x, y ::=
-  {{ tex \mathit{[[termvar]]} }} {{ com term variable }}
-metavar heapvar, h, init, mem ::=
-  {{ tex \mathit{[[heapvar]]} }} {{ com heap variable }}
+metavar progvar, x, y, z ::=
+  {{ com program variable }}
+metavar ghostvar, e, u, g ::=
+  {{ com ghost variable }}
+metavar termvar, v, w ::=
+  {{ com variable }}
+
+indexvar index, n ::=
+
+% metavar heapvar, h, init, mem ::=
+%   {{ tex \mathit{[[heapvar]]} }} {{ com heap variable }}
 
 
 grammar
+VarSet, V, W :: '' ::= {{ com variables }}
+  | v1 .. vn  :: :: Vars
+
+PVarSet, X, Y, Z :: '' ::= {{ com program variables }}
+  | x1 .. xn  :: :: PVars
+
+EGVarSet, E :: '' ::= {{ com entangled ghosts }}
+  | e1 .. en  :: :: EVars
+
+UGVarSet, U :: '' ::= {{ com unentangled ghosts }}
+  | u1 .. un  :: :: UVars
+
+GVarSet, G :: '' ::= {{ com ghost variables }}
+  | g1 .. gn  :: :: GVars
+
   A, B :: Ty ::=                                        {{ com Types }}
     | Unit                ::   :: Unit                    {{ com unit }}
-    | Bool                ::   :: Bool                    {{ com booleans }}
+    % | Bool                ::   :: Bool                    {{ com booleans }}
     | Qbit                ::   :: Qubit                   {{ com qubits }}
-    | U                   ::   :: Unitary                 {{ com unitary }}
+    % | U                   ::   :: Unitary                 {{ com unitary }}
     | A otimes B                  ::   :: pair                    {{ com product }}
     | Pi x : A . B                ::   :: Pi    (+ bind x in B +) {{ com dependent function }}
     | A -> B                      :: S :: arrow                   {{ com function }}
     | D . Psi . { P } x : A { Q } ::   :: Hoare (+ bind x in Q +) {{ com hoare type }}
     | { P } x : A { Q }   :: S :: HoareS
     | ( A )               :: S :: paren
-    | [ M / x ] A         :: M :: tsub
+    | [ N / x ] A         :: M :: tsub
 
-  P, Q, R :: Ass ::= {{ com Assertions }}
+  P, Q, R :: Pr ::= {{ com Predicates }}
     | top                 ::   :: Top
     | bot                 ::   :: Bot
-    | P /\ Q              ::   :: And
-    | P \/ Q              ::   :: Or
-    | P * Q               ::   :: SepCon
-    | P imp Q             ::   :: Imply
-    | not P               ::   :: Not
-    | ex x : A . P        ::   :: Exists  (+ bind x in P +)
-    | all x : A . P       ::   :: Forall  (+ bind x in P +)
-    | ex h : heap . P     ::   :: ExistsH (+ bind h in P +)
-    | ex D . Psi . P      :: S :: CExistsH
-    | all D . Psi . P     :: S :: CForallH
-    | all h : heap . P    ::   :: ForallH (+ bind h in P +)
-    | Id_A ( M , N )      ::   :: TermId {{ com propositional equality }}
-    | HId ( H , G )       ::   :: HeapId {{ com propositional heap equality }}
-    | indom ( H , M )     ::   :: InDomain
-    | seleq ( H , M , N ) :: S :: SelEq
-    | this ( H )          :: S :: This
-    | M |-> N             :: S :: SingleMap
-    | M |-> -             :: S :: SingleMap'
-    | M C-> N             :: S :: AtLeastMaps
-    | M C-> -             :: S :: AtLeastMaps'
-    | P o Q               :: S :: RelComp
-    | P -o Q              :: S :: Difference
-    | emp                 :: S :: Empty
+    | P /\ Q              ::   :: Conjunction
+    % | P, Q                :: S :: ConjSugar
+    | P \/ Q              ::   :: Disjunction
+    | M . P               ::   :: Operator
+    | X inq S             ::   :: VarListInSubspaceS
+    | W =q psi            ::   :: VarListEqState
+    | P { W / W' }        :: M :: Renaming
+    | separable ( X )     ::   :: Separable
+    | class ( X )         ::   :: Classical
     | ( P )               :: S :: Paren
-
-  H, G :: Heap ::= {{ com Quantum Heaps }}
-    | h                   ::   :: HeapVar
-    | empty               ::   :: Empty
-    | upd ( H , M , N )   ::   :: Update
-    | [ H / h ]           :: S :: hsub
 
   K, L :: ElimTm ::=                                    {{ com Elim Terms }}
     | x                   ::   :: Var                     {{ com variable }}
-    | K M                 ::   :: App                     {{ com application }}
-    | M : A               ::   :: Annot
+    | K N                 ::   :: App                     {{ com application }}
+    | N : A               ::   :: Annot
     | ( K )               :: S :: paren
     | [ K / x ] M         :: M :: tsub
 
-  M, N, O :: IntroTm ::=                                {{ com Intro Terms }}
+  N, O :: IntroTm ::=                                {{ com Intro Terms }}
     | K                   ::   :: Elim
-    | \ x . M             ::   :: Lam  (+ bind x in M +)  {{ com abstraction }}
+    | \ x . N             ::   :: Lam  (+ bind x in N +)  {{ com abstraction }}
     | ()                  ::   :: unit
-    | do E                ::   :: Computation
-    | true                ::   :: True
-    | false               ::   :: False
+    | do F                ::   :: Computation
 
-  c :: Cmd ::= {{ com Primitive Quantum Commands }}
-    | mkQbit M           :: :: init
-    | applyU M           :: :: apply
-    | measQbit M         :: :: measure
+  c, d :: Cmd ::= {{ com Primitive Quantum Commands }}
+    | init x             :: :: init
+    | apply U to X       :: :: apply
+    | if y then c else d :: :: ite
+    | c ; d              :: :: seq
+    | skip               :: :: skip
+    | X <-q psi          :: S:: initq
+    | X <- z             :: S:: initc
+    | Y <- measure X     :: S:: meas
+    % | measQbit M         :: :: measure
 
-  E, F :: Comp ::=  {{ com Computations }}
-    | return M        ::   :: lift
-    | x <- K ; E      ::   :: bindK     (+ bind x in E +)
-    | x <= c ; E      ::   :: bindC     (+ bind x in E +)
-    | x =_A M ; E     ::   :: bindPure  (+ bind x in E +)
-    | ( E )           :: S :: paren
-    | < E / x : A > F :: M :: msub                        {{ com monadic substitution }}
+  F :: Comp ::=  {{ com Computations }}
+    | return N        ::   :: lift
+    | x <- K ; F      ::   :: bindK     (+ bind x in F +)
+    | x <= c ; F      ::   :: bindC     (+ bind x in F +)
+    | x =_A N ; F     ::   :: bindPure  (+ bind x in F +)
+    | ( F )           :: S :: paren
+    | < F / x : A > F' :: M :: msub                        {{ com monadic substitution }}
 
   D {{ tex \Delta }} :: VCtx ::= {{ com Variable Context }}
     | empty               ::   :: em  {{ tex \cdot }}
@@ -110,7 +116,11 @@ grammar
     | syn                 ::   :: syn        {{ tex \textcolor{red}{\stackrel{\rightarrow}{\in} } }}
     | chk                 ::   :: chk        {{ tex \textcolor{blue}{\stackrel{\leftarrow}{\in} } }}
     | in                  ::   :: in         {{ tex \in }}
+    | inq                 ::   :: inq        {{ tex \in_q }}
+    | =q                  ::   :: eqq        {{ tex =_q }}
+    | <-q                 ::   :: initq      {{ tex \stackrel{q}{\leftarrow} }}
     | Pi                  ::   :: pi         {{ tex \Pi }}
+    | psi                 ::   :: psi        {{ tex \psi }}
     | otimes              ::   :: otimes     {{ tex \otimes }}
     | top                 ::   :: top        {{ tex \top }}
     | bot                 ::   :: bot        {{ tex \bot }}
@@ -133,9 +143,14 @@ grammar
     | x = x'              ::   :: eqv
     | x : A in D          ::   :: xAD
 
+% subrules
+%   E <:: G
+%   U <:: G
+%   P <:: V
+%   G <:: V
 
 freevars
-  M x :: fv
+  N x :: fv
 
 defns
   Jtype :: '' ::=
@@ -150,65 +165,65 @@ defn
     D, x:A |- x syn A
 
     D |- K syn Pi x:A.B
-    D |- M chk A
+    D |- N chk A
     --------------------- :: Pi
-    D |- K M syn [M/x](B)
+    D |- K N syn [N/x](B)
 
    D |- A chk type
-   D |- M chk A
+   D |- N chk A
    -------------- :: Annot
-   D |- M:A syn A
+   D |- N:A syn A
 
 defn
-    D |- M chk A :: :: TIntro :: TIntro       {{ com Intro term $[[M]]$ checks against type $[[A]]$ }} by
+    D |- N chk A :: :: TIntro :: TIntro       {{ com Intro term $[[N]]$ checks against type $[[A]]$ }} by
 
     ---------------- :: Unit
     D |- () chk Unit
 
-    D, x:A |- M chk B
+    D, x:A |- N chk B
     ---------------------- :: Pi
-    D |- \x.M chk Pi x:A.B
+    D |- \x.N chk Pi x:A.B
 
-    D; HId(init, mem) /\ P |- E chk x:A.Q
-    ------------------------------------- :: Hoare
-    D |- do E chk {P}x:A{Q}
+    % D; HId(init, mem) /\ P |- E chk x:A.Q
+    % ------------------------------------- :: Hoare
+    % D |- do E chk {P}x:A{Q}
 
-    D; this(init) /\ ex D'.Psi.(R1 * top) |- E chk x:A. all D'.Psi.R1 -o R2
-    ----------------------------------------------------------------------- :: DoE
-    D |- do E chk D'.Psi.{R1} x:A {R2}
+    % D; this(init) /\ ex D'.Psi.(R1 * top) |- E chk x:A. all D'.Psi.R1 -o R2
+    % ----------------------------------------------------------------------- :: DoE
+    % D |- do E chk D'.Psi.{R1} x:A {R2}
 
 defn
     D ; P |- E syn x : A . Q :: :: SPC :: SPC {{ com $[[E]]$ synthesizes strongest postcondition $[[Q]]$ }} by
 
-    D |- M chk A
-    ------------------------------------------- :: return
-    D; P |- return M syn x:A. P /\ Id_A(x, M)
+    % D |- M chk A
+    % ------------------------------------------- :: return
+    % D; P |- return M syn x:A. P /\ Id_A(x, M)
 
-    D |- K syn D'.Psi.{R1} x:A {R2}
-    D; init, mem; P |= ex D'.Psi.(R1 * top)
-    D, x:A; P o (all D'.Psi.R1 -o R2) |- E syn y:B.Q
-    ------------------------------------------------ :: composeSuspended
-    D; P |- x <- K; E syn y:B.(ex x:A.Q)
+    % D |- K syn D'.Psi.{R1} x:A {R2}
+    % D; init, mem; P |= ex D'.Psi.(R1 * top)
+    % D, x:A; P o (all D'.Psi.R1 -o R2) |- E syn y:B.Q
+    % ------------------------------------------------ :: composeSuspended
+    % D; P |- x <- K; E syn y:B.(ex x:A.Q)
 
 
-    D |- M chk Bool
-    D, x:Qbit; P * (x |-> M') |- E syn y:B.Q
-    ---------------------------------------------- :: init
-    D; P |- x <= mkQbit M; E syn y:B.(ex x:Qbit.Q)
+    % D |- M chk Bool
+    % D, x:Qbit; P * (x |-> M') |- E syn y:B.Q
+    % ---------------------------------------------- :: init
+    % D; P |- x <= mkQbit M; E syn y:B.(ex x:Qbit.Q)
 
-    D |- M chk Qbit
-    D; Psi; P |= (M C-> -)
-    D, x:Bool; P o ((M |-> -) -o emp) |- E syn y:B.Q
-    ---------------------------------------------- :: meas
-    D; P |- x <= measQbit M; E syn y:B.(ex x:Bool.Q)
+    % D |- M chk Qbit
+    % D; Psi; P |= (M C-> -)
+    % D, x:Bool; P o ((M |-> -) -o emp) |- E syn y:B.Q
+    % ---------------------------------------------- :: meas
+    % D; P |- x <= measQbit M; E syn y:B.(ex x:Bool.Q)
 
 defn
     D ; P |- E chk x : A . Q :: :: PC :: PC   {{ com $[[E]]$ satisfies postcondition $[[Q]]$ }} by
 
-    D; P |- E syn x:A.R
-    D, x:A; init, mem; R |= Q
-    -------------------------- :: consq
-    D; P |- E chk x:A.Q
+    % D; P |- E syn x:A.R
+    % D, x:A; init, mem; R |= Q
+    % -------------------------- :: consq
+    % D; P |- E chk x:A.Q
 
 defn
     D ; Psi ; Gm1 |= Gm2 :: :: SeqImp :: SeqImp by
@@ -218,34 +233,34 @@ defn
     ---------------------- :: Cut
     D; Psi; Gm1 |= Gm2
 
-    ------------------------------- :: ReflEqR
-    D; Psi; Gm1 |= Gm2, Id_A(M, M)
+    % ------------------------------- :: ReflEqR
+    % D; Psi; Gm1 |= Gm2, Id_A(M, M)
 
-    ------------------------------- :: HReflEqR
-    D; Psi; Gm1 |= Gm2, HId(H, H)
+    % ------------------------------- :: HReflEqR
+    % D; Psi; Gm1 |= Gm2, HId(H, H)
 defns
   Jop :: '' ::=
 
     defn
-    M ==>b M' ::  :: reduce :: 'B'       {{ com $[[M]]$ beta reduces to $[[M']]$ }} by
+    N ==>b N' ::  :: reduce :: 'B'       {{ com $[[N]]$ beta reduces to $[[N']]$ }} by
 
-    ------------------------------- :: AppAbs
-    (\x.M:Pi x:A.B) N ==>b [N:A/x]M
+    % ------------------------------- :: AppAbs
+    % (\x.N:Pi x:A.B) O ==>b [O:A/x]N
 
     defn
-    M ==>e M' ::  :: expand :: 'E'       {{ com $[[M]]$ eta expands to $[[M']]$ }} by
+    N ==>e N' ::  :: expand :: 'E'       {{ com $[[N]]$ eta expands to $[[N']]$ }} by
 
     ---------------- :: Unit
-    M : Unit ==>e ()
+    N : Unit ==>e ()
 
     -------------------------------- :: Abs
-    M:Pi x:A.B ==>e \y.(M:Pi x:A.B)y
+    N:Pi x:A.B ==>e \y.(N:Pi x:A.B)y
 
     -------------------------------------- :: Comp
     K:{P}x:A{Q} ==>e do (x <- K; return x)
 
     defn
-    E ==>b E' ::  :: creduce :: 'B'       {{ com Computation $[[E]]$ beta reduces to $[[E']]$ }} by
+    F ==>b F' ::  :: creduce :: 'B'       {{ com Computation $[[F]]$ beta reduces to $[[F']]$ }} by
 
-    ------------------------------------- :: Comp
-    x <- do E:{P}x:A{Q}; F ==>b <E/x:A> F
+    --------------------------------------- :: Comp
+    x <- do F:{P}x:A{Q}; F' ==>b <F/x:A> F'
