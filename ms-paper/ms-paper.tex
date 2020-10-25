@@ -94,7 +94,7 @@
 	%Need
 	In classical computing, formal verification and sound static type systems prevent several classes of bugs from being introduced. There is a need for similar techniques in the quantum regime.
 	%Task
-	Inspired by Hoare Type Theory in the classical paradigm, we propose Quantum Hoare Types by extending the Quantum IO Monad by indexing it with pre- and post-conditions that serve as program specifications.
+	Inspired by Hoare Type Theory in the classical paradigm, we propose Quantum Hoare Types in which a quantum effect monad is indexed with pre- and post-conditions that serve as program specifications.
 	%Object
 	In this paper, we introduce Quantum Hoare Type Theory (QHTT), present its syntax and typing rules, and demonstrate its effectiveness with the help of examples.
 	% Summary
@@ -120,7 +120,7 @@ It is difficult to reason about the correctness of quantum programs. Sound stati
 
 Recent work~\cite{huang_qdb:_2018,huang_statistical_2019} as part of EPiQC\footnote{EPiQC: Enabling Practical-Scale Quantum Computation:  \url{https://epiqc.cs.uchicago.edu}} has identified several classes of bugs in quantum programs and proposed approaches to tackle them. The technique that holds the most promise is assertion checking using preconditions and postconditions. But assertions are usually checked dynamically during runtime, which can be wasteful of precious quantum computing or simulation resources.
 
-As programming languages researchers, we think it will be better to encode such assertions into a static type system both for formal verification and to aid the programmers in writing correct programs from the start. Inspired by the use of Hoare triples in the verification of imperative programs and building on the idea of Hoare Type Theory (HTT) for classical programming languages~\cite{nanevski_hoare_2008}, we extend the Quantum IO Monad interface~\cite{qio} and propose Quantum Hoare Type Theory aimed at enabling both sound static type checking and formal verification of quantum programs.
+As programming languages researchers, we think it will be better to encode such assertions into a static type system both for formal verification and to aid the programmers in writing correct programs from the start. Inspired by the use of Hoare triples in the verification of imperative programs and building on the idea of Hoare Type Theory (HTT) for classical programming languages~\cite{nanevski_hoare_2008}, we extend a quantum effect monad inspired by the Quantum IO Monad interface~\cite{qio} and propose Quantum Hoare Type Theory aimed at enabling both sound static type checking and formal verification of quantum programs.
 
 The main idea is that instead of just indexing the QIO monad type with the type of computation result, we can also index it with pre-conditions and post-conditions so as to integrate Hoare-style reasoning into the type system itself. The resulting Quantum Hoare Type, $\{P\}\ x{ : }A\ \{Q\}$, specifies the preconditions, $P$, that hold on the quantum state before execution; the result, $x$, and its type, $A$; and, the postconditions, $Q$, that are true for the quantum state after successful execution. In this way the effectful quantum fragment of the program is effectively encapsulated inside the Quantum Hoare monad. Our theory, like HTT, allows the usual equational reasoning for the pure classical fragments of the program and uses syntax-directed type checking for generating strongest postconditions for the quantum fragment.
 
