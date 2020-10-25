@@ -221,20 +221,20 @@ Complete grammar written using Ott tool at \url{https://github.com/k4rtik/QHT/bl
 	\begin{tabular}{lrcl}
 		\textit{Types} & $A, B, C$ & ::= &
 		\begin{minipage}[t]{0.45\columnwidth}%
-			$ \type{1} \mid \type{Bool} \mid \type{Qbit} \mid \type{U} \mid \type{Pure} \mid A \otimes B \mid \Pi x{ : }A.B \mid \Delta. \Psi .\{P\} x{ : }A \{Q\}$
+			$ \type{1} \mid \type{Bool} \mid \type{Qbit} \mid \type{U} \mid A \otimes B \mid \Pi x{ : }A.B \mid \Delta. \Psi .\{P\} x{ : }A \{Q\}$
 		\end{minipage}\\ \\
 		\textit{Assertions} & $P, Q, R$ & ::= &
 		\begin{minipage}[t]{0.45\columnwidth}%
-			$ \top \mid \bot \mid P \wedge Q \mid P \vee Q \mid P \supset Q \mid \neg P \mid \exists x{:}A.P \mid \forall x{:}A.P \mid \exists h{:}\kw{heap}.P \mid \forall h{:}\kw{heap}.P \mid \kw{Id}_A(M, N) \mid \kw{HId}(H, G) \mid \kw{indom}(H,M) $
+			$ \top \mid \bot \mid P \wedge Q \mid P \vee Q \mid M \cdot P \mid X \in_q S \mid X =_q \psi \mid \kw{uniform}(X) \mid \kw{separable}(X) \mid \kw{classical}(X) $
 		\end{minipage}\\ \\
-		\textit{Q. Heaps} & $H, G$ & ::= & $ h \mid \kw{empty} \mid \kw{upd}(H, M, N) $\\ \\
-		\textit{Elim terms} & $K, L$ & ::= & $ x \mid K M \mid M : A $\\
-		\textit{Intro terms} & $M, N, O$ & ::= & $ K \mid () \mid \lambda x.M \mid \kw{do} E \mid \kw{true} \mid \kw{false} $\\ \\
+		% \textit{Q. Heaps} & $H, G$ & ::= & $ h \mid \kw{empty} \mid \kw{upd}(H, M, N) $\\ \\
+		\textit{Elim terms} & $K, L$ & ::= & $ x \mid K N \mid N : A $\\
+		\textit{Intro terms} & $N, O$ & ::= & $ K \mid () \mid \lambda x.N \mid \kw{do} E \mid \kw{true} \mid \kw{false} $\\ \\
 		\textit{Q. Commands} & $c$ & ::= &
 		\begin{minipage}[t]{0.45\columnwidth}%
-			$ \kw{mkQbit} M \mid \kw{measQbit} M \mid \kw{applyU} M$
+			$ \kw{init} N \mid \kw{apply} U \kw{to} N \mid \kw{measure} N \mid \kw{if} y \kw{then} E \kw{else} F$
 		\end{minipage}\\
-		\textit{Computations} & $E, F$ & ::= & $ \kw{return} M \mid x \leftarrow K; E \mid x \Leftarrow c; E \mid x =_A M; E $\\ \\
+		\textit{Computations} & $E, F$ & ::= & $ \kw{return} N \mid x \leftarrow K; E \mid x \Leftarrow c; E \mid x =_A N; E $\\ \\
 		\textit{Variable context} & $\Delta$ & ::= & $ \cdot \mid x : A, \Delta $ \\
 		\textit{Q. Heap context} & $\Psi$ & ::= & $ \cdot \mid h, \Psi$ \\
 		\textit{Assertion context} & $\Gamma$ & ::= & $ \cdot \mid P, \Gamma$ \\
@@ -247,15 +247,25 @@ Complete grammar written using Ott tool at \url{https://github.com/k4rtik/QHT/bl
 \paragraph{Types} We include primitive types for unit, booleans, qubits and unitary operations, and a type \type{Pure} for representing pure quantum state vectors (complex valued vectors in Hilbert space); these correspond to similar types in the QIO work. There are also type constructors for pairs, dependent functions and the Hoare type from HTT.
 
 \paragraph{Assertions}
-Apart from the usual first order logic, we have assertions for reasoning about propositional equality of terms, $\kw{Id}_A(M, N)$, and heaps, $\kw{HId}(H, G)$.
+The assertion language is inspired by \citet{unruh2019} that follows subspace semantics. We need to be explicit about what we mean when we say that a certain state satisifes a certain assertion (predicate) in the quantum setting. In this model, the predicates are subspaces of the Hilbert space corresponding to a quantum state. Here are some examples:
+\begin{itemize}
+	\item $\top$ represents the complete Hilbert space that is always satisfied by any state.
+	\item $\bot$ represents nothing, it is never satisfied.
+	\item $P \wedge Q$ represent that both P and Q hold (conjunction), it is equivalent to the intersection of the subspaces.
+	\item $P \vee Q$ similarly represents disjunction and is modeled as the sum (linear combination) of the subspaces P and Q.
+	\item If an operator M is applied to a state satisfying a predicate P, then the new predicate can be written as $M \cdot P$.
+	\item If we want to write that a variable w, or a list of variables W is in a specific state, we can model that predicate as the variable(s) being in the span of the state and use the notation, $W =_q \psi$.
+\end{itemize}
 
-As done in HTT, some common convenience assertions can be defined using the base primitives. Particularly, $\kw{emp}$ denotes that the current heap, say $h$, is empty, that is, $\kw{HId}(h, \kw{empty})$. $M \mapsto N$ represents the only mapping in the (singleton) heap. $M \hookrightarrow N$ says that looking up $M$ in the heap returns $N$ which can be more explicitly written as $\kw{seleq}(H, M, N)$.
+Here are some examples. The postcondition of the program \texttt{qplus} can be written as $r =_q \ket{+}$. The postcondition for the program \texttt{bell} as $ab =_q \frac{1}{\sqrt{2}}\ket{00}+\frac{1}{\sqrt{2}}\ket{11}$ and the precondition for the program \texttt{share} as $a =_q \ket{+} \vee a =_q \ket{-}$.
+
+There are other predicates that involve ghosts. \todo{TODO}
 
 \paragraph{Quantum State}
 
 We use the terms quantum state and quantum heaps interchangeably throughout. A quantum heap is a partial function from qubits (that can in turn be thought of as locations, represented using natural numbers) to at most one quantum state vector.
 
-For the purpose of the type theory, heaps are functional, so that, for example, $\kw{upd}(H, M, N)$ returns a new heap after updating heap $H$ at location $M$ with $N$.
+% For the purpose of the type theory, heaps are functional, so that, for example, $\kw{upd}(H, M, N)$ returns a new heap after updating heap $H$ at location $M$ with $N$.
 
 \paragraph{Terms}
 The terms are divided into introduction and elimination sorts for the purpose of bidirectional typechecking like in HTT.
@@ -263,9 +273,13 @@ The terms are divided into introduction and elimination sorts for the purpose of
 The pure fragment allows higher-order functions while the impure (effectful) fragment is encapsulated within the monadic \texttt{do} $E$ construct and supports a simple imperative quantum language inspired by QIO constructs. It is worth noting that \texttt{do} $E$ represents suspended computation and is considered pure.
 
 \paragraph{Quantum Commands}
-These are the quantum-specific effectful commands from QIO for initialization, unitary application and measurement of qubits.
+These are the quantum-specific effectful commands inspired by QIO for initialization, unitary application and measurement of qubits.
+\texttt{init} $N$ initializes a given variable based on the value of the expression $N$ (typically 0 or 1 if N is a boolean).
+\texttt{apply} $U$ \texttt{to} $X$ applies unitary operation $U$ to variables $X$.
+\texttt{measure} $x$ measures the variable $x$ in the computational basis.
+\texttt{if y then E else F} executes computation $E$ if measuring variable $y$ returns 1 else executes $F$.
 
-\paragraph{Computations} The computations are the usual monadic return and three sequencing operations that bind their result to a variable similar to HTT. The first, $x \leftarrow K$, executes a suspended computation (such as applying a function that includes a \texttt{do} $E$ in its body); the second, $x \Leftarrow c$ executes a primitive command $c$; and the last, $x =_A M$, is just syntactic sugar for let-binding.
+\paragraph{Computations} The computations are the usual monadic return and three sequencing operations that bind their result to a variable similar to HTT. The first, $x \leftarrow K$, executes a suspended computation (such as applying a function that includes a \texttt{do} $E$ in its body); the second, $x \Leftarrow c$ executes a primitive command $c$; and the last, $x =_A N$, is just syntactic sugar for let-binding.
 
 \paragraph{Contexts} Contexts are modelled exactly the same way as in HTT. The only difference is that instead of classical heaps, we have quantum heaps.
 
