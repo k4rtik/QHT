@@ -298,7 +298,7 @@ As usual, elim terms synthesize types ($\syn$) and intro terms are checked again
 \begin{center}
 	\begin{tabular}{ll}
 		$\Delta \vdash K \syn A [N']$ & Elim term K has type A and canonical form $N'$ \\
-		$\Delta \vdash M \chk A [M']$ & Intro term M has type A and canonical form $M'$
+		$\Delta \vdash N \chk A [N']$ & Intro term N has type A and canonical form $N'$
 	\end{tabular}
 \end{center}
 
@@ -327,32 +327,32 @@ We also use HTT's difference operator ($\multimap$) below that captures changes 
 We can now state the typing rules:
 
 \paragraph{Initialization}
-$x \Leftarrow \kw{mkQbit} M; E$
+$x \Leftarrow \kw{init} N; E$
 
 \begin{mathpar}
 	\inferrule
-	{\Delta \vdash M \chk \type{Bool}
-		\\ \Delta, x : \type{Qbit}; P \circ (x \mapsto \kw{state}(M)) \vdash E \syn y:B . Q}
-	{\Delta; P \vdash x \Leftarrow \kw{mkQbit} M; E \syn y:B. (\exists x:\type{Qbit}.Q)}
+	{\Delta \vdash N \chk \type{Bool}
+		\\ \Delta, x : \type{Qbit}; P \circ (x \mapsto \kw{state}(N)) \vdash E \syn y:B . Q}
+	{\Delta; P \vdash x \Leftarrow \kw{init} N; E \syn y:B. (\exists x:\type{Qbit}.Q)}
 \end{mathpar}
 where x is fresh and \texttt{state} is a function that translates a classical representation of quantum state (such as boolean here) to the equivalent quantum state vector.
 
-Initialization can only be performed for a term $M$ that can be type checked as a \type{Bool}. Then, we look at the rest of the computation, $E$, in a context that adds $x$ of type \type{Qbit} under a precondition that extends the previous precondition, $P$, with the strongest postcondition for initialization, that is, the newly bound variable $x$ points to the representation of a new qubit state; this should synthesize the strongest postcondition (with respect to the expanded precondition in the context), $Q$, for $E$.
+Initialization can only be performed for a term $N$ that can be type checked as a \type{Bool}. Then, we look at the rest of the computation, $E$, in a context that adds $x$ of type \type{Qbit} under a precondition that extends the previous precondition, $P$, with the strongest postcondition for initialization, that is, the newly bound variable $x$ points to the representation of a new qubit state; this should synthesize the strongest postcondition (with respect to the expanded precondition in the context), $Q$, for $E$.
 
 To avoid dangling variables, we need to existentially quantify $x$ in the postcondition, $Q$, of the conclusion.
 
 \paragraph{Measurement}
-$x \Leftarrow \kw{measQbit} M; E$
+$x \Leftarrow \kw{measure} N; E$
 
 \begin{mathpar}
 	\inferrule
-	{\Delta \vdash M \chk \type{Qbit}
-		\\ \Delta; \Psi; P \prove (M \hookrightarrow -)
-		\\ \Delta, x:\type{Bool}; P \circ ((M \mapsto -) \multimap \kw{emp}) \vdash E \syn y:B . Q}
-	{\Delta; P \vdash x \Leftarrow \kw{measQbit} M; E \syn y:B. (\exists x:\type{Bool}.Q)}
+	{\Delta \vdash N \chk \type{Qbit}
+		\\ \Delta; \Psi; P \prove (N \hookrightarrow -)
+		\\ \Delta, x:\type{Bool}; P \circ ((N \mapsto -) \multimap \kw{emp}) \vdash E \syn y:B . Q}
+	{\Delta; P \vdash x \Leftarrow \kw{measure} N; E \syn y:B. (\exists x:\type{Bool}.Q)}
 \end{mathpar}
 
-The measurement rule can be read in a similar way as the previous rule. But in measurement, we need to additionally prove that the verification condition (written as a sequent), the precondition $P$ implies that the qubit $M$ is allocated, holds in the heap context $\Psi$. The strongest postcondition here is that the fragment of heap that only refers to location M becomes empty.
+The measurement rule can be read in a similar way as the previous rule. But in measurement, we need to additionally prove that the verification condition (written as a sequent), the precondition $P$ implies that the qubit $N$ is allocated, holds in the heap context $\Psi$. The strongest postcondition here is that the fragment of heap that only refers to location N becomes empty.
 
 As may be apparent, initialization and measurement are analogous to HTT's \texttt{alloc} and \texttt{dealloc} primitives. We are working out precise details for unitary application, but at a high-level, they involve ensuring that the given unitary term actually represents a unitary matrix and updating the quantum state with the result of unitary application. This involves incorporating the monoidal structure of unitaries into our theory (as is done in QIO). This step also involves generating verification conditions that cannot be checked during this first phase of typechecking. We are also looking at alternatives such as the recently proposed sum-over-paths action semantics by \citet{amy18}.
 
