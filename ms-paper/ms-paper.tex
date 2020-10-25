@@ -369,8 +369,8 @@ At the end of this section, we show a sample verification using QHTT for Bell pa
 \begin{minipage}{0.95\linewidth}
 \begin{lstlisting}[language=QHaskell]
 hqw : {emp} r : Bool {emp /\ Id(r, false)}
-    = do q <= mkQbit false;
-         return measQbit q
+    = do q <= init false;
+         return measure q
 \end{lstlisting}
 \end{minipage}
 
@@ -382,9 +382,9 @@ Verification steps follow:
 \begin{lstlisting}[language=QHaskell]
 hqw : {emp} r : Bool {emp /\ Id(r, false)}
 -- P0: emp
-    = do q <= mkQbit false;
+    = do q <= init false;
 -- P1: P0 \o (q |-> |0\>)
-         return measQbit q
+         return measure q
 -- P2: P1 \o ((q |-> -) -o emp)
 \end{lstlisting}
 \end{minipage}
@@ -395,9 +395,9 @@ hqw : {emp} r : Bool {emp /\ Id(r, false)}
 \begin{minipage}{0.95\linewidth}
 \begin{lstlisting}[language=QHaskell]
 rnd : {emp} r : Bool {emp}
-    = do q <= mkQbit false;
-         applyU (H q);
-         return measQbit q
+    = do q <= init false;
+         apply H to q;
+         return measure q
 \end{lstlisting}
 \end{minipage}
 
@@ -409,11 +409,11 @@ Verification steps follow:
 \begin{lstlisting}[language=QHaskell]
 rnd : {emp} r : Bool {emp}
 -- P0: emp
-    = do q <= mkQbit false;
+    = do q <= init false;
 -- P1: P0 \o (q |-> |0\>)
-         applyU (H q);
+         apply H to q;
 -- P2: P1 \o ((q |-> |0\>) -o (q |-> |+\>))
-         return measQbit q
+         return measure q
 -- P3: P2 \o ((q |-> -) -o emp)
 \end{lstlisting}
 \end{minipage}
@@ -421,15 +421,16 @@ rnd : {emp} r : Bool {emp}
 \subsubsection{Testing Bell Pair}
 \leavevmode
 \todo{TODO: Should the type be \type{Bool} $\otimes$ \type{Bool}?}
+\todo{TODO: syntax for applying multi-qubit gate}
 
 \begin{minipage}{0.95\linewidth}
 \begin{lstlisting}[language=QHaskell]
 testBell : {emp} (a, b) : (Bool, Bool) {emp /\ Id(a, b)}  -- a,b \in {true, false}
-         = do qa <= mkQbit false;
-              applyU (H qa);
-              qb <= mkQbit false;
-              applyU (ifQ qa (X qb));
-              return (measQbit qa, measQbit qb)
+         = do qa <= init false;
+              apply H to qa;
+              qb <= init false;
+              apply CNOT to [qa, qb];
+              return (measure qa, measure qb)
 \end{lstlisting}
 \end{minipage}
 
@@ -441,19 +442,19 @@ We would like to describe how QHTT lets us verify the correctness of the above p
 \begin{lstlisting}[language=QHaskell]
 testBell : {emp} (a, b) : (Bool, Bool) {emp /\ Id(a, b)}
               -- P0: emp
-         = do qa <= mkQbit false;
+         = do qa <= init false;
               -- P1: P0 \o (qa |-> |0\>)
-              applyU (H qa);
+              apply H to qa;
               -- P2: P1 \o ((qa |-> |0\>) -o (qa |-> |+\>))
-              qb <= mkQbit false;
+              qb <= init false;
               -- P3: P2 \o (qb |-> |0\>)
-              applyU (ifQ qa (X qb));
+              apply CNOT to [qa, qb];
               -- P4: P3 \o ((qa |-> |+\>, qb |-> |0\>) -o (qa, qb) |-> |\Phi+\>)
-              return (measQbit qa, measQbit qb)
+              return (measure qa, measure qb)
               -- P5: P4 \o ((qa |-> -) -o emp) \o ((qb |-> -) -o emp)
 \end{lstlisting}
 
-In the assertion P2, we show that only the portion of the quantum state referred to by the \texttt{applyU} command is affected. Similarly, in P4 we see that only the relevant portion of the heap containing the control and target qubits used in the CNOT operation are affected. In this case, we also needed to combine the two qubit state as they are now entangled. The last assertion, P5, merely encodes the strongest postcondition for measurement for each of the two qubits.
+In the assertion P2, we show that only the portion of the quantum state referred to by the \texttt{apply} command is affected. Similarly, in P4 we see that only the relevant portion of the heap containing the control and target qubits used in the CNOT operation are affected. In this case, we also needed to combine the two qubit state as they are now entangled. The last assertion, P5, merely encodes the strongest postcondition for measurement for each of the two qubits.
 
 Finally, the \texttt{consq} rule of HTT ensures that the assertion P5 leads to the specified postcondition in the type of the program.
 
@@ -549,19 +550,19 @@ Complete derivation tree for Hello Quantum World:
 	\begin{mathpar}
 		\inferrule*[right=HIntro]
 		{\inferrule*[right=consq]
-			{\inferrule*[right=mkQbit]
-				{\inferrule*[right=measQbit]
+			{\inferrule*[right=init]
+				{\inferrule*[right=measure]
 					{\inferrule*[right=return]
 						{q : \type{Qbit}, r : \type{Bool} \vdash r \chk \type{Bool}}
 						{q : \type{Qbit}, r : \type{Bool}; P_1 \circ ((q \mapsto -) \multimap emp) \vdash \kw{return} r \syn r : \type{Bool} . R}
 						\\ q : \type{Qbit} \vdash q \chk \type{Qbit}
 						\\ \cdot; P_0 * (q \mapsto \ket{0}) \prove (q \hookrightarrow -)
 					}
-					{q : \type{Qbit}; P_0 * (q \mapsto \ket{0}) \vdash r \Leftarrow \kw{measQbit} q; E_3 \syn r : \type{Bool} . (\exists r : \type{Bool}.R)}
+					{q : \type{Qbit}; P_0 * (q \mapsto \ket{0}) \vdash r \Leftarrow \kw{measure} q; E_3 \syn r : \type{Bool} . (\exists r : \type{Bool}.R)}
 					\\ \cdot \vdash \kw{false} \chk \type{Bool}
 				}
 				{
-					\cdot; P_0 \vdash q \Leftarrow \kw{mkQbit false}; E_{23} \syn r : \type{Bool} . (\exists q : \type{Qbit}.R)
+					\cdot; P_0 \vdash q \Leftarrow \kw{init false}; E_{23} \syn r : \type{Bool} . (\exists q : \type{Qbit}.R)
 				}
 				\\ r : \type{Bool}; i,m ; R \prove emp \multimap emp \wedge Id(r, \kw{false})
 			}
@@ -581,13 +582,13 @@ Writing a modular version of \texttt{testBell}.
 \subsection{Hadamard basis states}
 \begin{lstlisting}[language=QHaskell]
 qplus : {emp} r : Qbit {Id(r, |+\>)}
-      = do q <= mkQbit false;
-           applyU (H q);
+      = do q <= init false;
+           apply H to q;
            return q
 
 qminus : {emp} r : Qbit {Id(r, |-\>)}
-       = do q <= mkQbit true;
-            applyU (H q);
+       = do q <= init true;
+            apply H to q;
             return q
 \end{lstlisting}
 
@@ -597,8 +598,8 @@ share : \Pi a : Qbit.
         {a \in {|+\>, |-\>}}   -- a \in {b, c} is short for Id(a,b) \/ Id(a,c)
            b : Qbit
         {Id(a, b) /\ a \in {|0\>, |1\>}}
-      = \a.do b <= mkQbit false;
-              applyU (ifQ a (X b));
+      = \a.do b <= init false;
+              apply CNOT to [a, b];
               return b
 \end{lstlisting}
 
@@ -614,7 +615,7 @@ bell : {emp} (a, b) : (Qbit o* Qbit) {Id(a, b) /\ a \in {|0\>, |1\>}}
 \begin{lstlisting}[language=QHaskell]
 testBell : {emp} (a, b) : (Bool o* Bool) {emp /\ Id(a, b)}
          = do (qa, qb) <- bell;
-              return (measQbit qa, measQbit qb)
+              return (measure qa, measure qb)
 \end{lstlisting}
 
 \section{Teleportation}
@@ -626,19 +627,19 @@ alice : \Pi a : Qbit. \Pi e : Qbit
         {(Id(a, -) /\ entangled(e)}
            r : (Bool o* Bool)
         {emp}
-      = \a.\e.do applyU (ifQ a (X e));
-                 applyU (H a);
-                 return (measQbit a, measQbit e)
+      = \a.\e.do apply CNOT to [a, e];
+                 apply H to a;
+                 return (measure a, measure e)
 \end{lstlisting}
 
-\subsection{Bob's circuit} \todo{TODO: With \texttt{if ... then ... else} removed, this will not work}
+\subsection{Bob's circuit}
 \begin{lstlisting}[language=QHaskell]
 bob : \Pi m1 m2 : Bool. \Pi e : Qbit
       {entangled(e)}
          r : Qbit
       {(Id(r, -)}
-      = \m1.\m2.\e.do if m1 then applyU (Z e) else ();
-                      if m2 then applyU (X e) else ();
+      = \m1.\m2.\e.do if m1 then (apply Z to e) else ();
+                      if m2 then (apply X to e) else ();
                       return e
 \end{lstlisting}
 
