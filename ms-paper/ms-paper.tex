@@ -45,6 +45,8 @@
 	{o*}{{$\otimes$}}1
 	{\\top}{{$\top$}}1
 	{\\bot}{{$\bot$}}1
+	{=q}{{$=_q$}}2
+	{alpha}{{$\alpha$}}1 {beta}{{$\beta$}}1
 }
 
 \newcommand{\sqir}{\ensuremath{s\textsc{qir}}\xspace}
@@ -366,6 +368,7 @@ In this section, we show some simple examples from the QIO work~\cite{qio} trans
 At the end of this section, we show a sample verification using QHTT for Bell pair generation.
 
 \subsubsection{Hello Quantum World}
+ \todo{TODO}
 \leavevmode
 
 \begin{minipage}{0.95\linewidth}
@@ -378,7 +381,7 @@ hqw : {\top} r : Bit {\top /\ r=0}
 
 In this trivial program where we initialize a new qubit with 0 and then immediately measure it, we assert that the result is equal to 0. The complete specification also implicitly says that the existing quantum state is not affected in any way as both the pre and postcondition include the $\top$ assertion.
 
-Verification steps follow:
+Verification steps follow:  \todo{TODO}
 
 \begin{minipage}{0.95\linewidth}
 \begin{lstlisting}[language=QHaskell]
@@ -405,7 +408,7 @@ rnd : {\top} r : Bit {\top}
 
 In the case of quantum coin toss, the result can be in either 0 or 1, hence, we need not specify any special postcondition as type checking the result will be sufficient for correctness.
 
-Verification steps follow:
+Verification steps follow: \todo{TODO}
 
 \begin{minipage}{0.95\linewidth}
 \begin{lstlisting}[language=QHaskell]
@@ -597,12 +600,12 @@ qminus : {\top} r : Qbit {Id(r, |-\>)}
 \subsection{Creating entanglement}
 \begin{lstlisting}[language=QHaskell]
 share : \Pi a : Qbit.
-        {a \in {|+\>, |-\>}}   -- a \in {b, c} is short for Id(a,b) \/ Id(a,c)
-           b : Qbit
-        {Id(a, b) /\ a \in {|0\>, |1\>}}
+        {a =q (alpha |0\> + beta |1\>)}
+           (a, b) : (Qbit o* Qbit)
+        {(a, b) =q (alpha |00\> + beta |11\>)}
       = \a.do b <= init 0;
-              apply CNOT to [a, b];
-              return b
+              (a, b) <= apply CNot to [a, b];
+              return (a, b)
 \end{lstlisting}
 
 \subsection{Bell pair}
