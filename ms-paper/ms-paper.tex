@@ -20,7 +20,7 @@
 \lstloadlanguages{Haskell}
 \lstdefinelanguage{QHaskell}{
 	language     = Haskell,
-	morekeywords = {Qbit, U, C, Pure},
+	morekeywords = {Qbit, U, C, Bit},
 }
 
 \lstset{
@@ -628,39 +628,44 @@ testBell : {\top} (a, b) : (Bit o* Bit) {\top /\ a = b}
 
 \section{Teleportation}
 \label{app:teleport}
-\todo{TODO: Refine assertions}
 \subsection{Alice's circuit}
 \begin{lstlisting}[language=QHaskell]
-alice : \Pi a : Qbit. \Pi e : Qbit
-        {(Id(a, -) /\ entangled(e)}
-           r : (Bit o* Bit)
-        {\top}
-      = \a.\e.do apply CNOT to [a, e];
-                 apply H to a;
-                 return (measure a, measure e)
+alice : \Pi q : Qbit. \Pi a : Qbit
+        {q =q (alpha |0\> + beta |1\>) /\ (a, e) =q |\Phi+\>}    -- ie, a is entangled with ghost var e
+           (m1, m2) : (Bit o* Bit)
+        {  (m1, m2) = 00 /\ e =q (alpha |0\> + beta |1\>)
+         \/ (m1, m2) = 01 /\ e =q (alpha |1\> + beta |0\>)
+         \/ (m1, m2) = 10 /\ e =q (alpha |0\> - beta |1\>)
+         \/ (m1, m2) = 11 /\ e =q (alpha |1\> - beta |0\>)}
+      = \q.\a.do (q, a) <= apply CNOT to [q, a];
+                 q <= apply H to q;
+                 rq <= measure q;
+                 ra <= measure a;
+                 return (rq, ra)
 \end{lstlisting}
 
 \subsection{Bob's circuit}
+\todo{TODO provide correct assertions using ghost e}
 \begin{lstlisting}[language=QHaskell]
-bob : \Pi m1 m2 : Bit. \Pi e : Qbit
-      {entangled(e)}
+bob : \Pi m1 m2 : Bit. \Pi b : Qbit
+      {(b, e) =q |\Phi+\>}
          r : Qbit
-      {(Id(r, -)}
-      = \m1.\m2.\e.do if m1 then (apply Z to e) else ();
-                      if m2 then (apply X to e) else ();
-                      return e
+      {\top}
+      = \m1.\m2.\b.do (m1, b) <= apply C_Z to [m1, b];
+                      (m2, b) <= apply C_X to [m2, b];
+                      return b
 \end{lstlisting}
 
 \subsection{Teleport}
 \begin{lstlisting}[language=QHaskell]
-teleport : \Pi q : Qbit. x : Pure.
-           {Id(q, x)}
-              r : Qbit
-           {Id(r, x)}
-         = \q.do (a, b) <- bell;
+teleport : \Pi q : Qbit.
+           {q =q (alpha |0\> + beta |1\>)}
+              b : Qbit
+           {r =q (alpha |0\> + beta |1\>)}
+         = \q.do (a, b) <- bell00;
                  (m1, m2) <- alice q a;
-                 tq <- bob m1 m2 b;
-                 return tq
+                 b <- bob m1 m2 b;
+                 return b
 \end{lstlisting}
 
 \section{Ideas from Unruh 2019}
