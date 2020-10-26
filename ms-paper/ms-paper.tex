@@ -586,14 +586,14 @@ Writing a modular version of \texttt{testBell}.
 
 \subsection{Hadamard basis states}
 \begin{lstlisting}[language=QHaskell]
-qplus : {\top} r : Qbit {Id(r, |+\>)}
+qplus : {\top} r : Qbit {r =q |+\>}
       = do q <= init 0;
-           apply H to q;
+           q <= apply H to q;
            return q
 
-qminus : {\top} r : Qbit {Id(r, |-\>)}
+qminus : {\top} r : Qbit {r =q |-\>}
        = do q <= init 1;
-            apply H to q;
+            q <= apply H to q;
             return q
 \end{lstlisting}
 
@@ -610,17 +610,20 @@ share : \Pi a : Qbit.
 
 \subsection{Bell pair}
 \begin{lstlisting}[language=QHaskell]
-bell : {\top} (a, b) : (Qbit o* Qbit) {Id(a, b) /\ a \in {|0\>, |1\>}}
+bell00 : {\top} (a, b) : (Qbit o* Qbit) {(a,b) =q |\Phi+\>}
      = do qa <- qplus;
-          qb <- share qa;
+          (qa, qb) <- share qa;
           return (qa, qb)
 \end{lstlisting}
 
 \subsection{Testing modular Bell pair}
+\todo{TODO: how is classical equality ensured?}
 \begin{lstlisting}[language=QHaskell]
-testBell : {\top} (a, b) : (Bit o* Bit) {\top /\ Id(a, b)}
-         = do (qa, qb) <- bell;
-              return (measure qa, measure qb)
+testBell : {\top} (a, b) : (Bit o* Bit) {\top /\ a = b}
+         = do (qa, qb) <- bell00;
+              a <= measure qa;
+              b <= measure qb;
+              return (a, b)
 \end{lstlisting}
 
 \section{Teleportation}
