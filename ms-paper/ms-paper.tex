@@ -334,10 +334,10 @@ $x \Leftarrow \kw{init} N; E$
 \begin{mathpar}
 	\inferrule
 	{\Delta \vdash N \chk \type{Bit}
-		\\ \Delta, x : \type{Qbit}; P \circ (x \mapsto \kw{state}(N)) \vdash E \syn y:B . Q}
+		\\ \Delta, x : \type{Qbit}; P \circ (x \mapsto \ket{N}) \vdash E \syn y:B . Q}
 	{\Delta; P \vdash x \Leftarrow \kw{init} N; E \syn y:B. (\exists x:\type{Qbit}.Q)}
 \end{mathpar}
-where x is fresh and \texttt{state} is a function that translates a classical representation of quantum state (such as boolean here) to the equivalent quantum state vector. \todo{TODO}
+where x is fresh.
 
 Initialization can only be performed for a term $N$ that can be type checked as a \type{Bit}. Then, we look at the rest of the computation, $E$, in a context that adds $x$ of type \type{Qbit} under a precondition that extends the previous precondition, $P$, with the strongest postcondition for initialization, that is, the newly bound variable $x$ points to the representation of a new qubit state; this should synthesize the strongest postcondition (with respect to the expanded precondition in the context), $Q$, for $E$.
 
