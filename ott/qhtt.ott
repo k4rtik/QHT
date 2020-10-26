@@ -27,122 +27,120 @@ UGVarSet, U :: '' ::= {{ com unentangled ghosts }}
 GVarSet, G :: '' ::= {{ com ghost variables }}
   | g1 .. gn  :: :: GVars
 
-  A, B :: Ty ::=                                        {{ com Types }}
-    | Unit                ::   :: Unit                    {{ com unit }}
-    % | Bool                ::   :: Bool                    {{ com booleans }}
-    | Qbit                ::   :: Qubit                   {{ com qubits }}
-    % | U                   ::   :: Unitary                 {{ com unitary }}
-    | A otimes B                  ::   :: pair                    {{ com product }}
-    | Pi x : A . B                ::   :: Pi    (+ bind x in B +) {{ com dependent function }}
-    | A -> B                      :: S :: arrow                   {{ com function }}
-    | D . Psi . { P } x : A { Q } ::   :: Hoare (+ bind x in Q +) {{ com hoare type }}
-    | { P } x : A { Q }   :: S :: HoareS
-    | ( A )               :: S :: paren
-    | [ N / x ] A         :: M :: tsub
+A, B :: Ty ::=                                        {{ com Types }}
+  | Unit                ::   :: Unit                    {{ com unit }}
+  | Bit                 ::   :: Bit                     {{ com bits }}
+  | Qbit                ::   :: Qubit                   {{ com qubits }}
+  % | U                   ::   :: Unitary                 {{ com unitary }}
+  | A otimes B                  ::   :: pair                    {{ com product }}
+  | Pi x : A . B                ::   :: Pi    (+ bind x in B +) {{ com dependent function }}
+  | A -> B                      :: S :: arrow                   {{ com function }}
+  | D . Psi . { P } x : A { Q } ::   :: Hoare (+ bind x in Q +) {{ com hoare type }}
+  | { P } x : A { Q }   :: S :: HoareS
+  | ( A )               :: S :: paren
+  | [ N / x ] A         :: M :: tsub
 
-  P, Q, R :: Pr ::= {{ com Predicates }}
-    | top                 ::   :: Top
-    | bot                 ::   :: Bot
-    | P /\ Q              ::   :: Conjunction
-    % | P, Q                :: S :: ConjSugar
-    | P \/ Q              ::   :: Disjunction
-    | M . P               ::   :: Operator
-    | X inq S             ::   :: VarListInSubspaceS
-    | W =q psi            ::   :: VarListEqState
-    | P { W / W' }        :: M :: Renaming
-    | uniform ( X )       ::   :: Uniform
-    | separable ( X )     ::   :: Separable
-    | class ( X )         ::   :: Classical
-    | ( P )               :: S :: Paren
+P, Q, R :: Pr ::= {{ com Predicates }}
+  | top                 ::   :: Top
+  | bot                 ::   :: Bot
+  | P /\ Q              ::   :: Conjunction
+  % | P, Q                :: S :: ConjSugar
+  | P \/ Q              ::   :: Disjunction
+  | M . P               ::   :: Operator
+  | X inq S             ::   :: VarListInSubspaceS
+  | W =q psi            ::   :: VarListEqState
+  | P { W / W' }        :: M :: Renaming
+  | uniform ( X )       ::   :: Uniform
+  | separable ( X )     ::   :: Separable
+  | class ( X )         ::   :: Classical
+  | ( P )               :: S :: Paren
 
-  K, L :: ElimTm ::=                                    {{ com Elim Terms }}
-    | x                   ::   :: Var                     {{ com variable }}
-    | K N                 ::   :: App                     {{ com application }}
-    | N : A               ::   :: Annot
-    | ( K )               :: S :: paren
-    | [ K / x ] M         :: M :: tsub
+K, L :: ElimTm ::=                                    {{ com Elim Terms }}
+  | x                   ::   :: Var                     {{ com variable }}
+  | K N                 ::   :: App                     {{ com application }}
+  | N : A               ::   :: Annot
+  | ( K )               :: S :: paren
+  | [ K / x ] M         :: M :: tsub
 
-  N, O :: IntroTm ::=                                {{ com Intro Terms }}
-    | K                   ::   :: Elim
-    | \ x . N             ::   :: Lam  (+ bind x in N +)  {{ com abstraction }}
-    | ()                  ::   :: unit
-    | do F                ::   :: Computation
+N, O :: IntroTm ::=                                {{ com Intro Terms }}
+  | K                   ::   :: Elim
+  | \ x . N             ::   :: Lam  (+ bind x in N +)  {{ com abstraction }}
+  | ()                  ::   :: unit
+  | do F                ::   :: Computation
 
-  c, d :: Cmd ::= {{ com Primitive Quantum Commands }}
-    | init x             :: :: init
-    | apply U to X       :: :: apply
-    | if y then c else d :: :: ite
-    | c ; d              :: :: seq
-    | skip               :: :: skip
-    | X <-q psi          :: S:: initq
-    | X <- z             :: S:: initc
-    | Y <- measure X     :: S:: meas
-    % | measQbit M         :: :: measure
+c, d :: Cmd ::= {{ com Primitive Quantum Commands }}
+  | init x             :: :: init
+  | apply U to X       :: :: apply
+  | if y then c else d :: :: ite
+  | X <-q psi          :: S:: initq
+  | X <- z             :: S:: initc
+  | Y <- measure X     :: S:: meas
+  % | measQbit M         :: :: measure
 
-  F :: Comp ::=  {{ com Computations }}
-    | return N        ::   :: lift
-    | x <- K ; F      ::   :: bindK     (+ bind x in F +)
-    | x <= c ; F      ::   :: bindC     (+ bind x in F +)
-    | x =_A N ; F     ::   :: bindPure  (+ bind x in F +)
-    | ( F )           :: S :: paren
-    | < F / x : A > F' :: M :: msub                        {{ com monadic substitution }}
+F :: Comp ::=  {{ com Computations }}
+  | return N        ::   :: lift
+  | x <- K ; F      ::   :: bindK     (+ bind x in F +)
+  | x <= c ; F      ::   :: bindC     (+ bind x in F +)
+  | x =_A N ; F     ::   :: bindPure  (+ bind x in F +)
+  | ( F )           :: S :: paren
+  | < F / x : A > F' :: M :: msub                        {{ com monadic substitution }}
 
-  D {{ tex \Delta }} :: VCtx ::= {{ com Variable Context }}
-    | empty               ::   :: em  {{ tex \cdot }}
-    | D , x : A           ::   :: vn
+D {{ tex \Delta }} :: VCtx ::= {{ com Variable Context }}
+  | empty               ::   :: em  {{ tex \cdot }}
+  | D , x : A           ::   :: vn
 
-  Psi {{ tex \Psi }} :: HCtx ::= {{ com Quantum Heap Context }}
-    | empty               ::   :: em  {{ tex \cdot }}
-    | Psi , h             ::   :: vn
-    | h                   :: S :: alone
+Psi {{ tex \Psi }} :: HCtx ::= {{ com Quantum Heap Context }}
+  | empty               ::   :: em  {{ tex \cdot }}
+  | Psi , h             ::   :: vn
+  | h                   :: S :: alone
 
-  Gm {{ tex \Gamma }} :: ACtx ::= {{ com Assertion Context }}
-    | empty               ::   :: em  {{ tex \cdot }}
-    | Gm , P              ::   :: vn
-    | P                   :: S :: alone
+Gm {{ tex \Gamma }} :: ACtx ::= {{ com Assertion Context }}
+  | empty               ::   :: em  {{ tex \cdot }}
+  | Gm , P              ::   :: vn
+  | P                   :: S :: alone
 
-  terminals :: 'terminals_' ::=
-    | \                   ::   :: lambda     {{ tex \lambda }}
-    | -->                 ::   :: red        {{ tex \longrightarrow }}
-    | |=                  ::   :: seqimp     {{ tex \models }}
-    | ==>b                ::   :: bred       {{ tex \Longrightarrow_\beta }}
-    | ==>e                ::   :: expand     {{ tex \Longrightarrow_\eta }}
-    |  ->                 ::   :: arrow      {{ tex \rightarrow }}
-    | <-                  ::   :: larrow     {{ tex \leftarrow }}
-    | <=                  ::   :: lbarrow    {{ tex \Leftarrow }}
-    |  =>                 ::   :: rbarrow    {{ tex \Rightarrow }}
-    | <                   ::   :: langle     {{ tex \langle }}
-    | >                   ::   :: rangle     {{ tex \rangle }}
-    | |-                  ::   :: turnstile  {{ tex \vdash }}
-    | syn                 ::   :: syn        {{ tex \textcolor{red}{\stackrel{\rightarrow}{\in} } }}
-    | chk                 ::   :: chk        {{ tex \textcolor{blue}{\stackrel{\leftarrow}{\in} } }}
-    | in                  ::   :: in         {{ tex \in }}
-    | inq                 ::   :: inq        {{ tex \in_q }}
-    | =q                  ::   :: eqq        {{ tex =_q }}
-    | <-q                 ::   :: initq      {{ tex \stackrel{q}{\leftarrow} }}
-    | Pi                  ::   :: pi         {{ tex \Pi }}
-    | psi                 ::   :: psi        {{ tex \psi }}
-    | otimes              ::   :: otimes     {{ tex \otimes }}
-    | top                 ::   :: top        {{ tex \top }}
-    | bot                 ::   :: bot        {{ tex \bot }}
-    | /\                  ::   :: and        {{ tex \wedge }}
-    | \/                  ::   :: or         {{ tex \vee }}
-    | imp                 ::   :: imp        {{ tex \supset }}
-    | not                 ::   :: not        {{ tex \neg }}
-    | ex                  ::   :: exists     {{ tex \exists }}
-    | all                 ::   :: forall     {{ tex \forall }}
-    | Id_A                ::   :: IdA        {{ tex \mathbf{Id}_A }}
-    | =_A                 ::   :: AssA       {{ tex =_A }}
-    | o                   ::   :: RelComp    {{ tex \circ }}
-    | -o                  ::   :: Lollipop   {{ tex \multimap }}
-    | |->                 ::   :: SMapsto    {{ tex \mapsto }}
-    | C->                 ::   :: SAtLeastMT {{ tex \hookrightarrow }}
+terminals :: 'terminals_' ::=
+  | \                   ::   :: lambda     {{ tex \lambda }}
+  | -->                 ::   :: red        {{ tex \longrightarrow }}
+  | |=                  ::   :: seqimp     {{ tex \models }}
+  | ==>b                ::   :: bred       {{ tex \Longrightarrow_\beta }}
+  | ==>e                ::   :: expand     {{ tex \Longrightarrow_\eta }}
+  |  ->                 ::   :: arrow      {{ tex \rightarrow }}
+  | <-                  ::   :: larrow     {{ tex \leftarrow }}
+  | <=                  ::   :: lbarrow    {{ tex \Leftarrow }}
+  |  =>                 ::   :: rbarrow    {{ tex \Rightarrow }}
+  | <                   ::   :: langle     {{ tex \langle }}
+  | >                   ::   :: rangle     {{ tex \rangle }}
+  | |-                  ::   :: turnstile  {{ tex \vdash }}
+  | syn                 ::   :: syn        {{ tex \textcolor{red}{\stackrel{\rightarrow}{\in} } }}
+  | chk                 ::   :: chk        {{ tex \textcolor{blue}{\stackrel{\leftarrow}{\in} } }}
+  | in                  ::   :: in         {{ tex \in }}
+  | inq                 ::   :: inq        {{ tex \in_q }}
+  | =q                  ::   :: eqq        {{ tex =_q }}
+  | <-q                 ::   :: initq      {{ tex \stackrel{q}{\leftarrow} }}
+  | Pi                  ::   :: pi         {{ tex \Pi }}
+  | psi                 ::   :: psi        {{ tex \psi }}
+  | otimes              ::   :: otimes     {{ tex \otimes }}
+  | top                 ::   :: top        {{ tex \top }}
+  | bot                 ::   :: bot        {{ tex \bot }}
+  | /\                  ::   :: and        {{ tex \wedge }}
+  | \/                  ::   :: or         {{ tex \vee }}
+  | imp                 ::   :: imp        {{ tex \supset }}
+  | not                 ::   :: not        {{ tex \neg }}
+  | ex                  ::   :: exists     {{ tex \exists }}
+  | all                 ::   :: forall     {{ tex \forall }}
+  | Id_A                ::   :: IdA        {{ tex \mathbf{Id}_A }}
+  | =_A                 ::   :: AssA       {{ tex =_A }}
+  | o                   ::   :: RelComp    {{ tex \circ }}
+  | -o                  ::   :: Lollipop   {{ tex \multimap }}
+  | |->                 ::   :: SMapsto    {{ tex \mapsto }}
+  | C->                 ::   :: SAtLeastMT {{ tex \hookrightarrow }}
 
-  formula :: 'formula_' ::=
-    | judgement           ::   :: judgement
-    | not ( formula )     ::   :: not
-    | x = x'              ::   :: eqv
-    | x : A in D          ::   :: xAD
+formula :: 'formula_' ::=
+  | judgement           ::   :: judgement
+  | not ( formula )     ::   :: not
+  | x = x'              ::   :: eqv
+  | x : A in D          ::   :: xAD
 
 % subrules
 %   E <:: G

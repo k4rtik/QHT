@@ -236,19 +236,19 @@ Complete grammar written using Ott tool at \url{https://github.com/k4rtik/QHT/bl
 		\textit{Intro terms} & $N, O$ & ::= & $ K \mid () \mid \lambda x.N \mid \kw{do} E \mid \kw{1} \mid \kw{0} $\\ \\
 		\textit{Q. Commands} & $c$ & ::= &
 		\begin{minipage}[t]{0.45\columnwidth}%
-			$ \kw{init} N \mid \kw{apply} U \kw{to} N \mid \kw{measure} N \mid \kw{if} y \kw{then} E \kw{else} F$
+			$ \kw{init} N \mid \kw{apply} U \kw{to} N \mid \kw{measure} N$
 		\end{minipage}\\
 		\textit{Computations} & $E, F$ & ::= & $ \kw{return} N \mid x \leftarrow K; E \mid x \Leftarrow c; E \mid x =_A N; E $\\ \\
-		\textit{Variable context} & $\Delta$ & ::= & $ \cdot \mid x : A, \Delta $ \\
-		\textit{Q. Heap context} & $\Psi$ & ::= & $ \cdot \mid h, \Psi$ \\
-		\textit{Assertion context} & $\Gamma$ & ::= & $ \cdot \mid P, \Gamma$ \\
+%		\textit{Variable context} & $\Delta$ & ::= & $ \cdot \mid x : A, \Delta $ \\
+%		\textit{Q. Heap context} & $\Psi$ & ::= & $ \cdot \mid h, \Psi$ \\
+%		\textit{Assertion context} & $\Gamma$ & ::= & $ \cdot \mid P, \Gamma$ \\
 	\end{tabular}
 	\Description{Syntax of Quantum Hoare Type Theory}
 	\caption{Syntax of Quantum Hoare Type Theory}
 	\label{fig:syntax}
 \end{figure}
 
-\paragraph{Types} We include primitive types for unit, bits, qubits and unitary operations, and a type \type{Pure} for representing pure quantum state vectors (complex valued vectors in Hilbert space); these correspond to similar types in the QIO work. There are also type constructors for pairs, dependent functions and the Hoare type from HTT.
+\paragraph{Types} We include primitive types for unit, bits, qubits and unitary operations; these correspond to similar types in the QIO work. There are also type constructors for pairs, dependent functions and the Hoare type from HTT.
 
 \paragraph{Assertions}
 The assertion language is inspired by \citet{unruh2019} that follows subspace semantics. We need to be explicit about what we mean when we say that a certain state satisifes a certain assertion (predicate) in the quantum setting. In this model, the predicates are subspaces of the Hilbert space corresponding to a quantum state. Here are some examples:
@@ -261,7 +261,7 @@ The assertion language is inspired by \citet{unruh2019} that follows subspace se
 	\item If we want to write that a variable w, or a list of variables W is in a specific state, we can model that predicate as the variable(s) being in the span of the state and use the notation, $W =_q \psi$.
 \end{itemize}
 
-Here are some examples. The postcondition of the program \texttt{qplus} can be written as $r =_q \ket{+}$. The postcondition for the program \texttt{bell} as $ab =_q \frac{1}{\sqrt{2}}\ket{00}+\frac{1}{\sqrt{2}}\ket{11}$ and the precondition for the program \texttt{share} as $a =_q \ket{+} \vee a =_q \ket{-}$.
+Here are some examples. The postcondition of the program \texttt{qplus} below can be written as $r =_q \ket{+}$. The postcondition for the program \texttt{bell00} as $(a, b) =_q \frac{1}{\sqrt{2}}\ket{00}+\frac{1}{\sqrt{2}}\ket{11}$ or equivalently as $(a, b) =_q \ket{\Phi^+}$..
 
 There are other predicates that involve ghosts. \todo{TODO}
 
@@ -281,7 +281,7 @@ These are the quantum-specific effectful commands inspired by QIO for initializa
 \texttt{init} $N$ initializes a given variable based on the value of the expression $N$ (typically 0 or 1 if N is a bit).
 \texttt{apply} $U$ \texttt{to} $X$ applies unitary operation $U$ to variables $X$.
 \texttt{measure} $x$ measures the variable $x$ in the computational basis.
-\texttt{if y then E else F} executes computation $E$ if measuring variable $y$ returns 1 else executes $F$.
+%\texttt{if y then E else F} executes computation $E$ if measuring variable $y$ returns 1 else executes $F$.
 
 \paragraph{Computations} The computations are the usual monadic return and three sequencing operations that bind their result to a variable similar to HTT. The first, $x \leftarrow K$, executes a suspended computation (such as applying a function that includes a \texttt{do} $E$ in its body); the second, $x \Leftarrow c$ executes a primitive command $c$; and the last, $x =_A N$, is just syntactic sugar for let-binding.
 
@@ -381,11 +381,11 @@ hqw : {\top} r : Bit {\top /\ r=0}
 
 In this trivial program where we initialize a new qubit with 0 and then immediately measure it, we assert that the result is equal to 0. The complete specification also implicitly says that the existing quantum state is not affected in any way as both the pre and postcondition include the $\top$ assertion.
 
-Verification steps follow:  \todo{TODO}
+Verification steps follow:  \todo{TODO how to ensure classical equality?}
 
 \begin{minipage}{0.95\linewidth}
 \begin{lstlisting}[language=QHaskell]
-hqw : {\top} r : Bit {\top /\ r=0}
+hqw : {\top} r : Bit {\top /\ r = 0}
 -- P0: \top
     = do q <= init 0;
 -- P1: P0 \o (q |-> |0\>)
@@ -401,7 +401,7 @@ hqw : {\top} r : Bit {\top /\ r=0}
 \begin{lstlisting}[language=QHaskell]
 rnd : {\top} r : Bit {\top}
     = do q <= init 0;
-         apply H to q;
+         q <= apply H to q;
          return measure q
 \end{lstlisting}
 \end{minipage}
@@ -416,7 +416,7 @@ rnd : {\top} r : Bit {\top}
 -- P0: \top
     = do q <= init 0;
 -- P1: P0 \o (q |-> |0\>)
-         apply H to q;
+         q <= apply H to q;
 -- P2: P1 \o ((q |-> |0\>) -o (q |-> |+\>))
          return measure q
 -- P3: P2 \o ((q |-> -) -o \top)
@@ -425,35 +425,34 @@ rnd : {\top} r : Bit {\top}
 
 \subsubsection{Testing Bell Pair}
 \leavevmode
-\todo{TODO: Should the type be \type{Bit} $\otimes$ \type{Bit}?}
 \todo{TODO: syntax for applying multi-qubit gate}
 
 \begin{minipage}{0.95\linewidth}
 \begin{lstlisting}[language=QHaskell]
-testBell : {\top} (a, b) : (Bit, Bit) {\top /\ Id(a, b)}  -- a,b \in {0, 1}
+testBell00 : {\top} (a, b) : (Bit o* Bit) {\top /\ a = b}
          = do qa <= init 0;
-              apply H to qa;
+              qa <= apply H to qa;
               qb <= init 0;
-              apply CNOT to [qa, qb];
+              (qa, qb) <= apply CNOT to [qa, qb];
               return (measure qa, measure qb)
 \end{lstlisting}
 \end{minipage}
 
-Here, we are asserting that the returned bits $a$ and $b$ hold the same value, which is what we expect from the first Bell state prepared in this program. \todo{TODO}
+Here, we are asserting that the returned bits $a$ and $b$ hold the same value, which is what we expect from the first Bell state prepared in this program.
 
 \paragraph{Verification}
-We would like to describe how QHTT lets us verify the correctness of the above program based on the specification provided as the type of the function. For illustration, we show the assertions annotated as comments as we step through the \texttt{testBell} program below. We have elided specific details about unitary application as they are still being worked out.
+We would like to describe how QHTT lets us verify the correctness of the above program based on the specification provided as the type of the function. For illustration, we show the assertions annotated as comments as we step through the \texttt{testBell00} program below. We have elided specific details about unitary application as they are still being worked out.
 
 \begin{lstlisting}[language=QHaskell]
-testBell : {\top} (a, b) : (Bit, Bit) {\top /\ Id(a, b)}
+testBell00 : {\top} (a, b) : (Bit o* Bit) {\top /\ a = b}
               -- P0: \top
          = do qa <= init 0;
               -- P1: P0 \o (qa |-> |0\>)
-              apply H to qa;
+              qa <= apply H to qa;
               -- P2: P1 \o ((qa |-> |0\>) -o (qa |-> |+\>))
               qb <= init 0;
               -- P3: P2 \o (qb |-> |0\>)
-              apply CNOT to [qa, qb];
+              (qa, qb) <= apply CNOT to [qa, qb];
               -- P4: P3 \o ((qa |-> |+\>, qb |-> |0\>) -o (qa, qb) |-> |\Phi+\>)
               return (measure qa, measure qb)
               -- P5: P4 \o ((qa |-> -) -o \top) \o ((qb |-> -) -o \top)
@@ -682,26 +681,11 @@ We will also need to talk about mixed states as we deal with measurements that c
 
 Applying unitaries to the quantum state is same as before, in that, we apply the operation to the specified variables and identity to all other program variables.
 
-\subsection{Quantum Assertion Language}
-We need to be explicit about what we mean when we say that a certain state satisifes a certain assertion (predicate) in the quantum setting. In this model, the predicates are subspaces of the Hilbert space corresponding to a quantum state. Here are some examples:
-\begin{itemize}
-	\item $\top$ represents the complete Hilbert space that is always satisfied by any state.
-	\item $\bot$ represents nothing, it is never satisfied.
-	\item $A \wedge B$ represent that both A and B hold (conjunction), it is equivalent to the intersection of the subspaces.
-	\item $A \vee B$ similarly represents disjunction and is modeled as the sum (linear combination) of the subspaces A and B.
-	\item If an operator M is applied to a state satisfying a predicate A, then the new predicate can be written as $M \cdot A$.
-	\item If we want to write that a variable w, or a list of variables W is in a specific state, we can model that predicate as the variable(s) being in the span of the state and use the notation, $W =_q \psi$.
-\end{itemize}
-
-Here are some examples. The postcondition of the program \texttt{qplus} above can be written as $r =_q \ket{+}$. The postcondition for the program \texttt{bell} as $ab =_q \frac{1}{\sqrt{2}}\ket{00}+\frac{1}{\sqrt{2}}\ket{11}$ and the precondition for the program \texttt{share} as $a =_q \ket{+} \vee a =_q \ket{-}$.
-
-What is the relation between the program variables and the subspaces corresponding to the predicates that we are talking about? We need to define the notion of free variables for a predicate $A$. fv(A) consists of those variables that solely describe the predicate A.
-
-There are more predicates that will involve ghosts, described in the section after the next.
+%What is the relation between the program variables and the subspaces corresponding to the predicates that we are talking about? We need to define the notion of free variables for a predicate $A$. fv(A) consists of those variables that solely describe the predicate A.
 
 \subsection{Improvements to the quantum commands}
 
-Added if then else, skip, sequencing, and a simpler form of apply; and the syntactic sugar for quantum and classical assignments in the ott document.
+Added if then else and a simpler form of apply; and the syntactic sugar for quantum and classical assignments in the ott document.
 
 \subsection{Predicates with Ghosts}
 \todo{To Do: consider adding distrib}
