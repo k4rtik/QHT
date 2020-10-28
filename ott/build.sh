@@ -1,3 +1,3 @@
 #!/bin/bash
 
-ott -i qhtt.ott -o qhtt.tex && make qhtt
+ott -show_sort true -show_defns true -i qhtt.ott -o qhtt.tex
