@@ -225,11 +225,11 @@ Complete grammar written using Ott tool at \url{https://github.com/k4rtik/QHT/bl
 	\begin{tabular}{lrcl}
 		\textit{Types} & $A, B, C$ & ::= &
 		\begin{minipage}[t]{0.5\columnwidth}%
-			$ \type{1} \mid \type{Qbit} \mid \type{U} \mid A \otimes B \mid \Pi x{ : }A.B \mid \Delta. \Psi .\{P\} x{ : }A \{Q\}$
+			$ \type{1} \mid \type{Qbit} \mid A \otimes B \mid \Pi x{ : }A.B \mid \Delta. \Psi .\{P\} x{ : }A \{Q\}$
 		\end{minipage}\\ \\
 		\textit{Propositions} & $P, Q, R$ & ::= &
 		\begin{minipage}[t]{0.5\columnwidth}%
-			$ \top \mid \bot \mid P \wedge Q \mid P \vee Q \mid U \cdot P \mid X \in_q S \mid X =_q \psi \mid \kw{uniform}(X) \mid \kw{separable}(X) \mid \kw{classical}(X) $
+			$ \top \mid \bot \mid P \wedge Q \mid P \vee Q \mid U \cdot P \mid \textbf{X} =_q \psi \mid \kw{uniform}(\textbf{X}) \mid \kw{separable}(\textbf{X}) \mid \kw{classical}(\textbf{X}) $
 		\end{minipage}\\ \\
 		% \textit{Q. Heaps} & $H, G$ & ::= & $ h \mid \kw{empty} \mid \kw{upd}(H, M, N) $\\ \\
 		\textit{Elim terms} & $K, L$ & ::= & $ x \mid K N \mid N : A $\\
@@ -249,22 +249,27 @@ Complete grammar written using Ott tool at \url{https://github.com/k4rtik/QHT/bl
 	\label{fig:syntax}
 \end{figure}
 
-\paragraph{Types} We include primitive types for unit, qubits, and unitary operations. There are also type constructors for pairs, dependent functions and the Hoare type from HTT.
+\paragraph{Types} There are primitive types for unit and qubits. There are also type constructors for pairs, dependent functions and the Hoare type from HTT.
 
 \paragraph{Propositions}
-The predicate language is inspired by \citet{unruh2019} that follows subspace semantics. We need to be explicit about what we mean when we say that a certain state satisifes a certain predicate in the quantum setting. In this model, the propositions are subspaces of the Hilbert space corresponding to a quantum state. Here are some examples:
+The predicate language is inspired by \citet{unruh2019} that follows subspace semantics. We need to be explicit about what we mean when we say that a certain state satisifes a certain predicate in the quantum setting. In this model, the propositions are subspaces of the Hilbert space corresponding to a quantum state. We use the metavariable \textbf{X} to refer to a list of quantum variables. Here are some examples:
 \begin{itemize}
 	\item $\top$ represents the complete Hilbert space that is always satisfied by any state.
 	\item $\bot$ represents nothing, it is never satisfied.
 	\item $P \wedge Q$ represent that both P and Q hold (conjunction), it is equivalent to the intersection of the subspaces.
 	\item $P \vee Q$ similarly represents disjunction and is modeled as the sum (linear combination) of the subspaces P and Q.
-	\item If an operator M is applied to a state satisfying a proposition P, then the new proposition can be written as $U \cdot P$.
-	\item If we want to write that a variable w, or a list of variables W is in a specific state, we can model that proposition as the variable(s) being in the span of the state and use the notation, $W =_q \psi$.
+	\item If a unitary operator U is applied to a state satisfying a proposition P, then the new proposition can be written as $U \cdot P$.
+	\item If we want to write that a list of variables \textbf{X} is in a specific state, we can model that proposition as the variables being in the span of the state and use the notation, $\textbf{X} =_q \psi$.
 \end{itemize}
 
-Here are some examples. The postcondition of the program \texttt{qplus} below can be written as $r =_q \ket{+}$. The postcondition for the program \texttt{bell00} as $(a, b) =_q \frac{1}{\sqrt{2}}\ket{00}+\frac{1}{\sqrt{2}}\ket{11}$ or equivalently as $(a, b) =_q \ket{\Phi^+}$..
+Here are some examples. The postcondition of the program \texttt{qplus} below can be written as $r =_q \ket{+}$. The postcondition for the program \texttt{bell00} as $(a, b) =_q \frac{1}{\sqrt{2}}\ket{00}+\frac{1}{\sqrt{2}}\ket{11}$ or equivalently as $(a, b) =_q \ket{\Phi^+}$.
 
-There are other propositions that involve ghosts. \todo{TODO}
+There are other propositions that involve ghosts:
+\begin{itemize}
+	\item uniform(\textbf{X}) is an abbreviation for $(\textbf{X}, \textbf{e}) = \frac{1}{\sqrt{2}}(\ket{00}+\ket{11})$ where \textbf{e} is  a fresh entangled ghost variable. It means that X is uniformly distributed.
+	\item separable(\textbf{X}) is an abbreviation for $\textbf{X} \equiv_{q} \textbf{u}$ where \textbf{u} is a fresh unentangled ghost variable.
+	\item class(\textbf{X}) is an abbreviation for $\textbf{X} \equiv_{cl} \textbf{u}$ where \textbf{u} is a fresh unentangled ghost variable. The classical equality symbol means that the variables on both side will measure to be the exact same values. That is there is no superposition involved.
+\end{itemize}
 
 \paragraph{Quantum State}
 
