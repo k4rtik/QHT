@@ -124,7 +124,7 @@ It is difficult to reason about the correctness of quantum programs. Sound stati
 
 Recent work~\cite{huang_qdb:_2018,huang_statistical_2019} as part of EPiQC\footnote{EPiQC: Enabling Practical-Scale Quantum Computation:  \url{https://epiqc.cs.uchicago.edu}} has identified several classes of bugs in quantum programs and proposed approaches to tackle them. The technique that holds the most promise is assertion checking using preconditions and postconditions. But assertions are usually checked dynamically during runtime, which can be wasteful of precious quantum computing or simulation resources.
 
-As programming languages researchers, we think it will be better to encode such assertions into a static type system both for formal verification and to aid the programmers in writing correct programs from the start. Inspired by the use of Hoare triples in the verification of imperative programs and building on the idea of Hoare Type Theory (HTT) for classical programming languages~\cite{nanevski_hoare_2008}, we extend a quantum effect monad inspired by the Quantum IO Monad interface~\cite{qio} and propose Quantum Hoare Type Theory aimed at enabling both sound static type checking and formal verification of quantum programs.
+As programming languages researchers, we think it will be better to encode such assertions (propositions) into a static type system both for formal verification and to aid the programmers in writing correct programs from the start.\footnote{In this work, we will use the terms \textit{proposition} and \textit{predicate} interchangeably to signify their static nature as opposed to the runtime nature of \textit{assertions}.} Inspired by the use of Hoare triples in the verification of imperative programs and building on the idea of Hoare Type Theory (HTT) for classical programming languages~\cite{nanevski_hoare_2008}, we extend a quantum effect monad inspired by the Quantum IO Monad interface~\cite{qio} and propose Quantum Hoare Type Theory aimed at enabling both sound static type checking and formal verification of quantum programs.
 
 The main idea is that instead of just indexing the QIO monad type with the type of computation result, we can also index it with pre-conditions and post-conditions so as to integrate Hoare-style reasoning into the type system itself. The resulting Quantum Hoare Type, $\{P\}\ x{ : }A\ \{Q\}$, specifies the preconditions, $P$, that hold on the quantum state before execution; the result, $x$, and its type, $A$; and, the postconditions, $Q$, that are true for the quantum state after successful execution. In this way the effectful quantum fragment of the program is effectively encapsulated inside the Quantum Hoare monad. Our theory, like HTT, allows the usual equational reasoning for the pure classical fragments of the program and uses syntax-directed type checking for generating strongest postconditions for the quantum fragment.
 
@@ -224,46 +224,47 @@ Complete grammar written using Ott tool at \url{https://github.com/k4rtik/QHT/bl
 \begin{figure}[ht]
 	\begin{tabular}{lrcl}
 		\textit{Types} & $A, B, C$ & ::= &
-		\begin{minipage}[t]{0.45\columnwidth}%
-			$ \type{1} \mid \type{Bit} \mid \type{Qbit} \mid \type{U} \mid A \otimes B \mid \Pi x{ : }A.B \mid \Delta. \Psi .\{P\} x{ : }A \{Q\}$
+		\begin{minipage}[t]{0.5\columnwidth}%
+			$ \type{1} \mid \type{Qbit} \mid \type{U} \mid A \otimes B \mid \Pi x{ : }A.B \mid \Delta. \Psi .\{P\} x{ : }A \{Q\}$
 		\end{minipage}\\ \\
-		\textit{Assertions} & $P, Q, R$ & ::= &
-		\begin{minipage}[t]{0.45\columnwidth}%
-			$ \top \mid \bot \mid P \wedge Q \mid P \vee Q \mid M \cdot P \mid X \in_q S \mid X =_q \psi \mid \kw{uniform}(X) \mid \kw{separable}(X) \mid \kw{classical}(X) $
+		\textit{Propositions} & $P, Q, R$ & ::= &
+		\begin{minipage}[t]{0.5\columnwidth}%
+			$ \top \mid \bot \mid P \wedge Q \mid P \vee Q \mid U \cdot P \mid X \in_q S \mid X =_q \psi \mid \kw{uniform}(X) \mid \kw{separable}(X) \mid \kw{classical}(X) $
 		\end{minipage}\\ \\
 		% \textit{Q. Heaps} & $H, G$ & ::= & $ h \mid \kw{empty} \mid \kw{upd}(H, M, N) $\\ \\
 		\textit{Elim terms} & $K, L$ & ::= & $ x \mid K N \mid N : A $\\
-		\textit{Intro terms} & $N, O$ & ::= & $ K \mid () \mid \lambda x.N \mid \kw{do} E \mid \kw{1} \mid \kw{0} $\\ \\
+		\textit{Intro terms} & $N, O$ & ::= & $ K \mid () \mid \lambda x.N \mid \kw{do} E $\\ \\
 		\textit{Q. Commands} & $c$ & ::= &
-		\begin{minipage}[t]{0.45\columnwidth}%
-			$ \kw{init} N \mid \kw{apply} U \kw{to} N \mid \kw{measure} N$
+		\begin{minipage}[t]{0.5\columnwidth}%
+			$ \kw{init0} \mid \kw{init1} \mid \kw{apply} U \kw{to} N \mid \kw{measure} N$
 		\end{minipage}\\
 		\textit{Computations} & $E, F$ & ::= & $ \kw{return} N \mid x \leftarrow K; E \mid x \Leftarrow c; E \mid x =_A N; E $\\ \\
 %		\textit{Variable context} & $\Delta$ & ::= & $ \cdot \mid x : A, \Delta $ \\
 %		\textit{Q. Heap context} & $\Psi$ & ::= & $ \cdot \mid h, \Psi$ \\
-%		\textit{Assertion context} & $\Gamma$ & ::= & $ \cdot \mid P, \Gamma$ \\
+%		\textit{Proposition context} & $\Gamma$ & ::= & $ \cdot \mid P, \Gamma$ \\
+		\textit{Unitaries} & $U$ & ::= & $ I \mid X \mid Y \mid Z \mid H \mid CX \mid CZ \mid S \mid T$
 	\end{tabular}
 	\Description{Syntax of Quantum Hoare Type Theory}
 	\caption{Syntax of Quantum Hoare Type Theory}
 	\label{fig:syntax}
 \end{figure}
 
-\paragraph{Types} We include primitive types for unit, bits, qubits and unitary operations; these correspond to similar types in the QIO work. There are also type constructors for pairs, dependent functions and the Hoare type from HTT.
+\paragraph{Types} We include primitive types for unit, qubits, and unitary operations. There are also type constructors for pairs, dependent functions and the Hoare type from HTT.
 
-\paragraph{Assertions}
-The assertion language is inspired by \citet{unruh2019} that follows subspace semantics. We need to be explicit about what we mean when we say that a certain state satisifes a certain assertion (predicate) in the quantum setting. In this model, the predicates are subspaces of the Hilbert space corresponding to a quantum state. Here are some examples:
+\paragraph{Propositions}
+The predicate language is inspired by \citet{unruh2019} that follows subspace semantics. We need to be explicit about what we mean when we say that a certain state satisifes a certain predicate in the quantum setting. In this model, the propositions are subspaces of the Hilbert space corresponding to a quantum state. Here are some examples:
 \begin{itemize}
 	\item $\top$ represents the complete Hilbert space that is always satisfied by any state.
 	\item $\bot$ represents nothing, it is never satisfied.
 	\item $P \wedge Q$ represent that both P and Q hold (conjunction), it is equivalent to the intersection of the subspaces.
 	\item $P \vee Q$ similarly represents disjunction and is modeled as the sum (linear combination) of the subspaces P and Q.
-	\item If an operator M is applied to a state satisfying a predicate P, then the new predicate can be written as $M \cdot P$.
-	\item If we want to write that a variable w, or a list of variables W is in a specific state, we can model that predicate as the variable(s) being in the span of the state and use the notation, $W =_q \psi$.
+	\item If an operator M is applied to a state satisfying a proposition P, then the new proposition can be written as $U \cdot P$.
+	\item If we want to write that a variable w, or a list of variables W is in a specific state, we can model that proposition as the variable(s) being in the span of the state and use the notation, $W =_q \psi$.
 \end{itemize}
 
 Here are some examples. The postcondition of the program \texttt{qplus} below can be written as $r =_q \ket{+}$. The postcondition for the program \texttt{bell00} as $(a, b) =_q \frac{1}{\sqrt{2}}\ket{00}+\frac{1}{\sqrt{2}}\ket{11}$ or equivalently as $(a, b) =_q \ket{\Phi^+}$..
 
-There are other predicates that involve ghosts. \todo{TODO}
+There are other propositions that involve ghosts. \todo{TODO}
 
 \paragraph{Quantum State}
 
@@ -317,12 +318,12 @@ The judgments for computations involve synthesizing the strongest postconditions
 
 Even though, we have shown the full forms of these judgments above, we will omit the canonical forms while presenting typing rules in the next section as they crowd the rules and do not affect the insight to be gained from them.
 
-Finally, the judgement $\Delta; \Psi; \Gamma_1 \prove \Gamma_2$ encodes the sequent calculus for the assertion logic. Recall that $\Delta$, $\Psi$, and $\Gamma$ denote the variable context, the quantum heap context and the assertion context, respectively.
+Finally, the judgement $\Delta; \Psi; \Gamma_1 \prove \Gamma_2$ encodes the sequent calculus for the predicate logic. Recall that $\Delta$, $\Psi$, and $\Gamma$ denote the variable context, the quantum heap context and the proposition context, respectively.
 
 The type system includes rules for primitive effectful commands and those for structuring composition such as monadic unit and bind. We reuse most of the HTT rules except those for primitives for quantum effects that need to specify the strongest postconditions for each primitive, we discuss that next.
 
 \subsubsection{Strongest Postconditions}
-Here we show the strongest postconditions for the primitive quantum commands of QHTT encoded in their typing rules. Given a quantum command for initialization, unitary application or measurement, its strongest postcondition is an assertion that most precisely captures the relationship between the initial state and the modified state after the execution. These rules along with the \texttt{consq} (consequent) rule of HTT (that ensures weakening of the given strongest postcondition to an arbitrary postcondition) work together to ensure composition of verification.
+Here we show the strongest postconditions for the primitive quantum commands of QHTT encoded in their typing rules. Given a quantum command for initialization, unitary application or measurement, its strongest postcondition is a proposition that most precisely captures the relationship between the initial state and the modified state after the execution. These rules along with the \texttt{consq} (consequent) rule of HTT (that ensures weakening of the given strongest postcondition to an arbitrary postcondition) work together to ensure composition of verification.
 
 We need to use the relational composition connective from HTT ($P \circ Q$) that captures how heap evolves with computation. It basically reads: $Q$ holds of the current heap which is obtained after modification of a prior heap for which P holds.
 
@@ -363,7 +364,7 @@ As may be apparent, initialization and measurement are analogous to HTT's \textt
 \subsection{Sample programs}
 \label{sec:examples}
 
-In this section, we show some simple examples from the QIO work~\cite{qio} translated in our language and annotated with their program specifications using their Quantum Hoare types. An observation is that translating the programs was a very simple process except for coming up with the right specifications for the programs. We provide some commentary on assertions specified for these programs.
+In this section, we show some simple examples from the QIO work~\cite{qio} translated in our language and annotated with their program specifications using their Quantum Hoare types. An observation is that translating the programs was a very simple process except for coming up with the right specifications for the programs. We provide some commentary on propositions specified for these programs.
 
 At the end of this section, we show a sample verification using QHTT for Bell pair generation.
 
@@ -379,7 +380,7 @@ hqw : {\top} r : Bit {\top /\ r=0}
 \end{lstlisting}
 \end{minipage}
 
-In this trivial program where we initialize a new qubit with 0 and then immediately measure it, we assert that the result is equal to 0. The complete specification also implicitly says that the existing quantum state is not affected in any way as both the pre and postcondition include the $\top$ assertion.
+In this trivial program where we initialize a new qubit with 0 and then immediately measure it, we assert that the result is equal to 0. The complete specification also implicitly says that the existing quantum state is not affected in any way as both the pre and postcondition include the $\top$ proposition.
 
 Verification steps follow:  \todo{TODO how to ensure classical equality?}
 
@@ -441,7 +442,7 @@ testBell00 : {\top} (a, b) : (Bit o* Bit) {\top /\ a = b}
 Here, we are asserting that the returned bits $a$ and $b$ hold the same value, which is what we expect from the first Bell state prepared in this program.
 
 \paragraph{Verification}
-We would like to describe how QHTT lets us verify the correctness of the above program based on the specification provided as the type of the function. For illustration, we show the assertions annotated as comments as we step through the \texttt{testBell00} program below. We have elided specific details about unitary application as they are still being worked out.
+We would like to describe how QHTT lets us verify the correctness of the above program based on the specification provided as the type of the function. For illustration, we show the propositions annotated as comments as we step through the \texttt{testBell00} program below. We have elided specific details about unitary application as they are still being worked out.
 
 \begin{lstlisting}[language=QHaskell]
 testBell00 : {\top} (a, b) : (Bit o* Bit) {\top /\ a = b}
@@ -458,18 +459,18 @@ testBell00 : {\top} (a, b) : (Bit o* Bit) {\top /\ a = b}
               -- P5: P4 \o ((qa |-> -) -o \top) \o ((qb |-> -) -o \top)
 \end{lstlisting}
 
-In the assertion P2, we show that only the portion of the quantum state referred to by the \texttt{apply} command is affected. Similarly, in P4 we see that only the relevant portion of the heap containing the control and target qubits used in the CNOT operation are affected. In this case, we also needed to combine the two qubit state as they are now entangled. The last assertion, P5, merely encodes the strongest postcondition for measurement for each of the two qubits.
+In the proposition P2, we show that only the portion of the quantum state referred to by the \texttt{apply} command is affected. Similarly, in P4 we see that only the relevant portion of the heap containing the control and target qubits used in the CNOT operation are affected. In this case, we also needed to combine the two qubit state as they are now entangled. The last proposition, P5, merely encodes the strongest postcondition for measurement for each of the two qubits.
 
-Finally, the \texttt{consq} rule of HTT ensures that the assertion P5 leads to the specified postcondition in the type of the program.
+Finally, the \texttt{consq} rule of HTT ensures that the proposition P5 leads to the specified postcondition in the type of the program.
 
-We show some two more examples in the appendix for a modular version of Bell pair generation (\Cref{app:mbp}) that shows use of higher-order features of QHTT and another for teleportation protocol (\Cref{app:teleport}). Both of these involve specifying assertions over quantum state whose theory we still need to work out.
+We show some two more examples in the appendix for a modular version of Bell pair generation (\Cref{app:mbp}) that shows use of higher-order features of QHTT and another for teleportation protocol (\Cref{app:teleport}). Both of these involve specifying propositions over quantum state whose theory we still need to work out.
 
 %\subsection{Soundness / Type Checking Algorithm}
 
 \section{Implementation}
 We are implementing QHTT in the F* programming language.
 
-One issue with the original formulation of Hoare Type Theory is that using Hoare triples does not directly lead to a verification condition generation algorithm. This results in requiring a complicated bidirectional typing system for implementation. If we use predicate transformers as demonstrated by the use of Dijkstra monads in F*, we can avoid these issues \cite{swamy2013verifying}.
+One issue with the original formulation of Hoare Type Theory is that using Hoare triples does not directly lead to a verification condition generation algorithm. This results in requiring a complicated bidirectional typing system for implementation. If we use proposition transformers as demonstrated by the use of Dijkstra monads in F*, we can avoid these issues \cite{swamy2013verifying}.
 
 The current steps for the implementation are:
 
@@ -512,7 +513,7 @@ There are several avenues of future work to explore:
 
 \paragraph{Mechanization} There are multiple implementations of HTT in Coq such as Ynot~\cite{ynot2008}. We are similarly working on mechanizing QHTT in Coq for higher assurance of the usefulness and soundness of our theory. This will also enable us to extract verified circuits in a lower level quantum language such as OpenQASM for execution on real machines.
 
-\paragraph{Quantum Assertion Logic} An obvious need is to come up with an assertion logic similar to Separation Logic~\cite{reynolds2002} for quantum computing so as to be able to reason about only the interesting portions of the quantum state while still ensuring correctness of non-local effects such as entanglement. Various Quantum Hoare Logics that exist~\cite{ying_floydhoare_2012} currently do not support frame rules that provide Separation Logic its power. The closest approach is that taken by \citet{unruh2019} that allows assertions on quantum state similar to what we would like in our setting, such as whether certain qubits are in classical state, or in uniform superposition, entangled or separable. We hope to incorporate these ideas in this work; this may require us to use a subspace semantics for the quantum state as shown in \citet{unruh2019}. We share preliminary work in that direction in the appendix below.
+\paragraph{Quantum Predicate Logic} An obvious need is to come up with a predicate logic similar to Separation Logic~\cite{reynolds2002} for quantum computing so as to be able to reason about only the interesting portions of the quantum state while still ensuring correctness of non-local effects such as entanglement. Various Quantum Hoare Logics that exist~\cite{ying_floydhoare_2012} currently do not support frame rules that provide Separation Logic its power. The closest approach is that taken by \citet{unruh2019} that allows predicates on quantum state similar to what we would like in our setting, such as whether certain qubits are in classical state, or in uniform superposition, entangled or separable. We hope to incorporate these ideas in this work; this may require us to use a subspace semantics for the quantum state as shown in \citet{unruh2019}. We share preliminary work in that direction in the appendix below.
 
 \paragraph{Linearity} Peter Selinger and collaborators have recently proposed a linear dependent typed version of Proto-Quipper (dubbed Proto-Quipper-D)~\cite{selinger2020,fu2020linear}. It is an interesting challenge to reconcile linearity in our theory based on their proposal.
 
@@ -644,7 +645,7 @@ alice : \Pi q : Qbit. \Pi a : Qbit
 \end{lstlisting}
 
 \subsection{Bob's circuit}
-\todo{TODO provide correct assertions using ghost e}
+\todo{TODO provide correct propositions using ghost e}
 \begin{lstlisting}[language=QHaskell]
 bob : \Pi m1 m2 : Bit. \Pi b : Qbit
       {(b, e) =q |\Phi+\>}
@@ -718,10 +719,10 @@ None of these seem completely impossible to overcome for our needs, but we may r
 
 Lean seems to have a better support for linear algebra (\url{https://leanprover-community.github.io/mathlib-overview.html}) but it may require significantly more work to understand that system.
 
-Robert suggests another approach that is to limit the expressivity of the system and implement the limited logic proposed in Häner, Hoefler and Troyer's ``Using Hoare logic for quantum circuit optimization'' (\url{https://arxiv.org/abs/1810.00375}), an improved version of which is going to be presented at OOPSLA in November. This may even be possible in F* with some effort.
+Robert suggests another approach that is to limit the expressiveness of the system and implement the limited logic proposed in Häner, Hoefler and Troyer's ``Using Hoare logic for quantum circuit optimization'' (\url{https://arxiv.org/abs/1810.00375}), an improved version of which is going to be presented at OOPSLA in November. This may even be possible in F* with some effort.
 
 \subsection{Remarks}
-Now, the question is whether we can use this memory model (based on subspsace semantics), assertion logic and rules and still continue to use bidirectional typing for the type system? If so, it's probably worth finishing up the rule for unitary application using this memory model.
+Now, the question is whether we can use this memory model (based on subspace semantics), predicate logic and rules and still continue to use bidirectional typing for the type system? If so, it's probably worth finishing up the rule for unitary application using this memory model.
 
 The implementation notes suggest that switching to F* seems to require making too many changes, both in the syntax of the language and in the core theory; which is something probably best left for a future implementation project.
 
