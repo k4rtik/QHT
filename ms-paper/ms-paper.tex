@@ -229,7 +229,7 @@ The next two sections discuss the syntax and typing of QHTT. The last section sh
 		\end{minipage}\\ \\
 		\textit{Propositions} & $P, Q, R$ & ::= &
 		\begin{minipage}[t]{0.5\columnwidth}%
-			$ \top \mid \bot \mid P \wedge Q \mid P \vee Q \mid U \cdot P \mid \textbf{X} =_q \psi \mid \kw{uniform}(\textbf{X}) \mid \kw{separable}(\textbf{X}) \mid \kw{classical}(\textbf{X}) $
+			$ \top \mid \bot \mid P \wedge Q \mid P \vee Q \mid U \cdot P \mid \textbf{X} =_q \psi \mid \kw{uniform}(\textbf{X}) \mid \kw{separable}(\textbf{X}) \mid \kw{class}(\textbf{X}) $
 		\end{minipage}\\ \\
 		% \textit{Q. Heaps} & $H, G$ & ::= & $ h \mid \kw{empty} \mid \kw{upd}(H, M, N) $\\ \\
 		\textit{Elim terms} & $K, L$ & ::= & $ x \mid K N \mid N : A $\\
@@ -658,7 +658,6 @@ bell00 : {\top} (a, b) : (Qbit o* Qbit) {(a,b) =q |\Phi+\>}
 \end{lstlisting}
 
 \subsection{Testing modular Bell pair}
-\todo{TODO: how is classical equality ensured?}
 \begin{lstlisting}[language=QHaskell]
 testBell : {\top} (a, b) : (Bool o* Bool) {\top /\ a = b}
          = do (qa, qb) <- bell00;
