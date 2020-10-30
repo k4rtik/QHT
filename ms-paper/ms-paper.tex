@@ -376,14 +376,14 @@ In this section, we show some simple examples from the QIO work~\cite{qio} trans
 At the end of this section, we show a sample verification using QHTT for Bell pair generation.
 
 \subsubsection{Hello Quantum World}
- \todo{TODO}
 \leavevmode
 
 \begin{minipage}{0.95\linewidth}
 \begin{lstlisting}[language=QHaskell]
-hqw : {\top} r : Bit {\top /\ r=0}
-    = do q <= init 0;
-         return measure q
+hqw : {\top} r : Bool {\top /\ r = false}
+    = do q <= init false;
+         r = meas q;
+         return r
 \end{lstlisting}
 \end{minipage}
 
@@ -393,12 +393,14 @@ Verification steps follow:
 
 \begin{minipage}{0.95\linewidth}
 \begin{lstlisting}[language=QHaskell]
-hqw : {\top} r : Bit {\top /\ r = 0}
--- P0: \top
-    = do q <= init 0;
--- P1: P0 \o (q |-> |0\>)
-         return measure q
--- P2: P1 \o ((q |-> -) -o \top)
+hqw : {\top} r : Bool {\top /\ r = false}
+         -- \top
+    = do q <= init false;
+         -- q =q |0\> /\ class(q)
+         r = meas q;
+         -- (q, e) =q |00\> /\ r = false -- could use a sugared version for measured
+         return r
+         -- r = false -- if no qubit left, should be able to switch to \top here
 \end{lstlisting}
 \end{minipage}
 
@@ -407,63 +409,73 @@ hqw : {\top} r : Bit {\top /\ r = 0}
 
 \begin{minipage}{0.95\linewidth}
 \begin{lstlisting}[language=QHaskell]
-rnd : {\top} r : Bit {\top}
-    = do q <= init 0;
-         q <= apply H to q;
-         return measure q
+rnd : {\top} r : Bool {\top}
+    = do q <= init false;
+         apply H to q;
+         r = meas q;
+         return r
 \end{lstlisting}
 \end{minipage}
 
-In the case of quantum coin toss, the result can be in either 0 or 1, hence, we need not specify any special postcondition as type checking the result will be sufficient for correctness.
+In the case of quantum coin toss, the result can be either true or false, hence, we need not specify any special postcondition as type checking the result will be sufficient for correctness.
 
-Verification steps follow: \todo{TODO}
+Verification steps follow:
 
 \begin{minipage}{0.95\linewidth}
 \begin{lstlisting}[language=QHaskell]
-rnd : {\top} r : Bit {\top}
--- P0: \top
-    = do q <= init 0;
--- P1: P0 \o (q |-> |0\>)
-         q <= apply H to q;
--- P2: P1 \o ((q |-> |0\>) -o (q |-> |+\>))
-         return measure q
--- P3: P2 \o ((q |-> -) -o \top)
+rnd : {\top} r : Bool {\top}
+         -- \top
+    = do q <= init false;
+         -- q =q |0\> /\ class(q)
+         apply H to q;
+         -- q =q |+\> /\ uniform(q)
+         r = meas q;
+         -- (q, e) =q |++\> -- perhaps we should be able to say uniform(r)?
+         return r
+         -- r = false \/ r = true -- or left unspecified
 \end{lstlisting}
 \end{minipage}
 
 \subsubsection{Testing Bell Pair}
 \leavevmode
-\todo{TODO: syntax for applying multi-qubit gate}
 
 \begin{minipage}{0.95\linewidth}
 \begin{lstlisting}[language=QHaskell]
-testBell00 : {\top} (a, b) : (Bit o* Bit) {\top /\ a = b}
-         = do qa <= init 0;
-              qa <= apply H to qa;
-              qb <= init 0;
-              (qa, qb) <= apply CNOT to [qa, qb];
-              return (measure qa, measure qb)
+testBell00 : {\top} (a, b) : (Bool o* Bool) {\top /\ a = b}
+         = do qa <= init false;
+              apply H to qa;
+              qb <= init false;
+              <= apply CNOT to (qa, qb);
+              a = meas qa;
+              b = meas qb;
+              return (a, b)
 \end{lstlisting}
 \end{minipage}
 
-Here, we are asserting that the returned bits $a$ and $b$ hold the same value, which is what we expect from the first Bell state prepared in this program.
+Here, we are asserting that the returned booleans $a$ and $b$ hold the same value, which is what we expect from the first Bell state prepared in this program.
 
 \paragraph{Verification}
 We would like to describe how QHTT lets us verify the correctness of the above program based on the specification provided as the type of the function. For illustration, we show the propositions annotated as comments as we step through the \texttt{testBell00} program below. We have elided specific details about unitary application as they are still being worked out.
-
+\newpage
 \begin{lstlisting}[language=QHaskell]
-testBell00 : {\top} (a, b) : (Bit o* Bit) {\top /\ a = b}
-              -- P0: \top
-         = do qa <= init 0;
-              -- P1: P0 \o (qa |-> |0\>)
-              qa <= apply H to qa;
-              -- P2: P1 \o ((qa |-> |0\>) -o (qa |-> |+\>))
-              qb <= init 0;
-              -- P3: P2 \o (qb |-> |0\>)
-              (qa, qb) <= apply CNOT to [qa, qb];
-              -- P4: P3 \o ((qa |-> |+\>, qb |-> |0\>) -o (qa, qb) |-> |\Phi+\>)
-              return (measure qa, measure qb)
-              -- P5: P4 \o ((qa |-> -) -o \top) \o ((qb |-> -) -o \top)
+testBell00 : {\top} (a, b) : (Bool o* Bool) {\top /\ a = b}
+              -- \top
+         = do qa <= init false;
+              -- qa =q |0\>, class(qa)
+              apply H to qa;
+              -- qa =q |+\>, uniform(qa)
+              qb <= init false;
+              -- qa =q |+\>, uniform(qa), qb =q |0\>, class(qb)
+              apply CNOT to (qa, qb);
+              -- (qa, qb) =q |++\>  -- can use a weaker but more general `EPR' here
+              -- /\ uniform(qa, qb) -- this won't apply then
+              a = meas qa;
+              --   (qa, e1) =q |00\>, (qb, e2) =q |00\>, a = false
+              -- \/ (qa, e1) =q |11\>, (qb, e2) =q |11\>, a = true
+              b = meas qb;
+              --   (qa, e1) =q |00\>, (qb, e2) =q |00\>, a = false, b = false
+              -- \/ (qa, e1) =q |11\>, (qb, e2) =q |11\>, a = true,  b = true
+              return (a, b)
 \end{lstlisting}
 
 In the proposition P2, we show that only the portion of the quantum state referred to by the \texttt{apply} command is affected. Similarly, in P4 we see that only the relevant portion of the heap containing the control and target qubits used in the CNOT operation are affected. In this case, we also needed to combine the two qubit state as they are now entangled. The last proposition, P5, merely encodes the strongest postcondition for measurement for each of the two qubits.
@@ -473,6 +485,28 @@ Finally, the \texttt{consq} rule of HTT ensures that the proposition P5 leads to
 We show some two more examples in the appendix for a modular version of Bell pair generation (\Cref{app:mbp}) that shows use of higher-order features of QHTT and another for teleportation protocol (\Cref{app:teleport}). Both of these involve specifying propositions over quantum state whose theory we still need to work out.
 
 %\subsection{Soundness / Type Checking Algorithm}
+
+\subsection{Entangle disentangle}
+\todo{OPTIONAL:}
+
+\begin{lstlisting}[language=QHaskell]
+entangle-disentangle : {T} (a, b) : (Qbit o* Qbit) {a = b}
+= do
+    -- P0: T
+    a <= init false;
+    -- P1: a =q |0\>, class(a)
+    b <= init false;
+    -- P2: P1, b =q |0\>, class(b)
+    apply H to a;
+    -- P3: H_a.P2     =   a =q |+\>, b =q |0\>, uniform(a), class(b)
+    apply CX to (a, b);
+    -- P4: CX_ab.P3   =   (a, b) =q |++\>, uniform(a, b)
+    apply CX to (a, b);
+    -- P5: CX_ab.P4   =   (a =q |+\>, b =q |0\>) \/ (a =q |0\>, b =q |+\>)
+    apply H to a;
+    -- P6: H_a.P5     =   (a =q |0\>, b =q |0\>) \/ (a =q |+\>, b =q |+\>)
+    return (a, b)
+\end{lstlisting}
 
 \section{Implementation}
 We are implementing QHTT in the F* programming language.
