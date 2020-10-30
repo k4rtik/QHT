@@ -252,7 +252,7 @@ The next two sections discuss the syntax and typing of QHTT. The last section sh
 \paragraph{Types} There are primitive types for unit, booleans, and qubits. There are also type constructors for pairs, dependent functions and the Hoare type from HTT.
 
 \paragraph{Propositions}
-The predicate language is inspired by \citet{unruh2019} that follows subspace semantics. We need to be explicit about what we mean when we say that a certain state satisifes a certain predicate in the quantum setting. In this model, the propositions are subspaces of the Hilbert space corresponding to a quantum state. We use the metavariable \textbf{X} to refer to a list of quantum variables. Here are some examples:
+The predicate language is inspired by \citet{unruh2019} that follows subspace semantics. We need to be explicit about what we mean when we say that a certain state satisfies a certain predicate in the quantum setting. In this model, the propositions are subspaces of the Hilbert space corresponding to a quantum state. We use the metavariable \textbf{X} to refer to a list of quantum variables. Here are some examples:
 \begin{itemize}
 	\item $\top$ represents the complete Hilbert space that is always satisfied by any state.
 	\item $\bot$ represents nothing, it is never satisfied.
@@ -455,7 +455,7 @@ testBell00 : {\top} (a, b) : (Bool o* Bool) {\top /\ a = b}
 Here, we are asserting that the returned booleans $a$ and $b$ hold the same value, which is what we expect from the first Bell state prepared in this program.
 
 \paragraph{Verification}
-We would like to describe how QHTT lets us verify the correctness of the above program based on the specification provided as the type of the function. For illustration, we show the propositions annotated as comments as we step through the \texttt{testBell00} program below. We have elided specific details about unitary application as they are still being worked out.
+We would like to describe how QHTT lets us verify the correctness of the above program based on the specification provided as the type of the function. For illustration, we show the propositions annotated as comments as we step through the \texttt{testBell00} program below.
 \newpage
 \begin{lstlisting}[language=QHaskell]
 testBell00 : {\top} (a, b) : (Bool o* Bool) {\top /\ a = b}
