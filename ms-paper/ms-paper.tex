@@ -20,7 +20,7 @@
 \lstloadlanguages{Haskell}
 \lstdefinelanguage{QHaskell}{
 	language     = Haskell,
-	morekeywords = {Qbit, U, C, Bit},
+	morekeywords = {Qbit, U, C, meas, apply, to},
 }
 
 \lstset{
@@ -168,7 +168,7 @@ The Quantum IO (QIO) monad~\cite{qio} is a purely functional interface for quant
 
 QIO interface was developed as a library for the Haskell programming language but its design was influenced~\cite{asg2010} by the category \textbf{FQC} of finite quantum computations (where computations are interpreted as superoperators) as explored by \citet{fqc06} in previous work. This is the most we will say about the relation of QIO monad to category theory in this paper.
 
-Here we discuss the relevant bits from the QIO interface. QIO provides a type for referring to qubits, \texttt{Qbit}; a type for unitary operations, \texttt{U}; and, the \texttt{QIO} type operator which is a monad indexed by the result of the quantum computation. The primitive quantum operations defined using the QIO monad below (Haskell syntax) are:
+Here we discuss the relevant concepts from the QIO interface. QIO provides a type for referring to qubits, \texttt{Qbit}; a type for unitary operations, \texttt{U}; and, the \texttt{QIO} type operator which is a monad indexed by the result of the quantum computation. The primitive quantum operations defined using the QIO monad below (Haskell syntax) are:
 
 \begin{minipage}{0.95\linewidth}
 \begin{lstlisting}[language=QHaskell]
@@ -219,13 +219,13 @@ The next two sections discuss the syntax and typing of QHTT. The last section sh
 
 \Cref{fig:syntax} shows the syntax of Quantum Hoare Type Theory. Our presentation closely follows that of HTT~\cite{nanevski_hoare_2008}.
 
-Complete grammar written using Ott tool at \url{https://github.com/k4rtik/QHT/blob/master/ott/qhtt.ott}.
+%Complete grammar written using Ott tool at \url{https://github.com/k4rtik/QHT/blob/master/ott/qhtt.ott}.
 
 \begin{figure}[ht]
 	\begin{tabular}{lrcl}
 		\textit{Types} & $A, B, C$ & ::= &
-		\begin{minipage}[t]{0.5\columnwidth}%
-			$ \type{1} \mid \type{Qbit} \mid A \otimes B \mid \Pi x{ : }A.B \mid \Delta. \Psi .\{P\} x{ : }A \{Q\}$
+		\begin{minipage}[t]{0.45\columnwidth}%
+			$ \type{1} \mid \type{Bool} \mid \type{Qbit} \mid A \otimes B \mid \Pi x{ : }A.B \mid \Delta. \Psi .\{P\} x{ : }A \{Q\}$
 		\end{minipage}\\ \\
 		\textit{Propositions} & $P, Q, R$ & ::= &
 		\begin{minipage}[t]{0.5\columnwidth}%
@@ -233,12 +233,12 @@ Complete grammar written using Ott tool at \url{https://github.com/k4rtik/QHT/bl
 		\end{minipage}\\ \\
 		% \textit{Q. Heaps} & $H, G$ & ::= & $ h \mid \kw{empty} \mid \kw{upd}(H, M, N) $\\ \\
 		\textit{Elim terms} & $K, L$ & ::= & $ x \mid K N \mid N : A $\\
-		\textit{Intro terms} & $N, O$ & ::= & $ K \mid () \mid \lambda x.N \mid \kw{do} E $\\ \\
+		\textit{Intro terms} & $N, O$ & ::= & $ K \mid () \mid \lambda x.N \mid \kw{do} E \mid \kw{true} \mid \kw{false} $\\ \\
 		\textit{Q. Commands} & $c$ & ::= &
 		\begin{minipage}[t]{0.5\columnwidth}%
-			$ \kw{init0} \mid \kw{init1} \mid \kw{apply} U \kw{to} N \mid \kw{measure} N$
+			$ \kw{\textbf{init}} N \mid \kw{\textbf{apply}} U \kw{\textbf{to}} N \mid \kw{\textbf{meas}} N$
 		\end{minipage}\\
-		\textit{Computations} & $E, F$ & ::= & $ \kw{return} N \mid x \leftarrow K; E \mid x \Leftarrow c; E \mid x =_A N; E $\\ \\
+		\textit{Computations} & $E, F$ & ::= & $ \kw{return} N \mid x \leftarrow K; E \mid x \Leftarrow c; E \mid x = N; E $\\ \\
 %		\textit{Variable context} & $\Delta$ & ::= & $ \cdot \mid x : A, \Delta $ \\
 %		\textit{Q. Heap context} & $\Psi$ & ::= & $ \cdot \mid h, \Psi$ \\
 %		\textit{Proposition context} & $\Gamma$ & ::= & $ \cdot \mid P, \Gamma$ \\
@@ -249,7 +249,7 @@ Complete grammar written using Ott tool at \url{https://github.com/k4rtik/QHT/bl
 	\label{fig:syntax}
 \end{figure}
 
-\paragraph{Types} There are primitive types for unit and qubits. There are also type constructors for pairs, dependent functions and the Hoare type from HTT.
+\paragraph{Types} There are primitive types for unit, booleans, and qubits. There are also type constructors for pairs, dependent functions and the Hoare type from HTT.
 
 \paragraph{Propositions}
 The predicate language is inspired by \citet{unruh2019} that follows subspace semantics. We need to be explicit about what we mean when we say that a certain state satisifes a certain predicate in the quantum setting. In this model, the propositions are subspaces of the Hilbert space corresponding to a quantum state. We use the metavariable \textbf{X} to refer to a list of quantum variables. Here are some examples:
@@ -268,8 +268,10 @@ There are other propositions that involve ghosts:
 \begin{itemize}
 	\item uniform(\textbf{X}) is an abbreviation for $(\textbf{X}, \textbf{e}) = \frac{1}{\sqrt{2}}(\ket{00}+\ket{11})$ where \textbf{e} is  a fresh entangled ghost variable. It means that X is uniformly distributed.
 	\item separable(\textbf{X}) is an abbreviation for $\textbf{X} \equiv_{q} \textbf{u}$ where \textbf{u} is a fresh unentangled ghost variable.
-	\item class(\textbf{X}) is an abbreviation for $\textbf{X} \equiv_{cl} \textbf{u}$ where \textbf{u} is a fresh unentangled ghost variable. The classical equality symbol means that the variables on both side will measure to be the exact same values. That is there is no superposition involved.
+	\item class(\textbf{X}) is an abbreviation for $\textbf{X} \equiv_{cl} \textbf{u}$ where \textbf{u} is a fresh unentangled ghost variable. The classical equality symbol means that the variables on both side will measure to be the exact same value. That is, there is no superposition involved.
 \end{itemize}
+
+In addition to these quantum-specific propositions, the system also supports first-order logic (not shown) for reasoning about the pure fragment of the language.
 
 \paragraph{Quantum State}
 
@@ -284,12 +286,12 @@ The pure fragment allows higher-order functions while the impure (effectful) fra
 
 \paragraph{Quantum Commands}
 These are the quantum-specific effectful commands inspired by QIO for initialization, unitary application and measurement of qubits.
-\texttt{init} $N$ initializes a given variable based on the value of the expression $N$ (typically 0 or 1 if N is a bit).
+\texttt{init} $N$ initializes a given variable based on the value of the expression $N$ (typically \ket{0} or \ket{1} if N is a boolean).
 \texttt{apply} $U$ \texttt{to} $X$ applies unitary operation $U$ to variables $X$.
-\texttt{measure} $x$ measures the variable $x$ in the computational basis.
+\texttt{meas} $x$ measures the variable $x$ in the computational basis.
 %\texttt{if y then E else F} executes computation $E$ if measuring variable $y$ returns 1 else executes $F$.
 
-\paragraph{Computations} The computations are the usual monadic return and three sequencing operations that bind their result to a variable similar to HTT. The first, $x \leftarrow K$, executes a suspended computation (such as applying a function that includes a \texttt{do} $E$ in its body); the second, $x \Leftarrow c$ executes a primitive command $c$; and the last, $x =_A N$, is just syntactic sugar for let-binding.
+\paragraph{Computations} The computations are the usual monadic return and three sequencing operations that bind their result to a variable similar to HTT. The first, $x \leftarrow K$, executes a suspended computation (such as applying a function that includes a \texttt{do} $E$ in its body); the second, $x \Leftarrow c$ executes a primitive command $c$; and the last, $x = N$, is just syntactic sugar for let-binding.
 
 \paragraph{Contexts} Contexts are modelled exactly the same way as in HTT. The only difference is that instead of classical heaps, we have quantum heaps.
 
@@ -341,28 +343,28 @@ $x \Leftarrow \kw{init} N; E$
 
 \begin{mathpar}
 	\inferrule
-	{\Delta \vdash N \chk \type{Bit}
-		\\ \Delta, x : \type{Qbit}; P \circ (x \mapsto \ket{N}) \vdash E \syn y:B . Q}
+	{\Delta \vdash N \chk \type{Bool}
+		\\ \Delta, x : \type{Qbit}; P \circ (x =_q \mathit{bool2ket}(N)) \vdash E \syn y:B . Q}
 	{\Delta; P \vdash x \Leftarrow \kw{init} N; E \syn y:B. (\exists x:\type{Qbit}.Q)}
 \end{mathpar}
 where x is fresh.
 
-Initialization can only be performed for a term $N$ that can be type checked as a \type{Bit}. Then, we look at the rest of the computation, $E$, in a context that adds $x$ of type \type{Qbit} under a precondition that extends the previous precondition, $P$, with the strongest postcondition for initialization, that is, the newly bound variable $x$ points to the representation of a new qubit state; this should synthesize the strongest postcondition (with respect to the expanded precondition in the context), $Q$, for $E$.
+Initialization can only be performed for a term $N$ that can be type checked as a \type{Bool}. Then, we look at the rest of the computation, $E$, in a context that adds $x$ of type \type{Qbit} under a precondition that extends the previous precondition, $P$, with the strongest postcondition for initialization, that is, the newly bound variable $x$ is equal to the \ket{0} or \ket{1}; this should synthesize the strongest postcondition (with respect to the expanded precondition in the context), $Q$, for $E$.
 
 To avoid dangling variables, we need to existentially quantify $x$ in the postcondition, $Q$, of the conclusion.
 
 \paragraph{Measurement}
-$x \Leftarrow \kw{measure} N; E$
+$x \Leftarrow \kw{meas} N; E$
 
 \begin{mathpar}
 	\inferrule
 	{\Delta \vdash N \chk \type{Qbit}
-		\\ \Delta; \Psi; P \prove (N \hookrightarrow -)
-		\\ \Delta, x:\type{Bit}; P \circ ((N \mapsto -) \multimap \top) \vdash E \syn y:B . Q}
-	{\Delta; P \vdash x \Leftarrow \kw{measure} N; E \syn y:B. (\exists x:\type{Bit}.Q)}
+		\\ \Delta; \Psi; P \prove (N =_q -)
+		\\ \Delta, x:\type{Bool}; P \circ ((N =_q -) \multimap \top) \vdash E \syn y:B . Q}
+	{\Delta; P \vdash x \Leftarrow \kw{meas} N; E \syn y:B. (\exists x:\type{Bool}.Q)}
 \end{mathpar}
 
-The measurement rule can be read in a similar way as the previous rule. But in measurement, we need to additionally prove that the verification condition (written as a sequent), the precondition $P$ implies that the qubit $N$ is allocated, holds in the heap context $\Psi$. The strongest postcondition here is that the fragment of heap that only refers to location N becomes empty.
+The measurement rule can be read in a similar way as the previous rule. But in measurement, we need to additionally prove that the verification condition (written as a sequent), the precondition $P$ implies that the qubit $N$ is allocated, holds in the heap context $\Psi$. The strongest postcondition here is that the fragment of heap that only refers to location N becomes empty. \todo{TODO: need to introduce ghost variable for measurement}
 
 As may be apparent, initialization and measurement are analogous to HTT's \texttt{alloc} and \texttt{dealloc} primitives. We are working out precise details for unitary application, but at a high-level, they involve ensuring that the given unitary term actually represents a unitary matrix and updating the quantum state with the result of unitary application. This involves incorporating the monoidal structure of unitaries into our theory (as is done in QIO). This step also involves generating verification conditions that cannot be checked during this first phase of typechecking. We are also looking at alternatives such as the recently proposed sum-over-paths action semantics by \citet{amy18}.
 
@@ -385,9 +387,9 @@ hqw : {\top} r : Bit {\top /\ r=0}
 \end{lstlisting}
 \end{minipage}
 
-In this trivial program where we initialize a new qubit with 0 and then immediately measure it, we assert that the result is equal to 0. The complete specification also implicitly says that the existing quantum state is not affected in any way as both the pre and postcondition include the $\top$ proposition.
+In this trivial program where we initialize a new qubit with false and then immediately measure it, we assert that the result is false. The complete specification also implicitly says that the existing quantum state is not affected in any way as both the pre and postcondition include the $\top$ proposition.
 
-Verification steps follow:  \todo{TODO how to ensure classical equality?}
+Verification steps follow:
 
 \begin{minipage}{0.95\linewidth}
 \begin{lstlisting}[language=QHaskell]
@@ -563,24 +565,24 @@ Complete derivation tree for Hello Quantum World:
 			{\inferrule*[right=init]
 				{\inferrule*[right=measure]
 					{\inferrule*[right=return]
-						{q : \type{Qbit}, r : \type{Bit} \vdash r \chk \type{Bit}}
-						{q : \type{Qbit}, r : \type{Bit}; P_1 \circ ((q \mapsto -) \multimap \top) \vdash \kw{return} r \syn r : \type{Bit} . R}
+						{q : \type{Qbit}, r : \type{Bool} \vdash r \chk \type{Bool}}
+						{q : \type{Qbit}, r : \type{Bool}; P_1 \circ ((q \mapsto -) \multimap \top) \vdash \kw{return} r \syn r : \type{Bool} . R}
 						\\ q : \type{Qbit} \vdash q \chk \type{Qbit}
 						\\ \cdot; P_0 * (q \mapsto \ket{0}) \prove (q \hookrightarrow -)
 					}
-					{q : \type{Qbit}; P_0 * (q \mapsto \ket{0}) \vdash r \Leftarrow \kw{measure} q; E_3 \syn r : \type{Bit} . (\exists r : \type{Bit}.R)}
-					\\ \cdot \vdash \kw{0} \chk \type{Bit}
+					{q : \type{Qbit}; P_0 * (q \mapsto \ket{0}) \vdash r \Leftarrow \kw{meas} q; E_3 \syn r : \type{Bool} . (\exists r : \type{Bool}.R)}
+					\\ \cdot \vdash \kw{0} \chk \type{Bool}
 				}
 				{
-					\cdot; P_0 \vdash q \Leftarrow \kw{init 0}; E_{23} \syn r : \type{Bit} . (\exists q : \type{Qbit}.R)
+					\cdot; P_0 \vdash q \Leftarrow \kw{init false}; E_{23} \syn r : \type{Bool} . (\exists q : \type{Qbit}.R)
 				}
-				\\ r : \type{Bit}; i,m ; R \prove \top \multimap \top \wedge Id(r, \kw{0})
+				\\ r : \type{Bool}; i,m ; R \prove \top \multimap \top \wedge Id(r, \kw{0})
 			}
 			{
-				\cdot; \lambda i . \lambda m . i = m \wedge (\top * \lambda m' \top)m \vdash E_1; E_{23} \chk r : \type{Bit} . (\top \multimap \top \wedge Id(r, \kw{0}))
+				\cdot; \lambda i . \lambda m . i = m \wedge (\top * \lambda m' \top)m \vdash E_1; E_{23} \chk r : \type{Bool} . (\top \multimap \top \wedge Id(r, \kw{0}))
 			}
 		}
-		{\cdot \vdash \kw{do} E \chk \{\top\} r : \type{Bit} \{\top \wedge \kw{Id}(r, \kw{0})\}}
+		{\cdot \vdash \kw{do} E \chk \{\top\} r : \type{Bool} \{\top \wedge \kw{Id}(r, \kw{0})\}}
 	\end{mathpar}
 	\end{minipage}
 \end{turn}
@@ -592,12 +594,12 @@ Writing a modular version of \texttt{testBell}.
 \subsection{Hadamard basis states}
 \begin{lstlisting}[language=QHaskell]
 qplus : {\top} r : Qbit {r =q |+\>}
-      = do q <= init 0;
+      = do q <= init false;
            q <= apply H to q;
            return q
 
 qminus : {\top} r : Qbit {r =q |-\>}
-       = do q <= init 1;
+       = do q <= init true;
             q <= apply H to q;
             return q
 \end{lstlisting}
@@ -608,7 +610,7 @@ share : \Pi a : Qbit.
         {a =q (alpha |0\> + beta |1\>)}
            (a, b) : (Qbit o* Qbit)
         {(a, b) =q (alpha |00\> + beta |11\>)}
-      = \a.do b <= init 0;
+      = \a.do b <= init false;
               (a, b) <= apply CNot to [a, b];
               return (a, b)
 \end{lstlisting}
@@ -624,10 +626,10 @@ bell00 : {\top} (a, b) : (Qbit o* Qbit) {(a,b) =q |\Phi+\>}
 \subsection{Testing modular Bell pair}
 \todo{TODO: how is classical equality ensured?}
 \begin{lstlisting}[language=QHaskell]
-testBell : {\top} (a, b) : (Bit o* Bit) {\top /\ a = b}
+testBell : {\top} (a, b) : (Bool o* Bool) {\top /\ a = b}
          = do (qa, qb) <- bell00;
-              a <= measure qa;
-              b <= measure qb;
+              a <= meas qa;
+              b <= meas qb;
               return (a, b)
 \end{lstlisting}
 
@@ -637,22 +639,22 @@ testBell : {\top} (a, b) : (Bit o* Bit) {\top /\ a = b}
 \begin{lstlisting}[language=QHaskell]
 alice : \Pi q : Qbit. \Pi a : Qbit
         {q =q (alpha |0\> + beta |1\>) /\ (a, e) =q |\Phi+\>}    -- a is entangled with ghost var e
-           (m1, m2) : (Bit o* Bit)
+           (m1, m2) : (Bool o* Bool)
         {  (m1, m2) = 00 /\ e =q (alpha |0\> + beta |1\>)
          \/ (m1, m2) = 01 /\ e =q (alpha |1\> + beta |0\>)
          \/ (m1, m2) = 10 /\ e =q (alpha |0\> - beta |1\>)
          \/ (m1, m2) = 11 /\ e =q (alpha |1\> - beta |0\>)}
       = \q.\a.do (q, a) <= apply CNOT to [q, a];
                  q <= apply H to q;
-                 rq <= measure q;
-                 ra <= measure a;
+                 rq <= meas q;
+                 ra <= meas a;
                  return (rq, ra)
 \end{lstlisting}
 
 \subsection{Bob's circuit}
 \todo{TODO provide correct propositions using ghost e}
 \begin{lstlisting}[language=QHaskell]
-bob : \Pi m1 m2 : Bit. \Pi b : Qbit
+bob : \Pi m1 m2 : Bool. \Pi b : Qbit
       {(b, e) =q |\Phi+\>}
          r : Qbit
       {\top}
