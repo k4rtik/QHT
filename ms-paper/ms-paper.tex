@@ -163,7 +163,11 @@ We provide more details when we introduce QHTT in section~\cref{sec:qhtt}. An ac
 
 \subsection{A Crash Course on Subspace Semantics}
 
-Main references: \cite{ying_duan_feng_ji_2009,aqhl2019,unruh2019}.
+Main references: \cite{logicqm36,ying_duan_feng_ji_2009,aqhl2019,unruh2019}.
+
+\citet{ying_duan_feng_ji_2009} present a systematic exposition of predicate transformer semantics for quantum programs focusing on the Birkhoff-von Neumann quantum logic by restricting to the quantum predicates expressible using projection operators. In this section, we will review how projection operators defined over Hilbert space can be viewed as predicates that will help us define the proposition language used in our Quantum Hoare Type Theory. We will also define various logial operations on these predicates that will help us reason about quantum programs.
+
+This restriction to projection operators, which are Hermitian operators with 0 or 1 as their eigenvalues, will let us reason about quantum programs similar to classical boolean predicates, without needing a quantum analogue of probabilistic logic. One can think of projection operators as performing a yes or no measurement for the chosen subspace. Further, we note that projection operators in Hilbert space correspond one to one with closed subspaces of this space.
 
 
 
