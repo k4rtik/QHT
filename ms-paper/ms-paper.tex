@@ -161,7 +161,7 @@ Type checking in HTT involves generation of strongest postconditions at each ste
 
 We provide more details when we introduce QHTT in section~\cref{sec:qhtt}. An accessible introduction to Hoare Type Theory is available in the lecture notes by \citet{perconti2012}.
 
-\subsection{A Crash Course on Subspace Semantics}
+\subsection{A Crash Course in Subspace Semantics for Quantum Predicates}
 
 Main references: \cite{logicqm36,ying_duan_feng_ji_2009,aqhl2019,unruh2019}.
 
@@ -174,13 +174,13 @@ This restriction to projection operators, which are Hermitian operators with 0 o
 \end{definition}
 Hermitian operators describe physical observables and their eigenvalues are real numbers. \citet{dhondt_quantum_2006} define a quantum predicate in $\mathcal{H}$ as a Hermitian operator with eigenvalues within the unit interval ($[0, 1]$).
 
-\citet{ying_duan_feng_ji_2009} point out a problem with that approach that it is not always possible to define certain logical operations such as conjunction and disjunction on some of these quantum predicates as they do not for a lattice. These operations are necessary to be able to compositionally reason about quantum programs. They, in turn, restrict themselves to quantum predicates that are expressed using a special class of Hermitian operators, called projection operators or projectors. It is well-known that projection operators in Hilbert space correspond one to one with closed subspaces in that space. Further, \citet{logicqm36} showed that the set of closed subspaces of Hilbert space form an orthomodular lattice that is used to define a logic for quantum mechanics. Similar to \cite{ying_duan_feng_ji_2009}, we will restrict ourselves to projection operators (or equivalently closed subspaces) to define quantum predicates.
+\citet{ying_duan_feng_ji_2009} point out a problem with the above approach that it is not always possible to define certain logical operations (such as conjunction and disjunction) on some of these quantum predicates as they do not for a lattice. These operations are necessary to be able to compositionally reason about quantum programs. They, in turn, restrict themselves to quantum predicates that are expressed using a special class of Hermitian operators, called projection operators or projectors. It is well-known that projection operators in Hilbert space correspond one to one with closed subspaces in that space. Further, \citet{logicqm36} showed that the set of closed subspaces of Hilbert space form an orthomodular lattice that they use to define a logic for quantum mechanics. Similar to \citet{ying_duan_feng_ji_2009}, we will restrict ourselves to projection operators (or equivalently closed subspaces) to define quantum predicates.
 
 \begin{definition}[Projection operator]
-	Let $X$ be a closed subspace of $\mathcal{H}$ and a vector $\ket{\psi} \in \mathcal{H}$. Then, there uniquely exist $\ket{\psi_0} \in X$ and $\ket{\psi_1} \in X^\bot$ (complement of X) such that $\ket{\psi} = \ket{\psi_0} + \ket{\psi_1}$. The vector $\ket{\psi_0}$ is called the projection of $\ket{\psi}$ onto subspace $X$ and is equal to $\ket{\psi_0} = P_X \ket{\psi}$. The operator $P_X$ is called the projection operator (or projector) onto $X$.
+	Let $X$ be a closed subspace of $\mathcal{H}$ and a vector $\ket{\psi} \in \mathcal{H}$. Then, there uniquely exist $\ket{\psi_0} \in X$ and $\ket{\psi_1} \in X^\bot$ (the orthocomplement of X) such that $\ket{\psi} = \ket{\psi_0} + \ket{\psi_1}$. The vector $\ket{\psi_0}$ is called the projection of $\ket{\psi}$ onto subspace $X$ and is equal to $\ket{\psi_0} = P_X \ket{\psi}$. The operator $P_X$ is called the projection operator (or projector) onto $X$.
 \end{definition}
 
-\todo{Consider defining orthomodular lattices}
+\todo{Consider defining orthomodular lattices formally}
 
 Let us define the notation and basic definitions we will need for talking about subspaces of a Hilbert space.
 
@@ -190,7 +190,17 @@ Let us define the notation and basic definitions we will need for talking about 
 
 Further, $S(\mathcal{H})$ is the set of closed subspaces of $\mathcal{H}$. If we write $\mathcal{P(H)}$ for the set of all quantum predicates on $\mathcal{H}$, then $S(\mathcal{H}) \subseteq \mathcal{P(H)}$.
 
-Now we can define the logical operations on quantum predicates:
+Now we can define the logical operations on quantum predicates following the algebraic structure of the set of closed subspaces of $\mathcal{H}$. Recall that the closed subspaces form an orthomodular lattice (with set inclusion as the partial order) which does not satisfy the full distributive law of Boolean algebra but will be sufficient for our needs.
+
+\begin{itemize}
+	\item $\top$ represents the complete Hilbert space, $\mathcal{H}$, under consideration.
+	\item $\bot$ represents the zero-dimension subspace of Hilbert space, $\{0\}$.
+	\item $X \wedge Y$ is taken to be the set intersection of the two subspaces: $X \cap Y$.
+	\item $X \vee Y$ is modeled as the sum (linear combination) of the subspaces $X$ and $Y$. In other words, it is the closed subspace of the union of the two subspaces: $\overline{\mathit{span}(X \cup Y)}$, where $\overline{X}$ denotes that $X$ is a closed subspace.
+	\item $X^\bot$ denotes the orthocomplement of $X$ which includes all vectors in $\mathcal{H}$ that are orthogonal to $X$.
+\end{itemize}
+
+\todo{TODO: also need to talk about mixed state / density operators}
 
 \subsection{Quantum IO Monad}
 \label{sec:qio}
