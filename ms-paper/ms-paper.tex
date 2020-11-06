@@ -180,6 +180,17 @@ Hermitian operators describe physical observables and their eigenvalues are real
 	Let $X$ be a closed subspace of $\mathcal{H}$ and a vector $\ket{\psi} \in \mathcal{H}$. Then, there uniquely exist $\ket{\psi_0} \in X$ and $\ket{\psi_1} \in X^\bot$ (complement of X) such that $\ket{\psi} = \ket{\psi_0} + \ket{\psi_1}$. The vector $\ket{\psi_0}$ is called the projection of $\ket{\psi}$ onto subspace $X$ and is equal to $\ket{\psi_0} = P_X \ket{\psi}$. The operator $P_X$ is called the projection operator (or projector) onto $X$.
 \end{definition}
 
+\todo{Consider defining orthomodular lattices}
+
+Let us define the notation and basic definitions we will need for talking about subspaces of a Hilbert space.
+
+\begin{definition}[Span of a subspace]
+	For any subspace $X$ in a Hilbert space $\mathcal{H}$, written ($X \subseteq \mathcal{H}$), $\mathit{span}(X)$ is the smallest closed subspace of $\mathcal{H}$ containing $X$. In other words, $\mathit{span}(X)$ is the set of linear combinations of vectors in $X$.
+\end{definition}
+
+Further, $S(\mathcal{H})$ is the set of closed subspaces of $\mathcal{H}$. If we write $\mathcal{P(H)}$ for the set of all quantum predicates on $\mathcal{H}$, then $S(\mathcal{H}) \subseteq \mathcal{P(H)}$.
+
+Now we can define the logical operations on quantum predicates:
 
 \subsection{Quantum IO Monad}
 \label{sec:qio}
