@@ -128,25 +128,11 @@ As programming languages researchers, we think it will be better to encode such 
 
 The main idea is that instead of just indexing the QIO monad type with the type of computation result, we can also index it with pre-conditions and post-conditions so as to integrate Hoare-style reasoning into the type system itself. The resulting Quantum Hoare Type, $\{P\}\ x{ : }A\ \{Q\}$, specifies the preconditions, $P$, that hold on the quantum state before execution; the result, $x$, and its type, $A$; and, the postconditions, $Q$, that are true for the quantum state after successful execution. In this way the effectful quantum fragment of the program is effectively encapsulated inside the Quantum Hoare monad. Our theory, like HTT, allows the usual equational reasoning for the pure classical fragments of the program and uses syntax-directed type checking for generating strongest postconditions for the quantum fragment.
 
-This paper is organized as follows. We discuss background in the next section, \cref{sec:bg}; specifically, quantum computing (\cref{sec:qc}),  Hoare Type Theory in the classical setting (\cref{sec:htt}) and then the Quantum IO Monad interface (\cref{sec:qio}). Then we introduce our contributions in merging these ideas together for specification and enforcement of useful semantic properties in section~\cref{sec:qhtt} along with its syntax (\cref{sec:syntax}), typing rules (\cref{sec:typing}) and, some examples (\cref{sec:examples}). Some related work follows in \cref{sec:related}. Finally, we conclude and share ideas for future work in the final section (\cref{sec:conclusion}).
+%This paper is organized as follows. We discuss background in the next section, \cref{sec:bg}; specifically, quantum computing (\cref{sec:qc}), Hoare Type Theory in the classical setting (\cref{sec:htt}) and then the Quantum IO Monad interface (\cref{sec:qio}). Then we introduce our contributions in merging these ideas together for specification and enforcement of useful semantic properties in section~\cref{sec:qhtt} along with its syntax (\cref{sec:syntax}), typing rules (\cref{sec:typing}) and, some examples (\cref{sec:examples}). Some related work follows in \cref{sec:related}. Finally, we conclude and share ideas for future work in the final section (\cref{sec:conclusion}).
 
 \section{Background}
 \label{sec:bg}
-In this section, we provide background on the core ideas from existing literature that form the foundation for our work --- Hoare Type Theory (HTT) and the Quantum IO Monad interface. We start with some basics of quantum computing.
-% and refer the reader to Nielsen's excellent series of essays~\cite{matuschak2019} for a first introduction and to the standard textbook~\cite{nielsen2010} for advanced material.
-
-\subsection{Quantum Computing}
-\label{sec:qc}
-The basic unit of information in quantum computing is a qubit, that can be represented using a unit vector in a two-dimensional complex vector space. Using Dirac's bra-ket notation, we can write an arbitrary qubit, $\ket{\psi}$, as a linear combination of the computational basis vectors: $\ket{\psi} = \alpha\ket{0} + \beta\ket{1}$, where $\ket{0}=\begin{bsmallmatrix}
-1 \\
-0
-\end{bsmallmatrix}$ and $\ket{1}=\begin{bsmallmatrix}
-0 \\
-1
-\end{bsmallmatrix}$, and the two constants are complex amplitudes that are normalized using the constraint $|\alpha|^2 +|\beta|^2 = 1$. This means that when measured, the probability of the qubit being in the state 0 is $|\alpha|^2$ and that for the state 1 is $|\beta|^2$. To work with multiple qubits, we need to take their tensor product, denoted by $\otimes$. Computation is performed by the application of unitary quantum gates, such as the Hadamard (H) gate or the controlled NOT (CX) gate, that can be represented as square matrices. Mathematically, a gate application is equivalent to multiplying the matrix representing the gate with the state vector of the qubit(s).
-
-This basic unit of information is not the only reason why quantum computing is fundamentally different from classical computing---certain quantum mechanical phenomenon are highly counterintuitive! One such phenomenon is \textit{quantum entanglement} which, at its most basic level, involves a correlation between two qubits such that when one is measured, the outcome obtained necessarily influences the measurement outcome of the other qubit (even if the two qubits are far apart). %We will see how this property can be utilized for computation in the quantum teleportation algorithm that we describe and program in \S\ref{telep}.
-We refer the reader to the standard textbook by \citet{nielsen_quantum_2010} or the excellent series of essays by \citet{matuschak2019} for more background.
+In this section, we provide background on the core ideas from existing literature that form the foundation for our work --- Hoare Type Theory (HTT), quantum computing, and quantum logic defined using closed subspaces.
 
 \subsection{Hoare Type Theory}
 \label{sec:htt}
@@ -161,6 +147,19 @@ Type checking in HTT involves generation of strongest postconditions at each ste
 
 We provide more details when we introduce QHTT in section~\cref{sec:qhtt}. An accessible introduction to Hoare Type Theory is available in the lecture notes by \citet{perconti2012}.
 
+\subsection{Quantum Computing}
+\label{sec:qc}
+The basic unit of information in quantum computing is a qubit, that can be represented using a unit vector in a two-dimensional complex vector space. Using Dirac's bra-ket notation, we can write an arbitrary qubit, $\ket{\psi}$, as a linear combination of the computational basis vectors: $\ket{\psi} = \alpha\ket{0} + \beta\ket{1}$, where $\ket{0}=\begin{bsmallmatrix}
+1 \\
+0
+\end{bsmallmatrix}$ and $\ket{1}=\begin{bsmallmatrix}
+0 \\
+1
+\end{bsmallmatrix}$, and the two constants are complex amplitudes that are normalized using the constraint $|\alpha|^2 +|\beta|^2 = 1$. This means that when measured, the probability of the qubit being in the state 0 is $|\alpha|^2$ and that for the state 1 is $|\beta|^2$. To work with multiple qubits, we need to take their tensor product, denoted by $\otimes$. Computation is performed by the application of unitary quantum gates, such as the Hadamard (H) gate or the controlled NOT (CX) gate, that can be represented as square matrices. Mathematically, a gate application is equivalent to multiplying the matrix representing the gate with the state vector of the qubit(s).
+
+This basic unit of information is not the only reason why quantum computing is fundamentally different from classical computing---certain quantum mechanical phenomenon are highly counterintuitive! One such phenomenon is \textit{quantum entanglement} which, at its most basic level, involves a correlation between two qubits such that when one is measured, the outcome obtained necessarily influences the measurement outcome of the other qubit (even if the two qubits are far apart). %We will see how this property can be utilized for computation in the quantum teleportation algorithm that we describe and program in \S\ref{telep}.
+We refer the reader to the standard textbook by \citet{nielsen_quantum_2010} or the excellent series of essays by \citet{matuschak2019} for more background.
+
 \subsection{A Crash Course in Subspace Semantics for Quantum Predicates}
 
 Main references: \cite{logicqm36,ying_duan_feng_ji_2009,aqhl2019,unruh2019}.
@@ -172,9 +171,9 @@ This restriction to projection operators, which are Hermitian operators with 0 o
 \begin{definition}[Hermitian operator]
 	A Hermitian operator, $A$, in a finite-dimensional complex Hilbert space, $\mathcal{H}$, is a self-adjoint operator in $\mathcal{H}$. It is equal to its complex conjugate: $A = A^\dagger$.
 \end{definition}
-Hermitian operators describe physical observables and their eigenvalues are real numbers. \citet{dhondt_quantum_2006} define a quantum predicate in $\mathcal{H}$ as a Hermitian operator with eigenvalues within the unit interval ($[0, 1]$).
+%Hermitian operators describe physical observables and their eigenvalues are real numbers. \citet{dhondt_quantum_2006} define a quantum predicate in $\mathcal{H}$ as a Hermitian operator with eigenvalues within the unit interval ($[0, 1]$).
 
-\citet{ying_duan_feng_ji_2009} point out a problem with the above approach that it is not always possible to define certain logical operations (such as conjunction and disjunction) on some of these quantum predicates as they do not for a lattice. These operations are necessary to be able to compositionally reason about quantum programs. They, in turn, restrict themselves to quantum predicates that are expressed using a special class of Hermitian operators, called projection operators or projectors. It is well-known that projection operators in Hilbert space correspond one to one with closed subspaces in that space. Further, \citet{logicqm36} showed that the set of closed subspaces of Hilbert space form an orthomodular lattice that they use to define a logic for quantum mechanics. Similar to \citet{ying_duan_feng_ji_2009}, we will restrict ourselves to projection operators (or equivalently closed subspaces) to define quantum predicates.
+\citet{ying_duan_feng_ji_2009} restrict themselves to quantum predicates that are expressed using a special class of Hermitian operators, called projection operators or projectors. It is well-known that projection operators in Hilbert space correspond one to one with closed subspaces in that space. Further, \citet{logicqm36} showed that the set of closed subspaces of Hilbert space form an orthomodular lattice that they use to define a logic for quantum mechanics. Similar to \citet{ying_duan_feng_ji_2009}, we will restrict ourselves to projection operators (or equivalently closed subspaces) to define quantum predicates.
 
 \begin{definition}[Projection operator]
 	Let $X$ be a closed subspace of $\mathcal{H}$ and a vector $\ket{\psi} \in \mathcal{H}$. Then, there uniquely exist $\ket{\psi_0} \in X$ and $\ket{\psi_1} \in X^\bot$ (the orthocomplement of X) such that $\ket{\psi} = \ket{\psi_0} + \ket{\psi_1}$. The vector $\ket{\psi_0}$ is called the projection of $\ket{\psi}$ onto subspace $X$ and is equal to $\ket{\psi_0} = P_X \ket{\psi}$. The operator $P_X$ is called the projection operator (or projector) onto $X$.
@@ -201,47 +200,6 @@ Now we can define the logical operations on quantum predicates following the alg
 \end{itemize}
 
 \todo{TODO: also need to talk about mixed state / density operators}
-
-\subsection{Quantum IO Monad}
-\label{sec:qio}
-
-The Quantum IO (QIO) monad~\cite{qio} is a purely functional interface for quantum programming that provides a separation between the unitary (reversible) and non-unitary (irreversible) fragments of quantum computation. It provides isolation of quantum effects inside a monad similar to what we need to provide in our Quantum Hoare monad.
-
-QIO interface was developed as a library for the Haskell programming language but its design was influenced~\cite{asg2010} by the category \textbf{FQC} of finite quantum computations (where computations are interpreted as superoperators) as explored by \citet{fqc06} in previous work. This is the most we will say about the relation of QIO monad to category theory in this paper.
-
-Here we discuss the relevant concepts from the QIO interface. QIO provides a type for referring to qubits, \texttt{Qbit}; a type for unitary operations, \texttt{U}; and, the \texttt{QIO} type operator which is a monad indexed by the result of the quantum computation. The primitive quantum operations defined using the QIO monad below (Haskell syntax) are:
-
-\begin{minipage}{0.95\linewidth}
-\begin{lstlisting}[language=QHaskell]
-mkQbit :: Bool -> QIO Qbit       -- initialization
-applyU :: U -> QIO ()            -- apply a unitary to quantum state
-measQbit :: Qbit -> QIO Bool     -- measurement
-\end{lstlisting}
-\end{minipage}
-
-Further, \texttt{U} is defined as a monoid with neutral element, \texttt{mempty}, and operation, \texttt{mappend}, that encodes reversible operations on quantum state. The core unitary primitives that we will need are:
-
-\begin{minipage}{0.95\linewidth}
-\begin{lstlisting}[language=QHaskell]
-rot :: Qbit -> ((Bool, Bool) -> C) -> U
-cond :: Qbit -> (Bool -> U) -> U
-\end{lstlisting}
-\end{minipage}
-
-\texttt{rot} takes a qubit and a two-by-two complex-valued unitary matrix (represented as a function from the matrix indices to $\mathbb{C}$) and lets one define arbitrary rotation on a single qubit. \texttt{rot} can then be used to define standard gates such as the Hadamard, H, and the Pauli gates, X, Y and Z. \texttt{cond} is the unitary conditional that is used to perform branching unitary operations. For the present paper, we use a simpler conditional, \texttt{ifQ}, that is defined as follows:
-
-\begin{minipage}{0.95\linewidth}
-\begin{lstlisting}[language=QHaskell]
-ifQ :: Qbit -> U -> U
-ifQ q u = cond q (\x -> if x then u else mempty)
-\end{lstlisting}
-\end{minipage}
-
-That is, \texttt{ifQ} acts as the standard control operator in the quantum circuit model that runs its second argument based on the truth value of its first argument. Then, it is easy to define controlled gates such as CNOT with the expression $\kw{ifQ q1 (X q2)}$.
-
-Quantum state in the QIO interface is modeled as a normalized vector that stores pairs representing complex amplitudes associated with each basis state (represented as a map from Qbit to Bool types). The operations defined over the vector class ensure that the quantum state is kept normalized throughout.
-
-QIO further ensures that the monoidal structure of unitary operations lets one run a unitary operation over the complete quantum state. We elide details here and refer the reader to \cite{qio} for more.
 
 %\subsection{Hoare Style Reasoning}
 %\textit{Basics of Hoare-triples for non-specialists\ldots}
@@ -280,9 +238,9 @@ The next two sections discuss the syntax and typing of QHTT. The last section sh
 			$ \kw{\textbf{init}} N \mid \kw{\textbf{apply}} U \kw{\textbf{to}} N \mid \kw{\textbf{meas}} N$
 		\end{minipage}\\
 		\textit{Computations} & $E, F$ & ::= & $ \kw{return} N \mid x \leftarrow K; E \mid x \Leftarrow c; E \mid x = N; E $\\ \\
-%		\textit{Variable context} & $\Delta$ & ::= & $ \cdot \mid x : A, \Delta $ \\
-%		\textit{Q. Heap context} & $\Psi$ & ::= & $ \cdot \mid h, \Psi$ \\
-%		\textit{Proposition context} & $\Gamma$ & ::= & $ \cdot \mid P, \Gamma$ \\
+		\textit{Variable context} & $\Delta$ & ::= & $ \cdot \mid x : A, \Delta $ \\
+		\textit{Q. Heap context} & $\Psi$ & ::= & $ \cdot \mid h, \Psi$ \\
+		\textit{Proposition context} & $\Gamma$ & ::= & $ \cdot \mid P, \Gamma$ \\
 		\textit{Unitaries} & $U$ & ::= & $ I \mid X \mid Y \mid Z \mid H \mid CX \mid CZ \mid S \mid T$
 	\end{tabular}
 	\Description{Syntax of Quantum Hoare Type Theory}
