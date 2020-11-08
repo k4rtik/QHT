@@ -13,35 +13,38 @@ Typ, A, B, C :: Ty ::= {{ com Types }}
   | Sig x : A . B      ::   :: DependentPair
   | A times B          :: S :: Pair
   | { x : A . P }      ::   :: Refinement
+  | A [ M / x ]        :: M :: Substitution
 
-ElimTm, K, L :: ETm ::= {{ com Elim Terms }}
-  | x       :: :: Var
-  | K N     :: :: App
-  | fst K   :: :: Fst
-  | snd K   :: :: Snd
-  | out K   :: :: Out
-  | M : A   :: :: Ascription
+ElimTm, K, L :: ElTm ::= {{ com Elim Terms }}
+  | x           ::  :: Var
+  | K N         ::  :: App
+  | fst K       ::  :: Fst
+  | snd K       ::  :: Snd
+  | out K       ::  :: Out
+  | M : A       ::  :: Ascription
 
-IntroTm, M, N :: ITm ::= {{ com Intro Terms }}
+IntroTm, M, N :: InTm ::= {{ com Intro Terms }}
   | K           :: :: ETm
   | true        :: :: True
   | false       :: :: False
   | ()          :: :: Unit
   | \ x . M     :: :: Lam
   | ( M , N )   :: :: Pair
-  | in M        :: :: Injection
+  | in M        :: :: In
 
-Prop, P, Q, R :: '' ::= {{ com Propositions (ITm) }}
-  | top              :: :: Top
-  | bot              :: :: Bottom
-  | P /\ Q           :: :: Conjunction
-  | P \/ Q           :: :: Disjunction
-  | P imp Q          :: :: Implication
-  | not P            :: :: Not
-  | forall x : A . P :: :: ForAll
-  | exists x : A . P :: :: Exists
+Prop, P, Q, R :: '' ::= {{ com Propositions (InTm) }}
+  | top                   ::  :: Top
+  | bot                   ::  :: Bottom
+  | P /\ Q                ::  :: Conjunction
+  | P \/ Q                ::  :: Disjunction
+  | P imp Q               ::  :: Implication
+  | not P                 ::  :: Not
+  | forall x : A . P      ::  :: ForAll
+  | exists x : A . P      ::  :: Exists
+  | xid ( A , B ; M , N ) ::  :: HeterogeneousEquality
+  | P [ M / x ]           :: M:: Substitution
 
-MonoTyp, t {{ tex \tau }}, s {{ tex \sigma }} :: '' ::= {{ com Monotypes (ITm) }}
+MonoTyp, t {{ tex \tau }}, s {{ tex \sigma }} :: '' ::= {{ com Monotypes (InTm) }}
   | bool          :: :: Bool
   | prop          :: :: Prop
   | ()            :: :: Unit
@@ -49,9 +52,10 @@ MonoTyp, t {{ tex \tau }}, s {{ tex \sigma }} :: '' ::= {{ com Monotypes (ITm) }
   | Sig x : t . s :: :: Sigma
   | { x : t . P } :: :: Refinement
 
-Delta, D {{ tex \Delta }} :: '' ::= {{ com Contexts }}
+Delta, D {{ tex \Delta }} :: 'Ctx' ::= {{ com Contexts }}
   | .               :: :: Empty
-  | D , x : A , P   :: :: Extension
+  | D , x : A       :: :: Type
+  | D , P           :: :: Prop
 
 
 terminals :: 'terminals_' ::=
@@ -92,3 +96,51 @@ terminals :: 'terminals_' ::=
   | o                      ::   :: RelComp    {{ tex \circ }}
   | -o                     ::   :: Lollipop   {{ tex \multimap }}
   | |->                    ::   :: SMapsto    {{ tex \mapsto }}
+
+
+defns
+  Jtype :: '' ::=
+
+defn
+  D |- M chk A :: :: TyIntro :: TyIn  {{ com $[[M]]$ checks against type $[[A]]$ }} by
+
+    D, x:A |- M chk B
+    ---------------------- :: Pi
+    D |- \x.M chk Pi x:A.B
+
+    D |- M chk A
+    D |- N chk B[M/x]
+    ------------------------- :: Sig
+    D |- (M, N) chk Sig x:A.B
+
+    D |- M chk A
+    D |= P[M/x]
+    --------------------- :: Refine
+    D |- in M chk {x:A.P}
+
+defn
+  D |- K syn A :: :: TyElim :: TyEl {{ com $[[K]]$ synthesizes type $[[A]]$ }} by
+
+    D |- K syn Pi x:A.B
+    D |- M chk A
+    ------------------- :: Pi
+    D |- K M syn B[M/x]
+
+    D |- K syn Sig x:A.B
+    -------------------- :: Fst
+    D |- fst K syn A
+
+    D |- K syn Sig x:A.B
+    --------------------------- :: Snd
+    D |- snd K syn B[fst K / x]
+
+    D |- K syn {x:A.P}
+    ------------------ :: Refine
+    D |- out K syn A
+
+defn
+  D |= P :: :: Prove :: Pr {{ com Proof obligation $[[P]]$ }} by
+
+    D |- K syn {x:A.P}
+    ------------------ :: Refine
+    D |= P[out K / x]
