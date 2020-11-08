@@ -1,0 +1,94 @@
+metavar termvar, x ::=
+
+grammar
+
+Typ, A, B, C :: Ty ::= {{ com Types }}
+  | K                  ::   :: K
+  | bool               ::   :: Bool
+  | prop               ::   :: Proposition
+  | unit               ::   :: Unit
+  | mono               ::   :: MonoType
+  | Pi x : A . B       ::   :: DependentFunction
+  | A -> B             :: S :: Arrow
+  | Sig x : A . B      ::   :: DependentPair
+  | A times B          :: S :: Pair
+  | { x : A . P }      ::   :: Refinement
+
+ElimTm, K, L :: ETm ::= {{ com Elim Terms }}
+  | x       :: :: Var
+  | K N     :: :: App
+  | fst K   :: :: Fst
+  | snd K   :: :: Snd
+  | out K   :: :: Out
+  | M : A   :: :: Ascription
+
+IntroTm, M, N :: ITm ::= {{ com Intro Terms }}
+  | K           :: :: ETm
+  | true        :: :: True
+  | false       :: :: False
+  | ()          :: :: Unit
+  | \ x . M     :: :: Lam
+  | ( M , N )   :: :: Pair
+  | in M        :: :: Injection
+
+Prop, P, Q, R :: '' ::= {{ com Propositions (ITm) }}
+  | top              :: :: Top
+  | bot              :: :: Bottom
+  | P /\ Q           :: :: Conjunction
+  | P \/ Q           :: :: Disjunction
+  | P imp Q          :: :: Implication
+  | not P            :: :: Not
+  | forall x : A . P :: :: ForAll
+  | exists x : A . P :: :: Exists
+
+MonoTyp, t {{ tex \tau }}, s {{ tex \sigma }} :: '' ::= {{ com Monotypes (ITm) }}
+  | bool          :: :: Bool
+  | prop          :: :: Prop
+  | ()            :: :: Unit
+  | Pi x : t . s  :: :: Pi
+  | Sig x : t . s :: :: Sigma
+  | { x : t . P } :: :: Refinement
+
+Delta, D {{ tex \Delta }} :: '' ::= {{ com Contexts }}
+  | .               :: :: Empty
+  | D , x : A , P   :: :: Extension
+
+
+terminals :: 'terminals_' ::=
+  | \                      ::   :: lambda     {{ tex \lambda }}
+  | -->                    ::   :: red        {{ tex \longrightarrow }}
+  | |=                     ::   :: seqimp     {{ tex \models }}
+  | ==>b                   ::   :: bred       {{ tex \Longrightarrow_\beta }}
+  | ==>e                   ::   :: expand     {{ tex \Longrightarrow_\eta }}
+  |  ->                    ::   :: arrow      {{ tex \rightarrow }}
+  | <-                     ::   :: larrow     {{ tex \leftarrow }}
+  | <=                     ::   :: lbarrow    {{ tex \Leftarrow }}
+  |  =>                    ::   :: rbarrow    {{ tex \Rightarrow }}
+  | <                      ::   :: langle     {{ tex \langle }}
+  | >                      ::   :: rangle     {{ tex \rangle }}
+  | |-                     ::   :: turnstile  {{ tex \vdash }}
+  | syn                    ::   :: syn        {{ tex \textcolor{red}{\stackrel{\rightarrow}{\in} } }}
+  | chk                    ::   :: chk        {{ tex \textcolor{blue}{\stackrel{\leftarrow}{\in} } }}
+  | inc                    ::   :: in         {{ tex \in }}
+  | inq                    ::   :: inq        {{ tex \in_q }}
+  | =q                     ::   :: eqq        {{ tex =_q }}
+  | <-q                    ::   :: initq      {{ tex \stackrel{q}{\leftarrow} }}
+  | Pi                     ::   :: pi         {{ tex \Pi }}
+  | Sig                    ::   :: Sigma      {{ tex \Sigma }}
+  | tau                    ::   :: tau        {{ tex \tau }}
+  | sigma                  ::   :: sigma      {{ tex \sigma }}
+  | psi                    ::   :: psi        {{ tex \psi }}
+  | times                  ::   :: times      {{ tex \times }}
+  | top                    ::   :: top        {{ tex \top }}
+  | bot                    ::   :: bot        {{ tex \bot }}
+  | /\                     ::   :: and        {{ tex \wedge }}
+  | \/                     ::   :: or         {{ tex \vee }}
+  | imp                    ::   :: imp        {{ tex \supset }}
+  | not                    ::   :: not        {{ tex \neg }}
+  | exists                 ::   :: exists     {{ tex \exists }}
+  | forall                 ::   :: forall     {{ tex \forall }}
+  | Id_A                   ::   :: IdA        {{ tex \mathbf{Id}_A }}
+  | =_A                    ::   :: AssA       {{ tex =_A }}
+  | o                      ::   :: RelComp    {{ tex \circ }}
+  | -o                     ::   :: Lollipop   {{ tex \multimap }}
+  | |->                    ::   :: SMapsto    {{ tex \mapsto }}
