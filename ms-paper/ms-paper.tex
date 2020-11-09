@@ -149,16 +149,27 @@ We provide more details when we introduce QHTT in section~\cref{sec:qhtt}. An ac
 
 \subsection{Quantum Computing}
 \label{sec:qc}
-The basic unit of information in quantum computing is a qubit, that can be represented using a unit vector in a two-dimensional complex vector space. Using Dirac's bra-ket notation, we can write an arbitrary qubit, $\ket{\psi}$, as a linear combination of the computational basis vectors: $\ket{\psi} = \alpha\ket{0} + \beta\ket{1}$, where $\ket{0}=\begin{bsmallmatrix}
+The basic unit of information in quantum computing is a qubit, that can be represented using a unit vector in a two-dimensional complex vector space, $\mathbb{C}^2$. Using Dirac's bra-ket notation, we can write an arbitrary qubit, $\ket{\psi}$, as a linear combination (or \textit{superposition}) of the computational basis vectors: $\ket{\psi} = \alpha\ket{0} + \beta\ket{1}$, where $\ket{0}=\begin{bsmallmatrix}
 1 \\
 0
 \end{bsmallmatrix}$ and $\ket{1}=\begin{bsmallmatrix}
 0 \\
 1
-\end{bsmallmatrix}$, and the two constants are complex amplitudes that are normalized using the constraint $|\alpha|^2 +|\beta|^2 = 1$. This means that when measured, the probability of the qubit being in the state 0 is $|\alpha|^2$ and that for the state 1 is $|\beta|^2$. To work with multiple qubits, we need to take their tensor product, denoted by $\otimes$. Computation is performed by the application of unitary quantum gates, such as the Hadamard (H) gate or the controlled NOT (CX) gate, that can be represented as square matrices. Mathematically, a gate application is equivalent to multiplying the matrix representing the gate with the state vector of the qubit(s).
+\end{bsmallmatrix}$, and the two constants are complex amplitudes that are normalized using the constraint $|\alpha|^2 +|\beta|^2 = 1$. This means that when measured, the probability of the qubit being in the state 0 is $|\alpha|^2$ and that for the state 1 is $|\beta|^2$. To work with multiple qubits, we need to take their tensor product, denoted by $\otimes$. Computation is performed by the application of unitary quantum gates, such as the Hadamard (H) gate or the controlled-Not (CX) gate, that can be represented as square matrices. Mathematically, a gate application is equivalent to multiplying the matrix representing the gate with the state vector of the qubit(s).
 
-This basic unit of information is not the only reason why quantum computing is fundamentally different from classical computing---certain quantum mechanical phenomenon are highly counterintuitive! One such phenomenon is \textit{quantum entanglement} which, at its most basic level, involves a correlation between two qubits such that when one is measured, the outcome obtained necessarily influences the measurement outcome of the other qubit (even if the two qubits are far apart). %We will see how this property can be utilized for computation in the quantum teleportation algorithm that we describe and program in \S\ref{telep}.
+This basic unit of information is not the only reason why quantum computing is fundamentally different from classical computing---certain quantum mechanical phenomenon are highly counter-intuitive! One such phenomenon is \textit{quantum entanglement} which, at its most basic level, involves a correlation between two qubits such that when one is measured, the outcome obtained necessarily influences the measurement outcome of the other qubit (even if the two qubits are far apart).
 We refer the reader to the standard textbook by \citet{nielsen_quantum_2010} or the excellent series of essays by \citet{matuschak2019} for more background.
+
+We assume basic familiarity with linear algebra. Here we define some mathematical preliminaries specific to quantum computing that we will need.
+
+\begin{definition}[Vector Subspace]
+	A subspace of a vector space is a subset of its vectors which is closed under its operations of vector addition and scalar multiplication.
+\end{definition}
+
+All vector spaces are equipped with at least two (\textit{trivial}) subspaces: the singleton set, $\{ 0 \}$, consisting of the zero vector and the vector space itself.
+
+We will work in a specific vector space called \textit{Hilbert space}, $\mathcal{H}$, which for our purposes can be thought of as an n-dimensional complex vector space equipped with an inner product ($\mathbb{C}^n$). It is tricky to precisely define a Hilbert space as it needs to satisfy certain axioms from mathematical analysis but we will not need them in this work as we only consider finite-dimensional Hilbert spaces. We have already seen an important example of a Hilbert space above when we described a qubit: $\mathbb{C}^2$.
+
 
 \subsection{A Crash Course in Subspace Semantics for Quantum Predicates}
 
