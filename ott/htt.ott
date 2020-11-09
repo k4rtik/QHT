@@ -8,9 +8,9 @@ Typ, A, B, C :: Ty ::= {{ com Types }}
   | prop               ::   :: Proposition
   | unit               ::   :: Unit
   | mono               ::   :: MonoType
-  | Pi x : A . B       ::   :: DependentFunction
+  | Pi x : A . B       ::   :: DependentProduct
   | A -> B             :: S :: Arrow
-  | Sig x : A . B      ::   :: DependentPair
+  | Sig x : A . B      ::   :: DependentSum
   | A times B          :: S :: Pair
   | { x : A . P }      ::   :: Refinement
   | { P } x : A { Q }  ::   :: Hoare
@@ -154,6 +154,21 @@ defn
     -------------- :: Unit
     D |- unit type
 
+    D |- A type
+    D, x:A |- B type
+    ------------------ :: Pi
+    D |- Pi x:A.B type
+
+    D |- A type
+    D, x:A |- B type
+    ------------------ :: Sig
+    D |- Sig x:A.B type
+
+    D |- A type
+    D, x:A |- P chk prop
+    -------------------- :: Refine
+    D |- {x:A.P} type
+
 defn
   D |- M : A :: :: Term :: tm {{ com term $[[M]]$ has type $[[A]]$ }} by
 
@@ -164,7 +179,7 @@ defn
   D |- M = N : A :: :: TmEq :: tmeq {{ com $[[M]]$ and $[[N]]$ are equal as terms of type $[[A]]$ }} by
 
 defn
-  D |- P chk prop :: :: Prop :: prop {{ com $[[P]]$ type checks as a prop }} by
+  D |- P chk prop :: :: Prop :: prop {{ com $[[P]]$ type checks as a $[[prop]]$ }} by
 
 defn
   D |- M chk A :: :: TyIntro :: TyIn  {{ com $[[M]]$ checks against type $[[A]]$ }} by
