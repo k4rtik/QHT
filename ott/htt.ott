@@ -102,6 +102,18 @@ defns
   Jtype :: '' ::=
 
 defn
+  D |- A type :: :: Type :: ty {{ com $[[A]]$ is a type }} by
+
+defn
+  D |- M : A :: :: Term :: tm {{ com term $[[M]]$ has type $[[A]]$ }} by
+
+defn
+  A = B :: :: TyEq :: tyeq {{ com $[[A]]$ and $[[B]]$ are equal as types }} by
+
+defn
+  D |- M = N : A :: :: TmEq :: tmeq {{ com $[[M]]$ and $[[N]]$ are equal as terms of type $[[A]]$ }} by
+
+defn
   D |- M chk A :: :: TyIntro :: TyIn  {{ com $[[M]]$ checks against type $[[A]]$ }} by
 
     D, x:A |- M chk B
@@ -117,6 +129,11 @@ defn
     D |= P[M/x]
     --------------------- :: Refine
     D |- in M chk {x:A.P}
+
+    D |- K syn A
+    A = B
+    ------------ :: Elim
+    D |- K chk B
 
 defn
   D |- K syn A :: :: TyElim :: TyEl {{ com $[[K]]$ synthesizes type $[[A]]$ }} by
@@ -137,6 +154,11 @@ defn
     D |- K syn {x:A.P}
     ------------------ :: Refine
     D |- out K syn A
+
+    D |- A type
+    D |- M chk A
+    -------------- :: Ascription
+    D |- M:A syn A
 
 defn
   D |= P :: :: Prove :: Pr {{ com Proof obligation $[[P]]$ }} by
