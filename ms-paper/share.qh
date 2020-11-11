@@ -1,0 +1,7 @@
+share : Π a : qbit.
+        {a =q (α|0⟩ + β|1⟩)}
+           (a, b) : (qbit ⊗ qbit)
+        {(a, b) =q (α|00⟩ + β|11⟩)}
+      = λa.do b = init false;
+              apply CX to (a, b);
+              return (a, b)

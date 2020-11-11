@@ -1,0 +1,29 @@
+alice : Π q : qbit. Π a : qbit
+        {q =q (α|0⟩ + β|1⟩), (a, e) =q EPR}    -- a is entangled with ghost var e
+           (m1, m2) : (bool ⊗ bool)
+        {  (m1, m2) = 00, e =q (α|0⟩ + β|1⟩)
+         ∨ (m1, m2) = 01, e =q (α|1⟩ + β|0⟩)
+         ∨ (m1, m2) = 10, e =q (α|0⟩ - β|1⟩)
+         ∨ (m1, m2) = 11, e =q (α|1⟩ - β|0⟩)}
+      = λq.λa.do apply CX to (q, a);
+                 apply H to q;
+                 rq = meas q;
+                 ra = meas a;
+                 return (rq, ra)
+
+bob : Π m1 m2 : bool. Π b : qbit
+      {(b, e) =q EPR}
+         r : qbit
+      {⊤}
+      = λm1.λm2.λb.do apply C_Z to (m1, b);
+                      apply C_X to (m2, b);
+                      return b
+
+teleport : Π q : qbit.
+           {q =q (α|0⟩ + β|1⟩)}
+              b : qbit
+           {r =q (α|0⟩ + β|1⟩)}
+         = λq.do (a, b) = bell00;
+                 (m1, m2) = alice q a;
+                 b = bob m1 m2 b;
+                 return b

@@ -1,0 +1,9 @@
+qplus : {⊤} r : qbit {r =q |+⟩}
+      = do q = init false;
+           apply H to q;
+           return q
+
+qminus : {⊤} r : qbit {r =q |-⟩}
+       = do q = init true;
+            apply H to q;
+            return q

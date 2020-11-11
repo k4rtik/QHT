@@ -1,0 +1,17 @@
+rnd : {⊤} r : bool {⊤}
+    = do q = init false;
+         apply H to q;
+         r = meas q;
+         return r
+
+rnd : {⊤} r : bool {⊤}
+         -- ⊤
+    = do q = init false;
+         -- q =q |0⟩
+         apply H to q;
+         -- (H on q).(q =q |0⟩) ⇒ q =q |+⟩
+         r = meas q;
+         -- (proj(|0⟩) on q ∨ proj(|1⟩) on q).(q =q |+⟩)
+         -- ⇒ erase(q), r =c 0 ∨ r =c 1
+         return r
+         -- ⊤, r = false ∨ r = true (lifting)

@@ -1,0 +1,27 @@
+testBell00 : {⊤} (a, b) : (bool ⊗ bool) {⊤, a = b}
+         = do qa = init false;
+              apply H to qa;
+              qb = init false;
+              apply CX to (qa, qb);
+              a = meas qa;
+              b = meas qb;
+              return (a, b)
+
+testBell00 : {⊤} (a, b) : (bool ⊗ bool) {⊤, a = b}
+              -- ⊤
+         = do qa = init false;
+              -- qa =q |0⟩
+              apply H to qa;
+              -- qa =q |+⟩
+              qb = init false;
+              -- qa =q |+⟩, qb =q |0⟩
+              apply CX to (qa, qb);
+              --   (CX on (qa, qb)).(qa =q |+⟩, qb =q |0⟩)
+              -- ⇒ (qa, qb) =q 1/√2 (|00⟩+|11⟩)
+              a = meas qa;
+              --   (qa, e1) =q |00⟩, (qb, e2) =q |00⟩, a = false
+              -- ∨ (qa, e1) =q |11⟩, (qb, e2) =q |11⟩, a = true
+              b = meas qb;
+              --   (qa, e1) =q |00⟩, (qb, e2) =q |00⟩, a = false, b = false
+              -- ∨ (qa, e1) =q |11⟩, (qb, e2) =q |11⟩, a = true, b = true
+              return (a, b)

@@ -1,0 +1,13 @@
+hqw : {⊤} r : bool {⊤, r = false}
+    = do q = init false;
+         r = meas q;
+         return r
+
+hqw : {⊤} r : bool {⊤, r = false}
+         -- ⊤ (ie, the list of quantum variables, Q = {})
+    = do q = init false;
+         -- q =q |0⟩ (subspace of H2; (q ∈ span(|0⟩)) = (span(|0⟩) ⊗ L[V\q]))
+         r = meas q;
+         -- (proj(|0⟩) on q ∨ proj(|1⟩) on q).(q =q |0⟩) ⇒ erase(q), r =c 0
+         return r
+         -- ⊤, r = false (Q = {} again, and lifting)

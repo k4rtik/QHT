@@ -1,0 +1,4 @@
+bell00 : {⊤} (a, b) : (qbit ⊗ qbit) {(a,b) =q EPR}
+     = do qa = qplus;
+          (qa, qb) = share qa;
+          return (qa, qb)

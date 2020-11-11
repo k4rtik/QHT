@@ -1,0 +1,5 @@
+testBell : {⊤} (a, b) : (bool ⊗ bool) {⊤,  a = b}
+         = do (qa, qb) = bell00;
+              a = meas qa;
+              b = meas qb;
+              return (a, b)
