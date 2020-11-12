@@ -1,0 +1,28 @@
+bell00 : Circ 1 (qbit ⊗ qbit)
+bell00 = box () => q1 = init 0
+                   a = apply H to q1;
+                   q2 = init 0
+                   b = apply H to q2;
+                   apply CX to (a, b)
+
+flip : QIO bool -- QIO is the state monad over state [qbit] & output bool
+ -- OR (Circ 1 bit) where bit = Lower bool
+flip = box () => q = init 0;
+                 apply H to q;
+                 meas q
+
+alice : Circ (qbit ⊗ qbit) (bit ⊗ bit)
+alice = box (q, a) => apply CX to (q, a);
+                      apply H to q;
+                      (meas q, meas a)
+
+bob : bool -> bool -> Circ qbit qbit
+bob = if x && y then (Z . X) -- assuming compose is defined
+      else if x && ~y then X -- X = box q => apply X to q
+      else if ~x && y then Z -- Z = box q => apply Z to q
+      else I
+
+teleport : Circ qbit qbit
+teleport = box q => (a, b) = bell00 ();
+                    (x, y) = alice (q, a);
+                    bob x y b
