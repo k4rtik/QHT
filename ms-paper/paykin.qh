@@ -16,11 +16,10 @@ alice = box (q, a) => apply CX to (q, a);
                       apply H to q;
                       (meas q, meas a)
 
-bob : bool -> bool -> Circ qbit qbit
-bob = if x && y then (Z . X) -- assuming compose is defined
-      else if x && ~y then X -- X = box q => apply X to q
-      else if ~x && y then Z -- Z = box q => apply Z to q
-      else I
+bob : Circ (bit ⊗ bit ⊗ qbit) qbit
+bob = box (x, y, q) => apply CX to (x, q);
+                       apply CZ to (y, q);
+                       q
 
 teleport : Circ qbit qbit
 teleport = box q => (a, b) = bell00 ();
