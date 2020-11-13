@@ -1,0 +1,36 @@
+-- Examples from Selinger's Quantum λ-Calculus
+-- 4.2.1/4.3.16 Deutsch Algorithm (higher-order)
+Uf : f: (bit -> bit)
+{ ⊤ }
+ U_f: (qbit ⊗ qbit -> qbit ⊗ qbit)
+{ U_f (|y⟩, |x⟩) = (|y ⊕ f x⟩, |x⟩)}
+
+deutsch : Π U_f : (qbit ⊗ qbit -> qbit ⊗ qbit). ∃ f: (bit -> bit).
+          { U_f(|y⟩, |x⟩) = (|y ⊕ f x⟩, |x⟩) }
+            r: bit
+          {
+            r =c 0 => f 0 ⊕ f 1 = 0,
+            r =c 1 => f 0 ⊕ f 1 = 1
+          }
+deutsch = λ U_f . do y = init 1;
+                     x = init 0;
+                     apply H to y;
+                     apply H to x;
+                     (x', y') = U_f (x, y);
+                     apply H to x;
+                     meas x
+
+EPR : {⊤} r : (qbit ⊗ qbit) {r =q 1/√2 (|00⟩+|11⟩)}
+EPR = do x = init 0;
+         y = init 0;
+         apply H to x;
+         apply CX to (x, y);
+         (x, y)
+
+BellMeasure : Π (q a : qbit)
+              { ae =q EPR }
+                bit ⊗ bit
+              {  }
+BellMeasure = λ q . λ a . do apply CX to (q, a);
+                             apply H to q;
+                             (meas x, meas y)

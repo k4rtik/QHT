@@ -38,11 +38,13 @@
 	{\ .}{{$\circ$}}2 {\ .\ }{{$\circ$}}2
 	{|}{{$\vert$}}1 {⟩}{{$\rangle$}}1
 	{∧}{{$\wedge$}}1 {∨}{{$\vee$}}1
-	{∈}{{$\in$}}1 {Π}{{$\Pi$}}1
-	{⊗}{{$\otimes$}}1
+	{∈}{{$\in$}}1 {Π}{{$\Pi$}}1 {∃}{{$\exists$}}1
+	{⊗}{{$\otimes$}}1 {⊕}{{$\oplus$}}1
 	{⊤}{{$\top$}}1
 	{=q}{{$=_q$}}2 {=c}{{$=_c$}}2
 	{α}{{$\alpha$}}1 {β}{{$\beta$}}1
+	{_i}{{$_i$}}1
+	{\ .\ }{{$\cdot$}}1
 }
 
 \newcommand{\sqir}{\ensuremath{s\textsc{qir}}\xspace}
@@ -202,7 +204,7 @@ Now we can define the logical operations on quantum predicates following the alg
 	\item $\top$ represents the complete Hilbert space, $\mathcal{H}$, under consideration.
 	\item $\bot$ represents the zero-dimension subspace of Hilbert space, $\{0\}$.
 	\item $X \wedge Y$ is taken to be the set intersection of the two subspaces: $X \cap Y$.
-	\item $X \vee Y$ is modeled as the sum (linear combination) of the subspaces $X$ and $Y$. In other words, it is the closed subspace of the union of the two subspaces: $\overline{\mathit{span}(X \cup Y)}$, where $\overline{X}$ denotes that $X$ is a closed subspace.
+	\item $X \vee Y$ is modeled as the sum (linear combination) of the subspaces $X$ and $Y$. In other words, it is the closed subspace of the union of the two subspaces: $\overline{\mathit{span}(X \cup Y)}$, where $\overline{X}$ denotes the closure of $X$.
 	\item $X^\bot$ denotes the orthocomplement of $X$ which includes all vectors in $\mathcal{H}$ that are orthogonal to $X$.
 \end{itemize}
 
@@ -610,5 +612,17 @@ The implementation notes suggest that switching to F* seems to require making to
 
 %\section{Sample Proof}
 %\textit{Coq code / Annotated proof objects from implementation\ldots}
+
+\section{Other examples}
+
+\subsection{QPL}
+
+\lstinputlisting[language=QHaskell]{qpl.qh}
+
+\subsection{Quantum Lambda Calculus}
+\lstinputlisting[language=QHaskell]{qlc.qh}
+
+\subsection{QWire Core}
+\lstinputlisting[language=QHaskell]{paykin.qh}
 
 \end{document}

@@ -1,3 +1,4 @@
+-- Examples from Paykin's thesis
 bell00 : Circ 1 (qbit ⊗ qbit)
 bell00 = box () => q1 = init 0
                    a = apply H to q1;
@@ -25,3 +26,9 @@ teleport : Circ qbit qbit
 teleport = box q => (a, b) = bell00 ();
                     (x, y) = alice (q, a);
                     bob x y b
+
+bob' : bool -> bool -> Circ qbit qbit
+bob' = if x && y then (Z . X) -- assuming compose is defined
+       else if x && ~y then X -- X = box q => apply X to q
+       else if ~x && y then Z -- Z = box q => apply Z to q
+       else I

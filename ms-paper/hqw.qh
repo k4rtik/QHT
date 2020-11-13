@@ -6,8 +6,8 @@ hqw : {⊤} r : bool {⊤, r = false}
 hqw : {⊤} r : bool {⊤, r = false}
          -- ⊤ (ie, the list of quantum variables, Q = {})
     = do q = init false;
-         -- q =q |0⟩ (subspace of H2; (q ∈ span(|0⟩)) = (span(|0⟩) ⊗ L[V\q]))
+         -- q =q |0⟩ (subspace of H2; (q ∈ span(|0⟩)) = (span(|0⟩) ⊗ l^2[V\q]))
          r = meas q;
-         -- (proj(|0⟩) on q ∨ proj(|1⟩) on q).(q =q |0⟩) ⇒ erase(q), r =c 0
+         -- ∨_i(P_i on q) . (q =q |0⟩) ⇒ discard(q), r =c 0
          return r
          -- ⊤, r = false (Q = {} again, and lifting)
