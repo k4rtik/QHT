@@ -8,6 +8,7 @@ hqw : {⊤} r : bool {⊤, r = false}
     = do q = init false;
          -- q =q |0⟩ (subspace of H2; (q ∈ span(|0⟩)) = (span(|0⟩) ⊗ l^2[V\q]))
          r = meas q;
-         -- ∨_i(P_i on q) . (q =q |0⟩) ⇒ discard(q), r =c 0
+         -- qe = |00⟩ (strong, keeps both distribution and outcome)
+         -- ∨_i(P_i on q) . (q =q |0⟩) ⇒ discard(q), r =c 0 (forgets distribution)
          return r
          -- ⊤, r = false (Q = {} again, and lifting)
