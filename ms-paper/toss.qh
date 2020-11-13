@@ -9,7 +9,7 @@ rnd : {⊤} r : bool {r = 1/2(true) + 1/2(false)}
     = do q = init false;
          -- q =q |0⟩
          apply H to q;
-         -- (H on q).(q =q |0⟩) ⇒ q =q |+⟩
+         -- (H on q) . (q =q |0⟩) ⇒ q =q |+⟩
          r = meas q;
          -- ∨_i(P_i on q) . (q =q |+⟩)
          -- ⇒ discard(q), r =c 1/2(0) + 1/2(1)

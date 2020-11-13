@@ -16,7 +16,7 @@ testBell00 : {⊤} (a, b) : (bool ⊗ bool) {⊤, a = b}
               qb = init false;
               -- qa =q |+⟩, qb =q |0⟩
               apply CX to (qa, qb);
-              --   (CX on (qa, qb)).(qa =q |+⟩, qb =q |0⟩)
+              --   (CX on (qa, qb)) . (qa =q |+⟩, qb =q |0⟩)
               -- ⇒ (qa, qb) =q 1/√2 (|00⟩+|11⟩)
               a = meas qa;
               --   (qa, e1) =q |00⟩, (qb, e2) =q |00⟩, a = false
